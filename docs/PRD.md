@@ -3,70 +3,99 @@ title: "PRD — Next in Site (cms-scaffold-cli)"
 internal_name: cms-scaffold-cli
 codename: nis
 public_name: Next in Site
-status: in progress
+status: Discovery
 created_at: 2026-04-19
-updated_at: 2026-04-25
+updated_at: 2026-04-26
 ---
 
-# PRD — Next in Site
+# PRD — Next in Site (cms-scaffold-cli)
 
-## 1. Purpose
+> [!NOTE]
+> Stack, flows and technical decisions in `ARCH.md`. Delivery sequence in `ROADMAP.md`.
 
-**Pitch:** a one-command CLI that scaffolds a production-ready, full-stack codebase for content-driven sites in under 2 minutes — opinionated end-to-end, no boilerplate to assemble.
+## 1. Problem
 
-**Audience:** full-stack developers building content-driven sites and platforms who don't want to rebuild the same stack on every project. Agency tech leads who need a standard baseline across teams.
+Full-stack devs and agency tech leads who build content-driven sites rebuild the same stack every project. Existing options solve only parts: headless CMS without front-end, front-end frameworks without CMS, or all-in-one platforms with vendor lock-in. Nobody ships an opinionated, open scaffold that wires CMS + front-end + types + dynamic blocks end-to-end.
 
-**Why now:** the modern alternatives solve only parts of the problem (headless CMS without front-end, front-end frameworks without CMS, or all-in-one platforms with vendor lock-in). There's an open window for an opinionated, open scaffold that ships the whole package.
+## 2. Hypothesis
 
-**Edge:**
-- Type-safe contract between CMS and front-end out of the box
-- Dynamic block system so editors compose pages without developer changes
-- Bilingual documentation (en / pt-BR)
+Devs and small agencies adopt a one-command CLI that scaffolds a production-ready, full-stack codebase in under 2 minutes when it removes the boilerplate phase entirely and stays open and rebrandable, in exchange for accepting an opinionated stack.
 
-## 2. Features (MVP)
+**Validation:** ≥ 20 external PRs and ≥ 100 unique installs in the first 3 months post-`v0.1`, with ≥ 1 agency forking and rebranding the scaffold for client work.
 
-**Must Have**
-- F1 — Single command generates the project and boots the local environment
-- F2 — Pre-configured monorepo layout (front-end app, CMS app, shared packages)
-- F3 — Shared type contract between CMS and front-end (auto-synced during development)
-- F4 — Dynamic block system with sample blocks editors can compose
-- F5 — Multi-language content and routing ready on day one
-- F6 — Deploy guide for managed and self-hosted scenarios
-- F11 — Whitelabel-by-design: all brand strings/assets (product name, CLI command label, tagline, primary color, logo, repo/docs URLs) centralized in a single config file consumed by templates, README, CLI banner, landing, and generated `package.json`. Enables zero-friction rebrand and agency forks.
+## 3. User
 
-**Should Have**
-- F7 — Admin authentication ready out of the box (no custom auth needed)
-- F8 — Basic SEO defaults (meta tags, sitemap, robots)
-- F9 — Utility-first styling configured (no opinionated design system imposed)
+Single persona: **full-stack dev or agency tech lead** building content-driven sites, with two usage profiles:
 
-**Post-MVP (v1.1+)**
-- F10 — Opt-in CLI telemetry to inform roadmap (deferred from MVP; see Decision 3)
+- **Solo dev / freelancer** — wants a production-ready baseline they didn't have to assemble; values speed from `create` to deploy.
+- **Agency tech lead** — wants a standard baseline across teams and clients; values whitelabel/rebrand support so the scaffold becomes the agency's own template.
 
-## 3. Release Criteria (v0.1)
+JTBD: *"When I start a new content-driven site, I want a single command to scaffold the whole stack — CMS, front-end, types, blocks — so I can ship features instead of wiring boilerplate."*
 
-**Targets (3 months):**
+## 4. Scope
 
-| Category | Metric | Target |
-|---|---|---|
-| Engagement | External PRs | ≥ 20 |
-| Engagement | `create` → first deploy | ≤ 30min |
-| Engagement | Dev NPS | ≥ 30 |
-| Quality | Generated-site Core Web Vitals | LCP <2.5s, CLS <0.1 |
-| Quality | Releases without critical regression | 100% |
+### Must-have
 
-**Out of scope for MVP:** SaaS / hosted offering, WYSIWYG page builder, theme marketplace, custom RBAC, advanced technical SEO, prebuilt design system, alternative front-end frameworks.
+- Single command generates the project and boots the local environment (`create` → running stack in ≤ 2 min).
+- Pre-configured monorepo layout (front-end app, CMS app, shared packages).
+- Shared type contract between CMS and front-end, auto-synced during development.
+- Dynamic block system with sample blocks editors can compose without dev changes.
+- Multi-language content and routing ready on day one.
+- Whitelabel-by-design: brand strings/assets (product name, CLI label, tagline, primary color, logo, repo/docs URLs) centralized in a single config consumed by templates, README, CLI banner, landing and generated `package.json`.
+- Deploy guide for managed and self-hosted scenarios.
 
-## 4. Schedule
+### Should-have (only after must-have ships)
 
-- **Team:** 2 full-time devs, no dedicated designer
-- **Deadline:** v0.1 in 3 months (July/2026)
-- **License:** open-source MIT
+- Admin authentication ready out of the box (no custom auth needed).
+- Basic SEO defaults (meta tags, sitemap, robots).
+- Utility-first styling configured (no opinionated design system imposed).
 
-## 5. Decisions
+> Should-have only starts **after** must-haves have been in real use for ≥ 1 month with ≥ 3 external adopters. If a should-have takes > 1 week to implement, it's cut and becomes post-MVP debt.
 
-1. **License:** MIT — aligned with the JS/Node ecosystem (Next.js, Vite, Astro, etc.) and reduces friction for adopters' legal review.
-2. **Distribution name (npm):** `@nis/create` — invoked as `npm create @nis@latest`. Scoped name avoids trademark proximity with Next.js and protects against squatting. Scope availability checked via registry (`@nis/*` returns 0 results); final reservation requires creating the `nis` organization on npmjs.com while logged in.
-3. **Telemetry (F10):** deferred to v1.1. Keeps MVP scope tight; pre-traction telemetry has low signal. Early roadmap input via GitHub activity and qualitative interviews.
-4. **Community:** GitHub Discussions only at launch. Indexable, asynchronous, low moderation cost for a 2-dev team. Reassess Discord post-v0.1 if there is recurring demand for synchronous chat.
-5. **Branding:** founders decide a minimum-viable identity (wordmark, one primary color, single-scroll landing). Project is **whitelabel-by-design** — all brand strings/assets centralized in a single config so rebranding (or fork-and-rebrand by agencies) is a one-file change. Removes the "Next in Site" trademark risk as a blocker.
-6. **Governance:** `CODEOWNERS` enabled at launch (auto-assign reviewers; initial rule `* @founder1 @founder2`). DCO sign-off (`git commit -s`) enforced via the official **DCO GitHub App** (https://github.com/apps/dco) for lightweight provenance — no Action wiring needed, just install on the repo. RFC process and CLA deferred — revisit RFC after consistent external contribution volume; CLA only if the project ever moves to dual-licensing.
+### Nice-to-have
+
+- Opt-in CLI telemetry to inform roadmap.
+
+## 5. Out of scope
+
+- SaaS / hosted offering.
+- WYSIWYG page builder.
+- Theme marketplace.
+- Custom RBAC.
+- Advanced technical SEO (structured data automation, hreflang matrices, etc.).
+- Prebuilt design system / component library.
+- Alternative front-end frameworks (single opinionated choice in MVP).
+- Custom auth providers beyond the bundled default.
+- CLA / formal RFC process pre-traction.
+
+## 6. Success metrics
+
+- **≥ 20 external PRs** merged in 3 months post-`v0.1`.
+- **`create` → first deploy ≤ 30 min** (median, measured via opt-in telemetry or qualitative interviews).
+- **Dev NPS ≥ 30** from a sample of ≥ 10 adopters surveyed at 30 and 90 days.
+- **Generated-site Core Web Vitals**: LCP < 2.5s, CLS < 0.1 on the default template.
+- **Zero critical regressions** persisting > 1 working day across releases in the 3-month window.
+
+**Checkpoints:** 30min retro every **2 weeks** with 3 fixed questions:
+
+1. Are external adopters using it? (yes/no/partial — with evidence from GitHub activity, telemetry or interviews)
+2. Is anything blocking adoption? (friction, bug, missing feature, doc gap)
+3. Cut scope, continue or stop?
+
+Decision logged in this PRD changelog or a dedicated file.
+
+**Stop rule:**
+
+- 6 calendar months without hitting validation (≥ 20 external PRs + ≥ 100 installs + ≥ 1 agency fork) → soft cap, retro decides continue / cut / stop.
+- Validation reached → close discovery, decide hardening / open next phase in ROADMAP.
+
+**Failure:** zero external PRs after 90 days post-`v0.1`, or no agency adopts the whitelabel path despite outreach to ≥ 5 qualified candidates.
+
+## 7. Assumptions
+
+- Two devs full-time sustain delivery pace for `v0.1` in 3 months without dedicated designer.
+- MIT license is acceptable for both adopters and downstream agencies forking the scaffold.
+- The chosen opinionated stack (front-end framework, CMS, type-sharing approach — defined in ARCH) remains stable enough during the 3-month window.
+- npm scope `@nis` remains available and reservable on `npmjs.com`.
+- GitHub Discussions is sufficient for community at launch; Discord deferred until recurring demand for synchronous chat.
+- DCO sign-off via the official DCO GitHub App is acceptable to contributors as the only provenance requirement (no CLA).
