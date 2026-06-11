@@ -9,8 +9,6 @@ updated_at: 2026-06-10
 
 # Beta PRD — press
 
-> [!NOTE]
-> This is a **beta** PRD: it exists to validate one bet with a small set of users, not to define the long-term product. Stack, flows, and technical decisions belong in `ARCH.md`.
 
 **TL;DR** — press is **not a scaffold**. It is an opinionated meta-framework for content-driven sites. The stack (CMS + front-end + type contract + dynamic blocks) ships as **versioned dependencies** (`@press/core`, `@press/cms`, `@press/web`) that the adopter consumes, not as boilerplate copied into their repo. The adopter owns only a thin layer on top — config, content, and custom blocks. The product's core promise is a **non-breakage contract**: updating press must not break the adopter's layer. The beta exists to prove that promise is real with external users.
 
@@ -49,7 +47,7 @@ press divides every generated project into two zones with a hard boundary betwee
 
 **Definition of "non-breakage" (testable):** Given a project on `@press/core` vN that builds and boots, bumping to vN+1 within the same major leaves the **Project zone** unchanged on disk and the project still builds, boots, and deploys. Any change required inside the Project zone to absorb an update is a **contract leak** — the central defect class the beta hunts for.
 
-> The exact field/API surface of the contract (what `press.config.ts` exposes, the custom-block interface, the engine's public types) is defined in `ARCH.md`. This PRD fixes the *promise*; ARCH fixes the *interface*.
+> The exact field/API surface of the contract (what `press.config.ts` exposes, the custom-block interface, the engine's public types) is left to a later architecture/design phase. This PRD fixes the *promise*; the architecture work fixes the *interface*.
 
 ## 5. Users & access — two phases
 
@@ -108,7 +106,7 @@ Mostly qualitative — a closed beta with ~5–10 users measures depth, not volu
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| **Strapi-as-dependency (#1)** — the CMS is a full app, not a library; wrapping it as a consumable, updatable `@press/cms` may not be cleanly feasible | If false, the framework concept collapses — Phase 0 cannot be reached | Treat as the first thing Phase 0 proves; spike it before committing the rest of the engine. Decision recorded in `ARCH.md`. |
+| **Strapi-as-dependency (#1)** — the CMS is a full app, not a library; wrapping it as a consumable, updatable `@press/cms` may not be cleanly feasible | If false, the framework concept collapses — Phase 0 cannot be reached | Treat as the first thing Phase 0 proves; spike it before committing the rest of the engine. Decision recorded in the architecture/design work. |
 | **Contract leaks** — an engine update forces edits in the Project zone | Breaks the core promise; erodes the one thing that differentiates press | Snapshot/contract tests in CI that fail on any Project-zone change after a simulated update; treat each leak as a release blocker |
 | **Engine surface too large to honor across updates** | Every public type/API becomes a non-breakage obligation the team can't sustain | Keep the public contract deliberately small in the beta; everything not in the contract is internal and free to change |
 | **Team capacity** | A framework with an update guarantee is heavier to maintain than a scaffold | Confirm team size (§9); keep beta scope ruthlessly minimal |
@@ -117,11 +115,11 @@ Mostly qualitative — a closed beta with ~5–10 users measures depth, not volu
 
 **Assumptions**
 
-- The opinionated stack carries over from the prior discovery work (Next + Strapi + TypeScript + Turborepo + pnpm + Tailwind). *To be confirmed in `ARCH.md`.*
+- The opinionated stack carries over from the prior discovery work (Next + Strapi + TypeScript + Turborepo + pnpm + Tailwind). *To be confirmed in the architecture/design phase.*
 - An npm scope for `@press/*` is available and reservable.
 - A closed beta with private package access is operationally feasible (invite-based install).
 
-**Open questions (resolved in ARCH or before Phase 1, do not block this PRD)**
+**Open questions (resolved in the architecture/design phase or before Phase 1, do not block this PRD)**
 
 - Exact CLI command surface — does `press upgrade` (assisted migration) exist in the beta, or is the update path just "bump `@press/*` + boot"?
 - Does the prior stack (Next 15 / Strapi 5 / Turborepo / pnpm) carry over unchanged, or does the framework concept force a different composition (esp. for `@press/cms`)?

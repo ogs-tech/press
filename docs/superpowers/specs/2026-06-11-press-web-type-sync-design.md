@@ -97,6 +97,13 @@ The adopter never edits anything under `packages/press-web/`. Generated types la
 **here**, not in the Project zone, so the contract stays clean by construction
 (same principle as Spec 0: no generated artifact in the Project zone).
 
+> **"Versioned" scope for Spec 1.** `generated.ts` is gitignored and regenerated on
+> demand, which works because Spec 1 lives in the monorepo: `sync-types` runs
+> locally before `tsc`. How a *published* `@press/web` ships its types to an adopter
+> who has never booted the CMS (generate-on-publish vs. committed artifact) is the
+> **update/publish path — deferred to Spec 4/5** (§9). Here "versioned" means the
+> local workspace package, not the npm publish story.
+
 ### 4.2 `apps/web` — the host (Project zone, adopter-owned)
 
 ```
@@ -126,6 +133,17 @@ apps/web/                            # the thinnest Next app that renders engine
 `findOne` with the `body` dynamic zone populated, read-public for `page`. Engine-
 owned and versioned — the adopter never defines it. This is the wire shape the
 front-end consumes.
+
+**Published-only + 404 (decision 2026-06-11).** `getPage(slug)` fetches **published**
+content only (Strapi draft/publish: the default published view); a missing or
+unpublished slug yields a 404 via the App Router's `notFound()`. Draft preview is
+**out of scope** here (revisit with whitelabel/config in Spec 2). This makes
+"published-only" an explicit, intentional part of the contract rather than an
+implicit side effect of the fetch.
+
+**Media.** The `press.hero` reference block carries an image, so the route populates
+its media and the front-end resolves the asset URL against the CMS base. Media
+serialization is therefore exercised by the e2e render (see §7 AC 1), not deferred.
 
 ### 5.2 Schema: `/press/schema` endpoint (source of truth for type-sync)
 
@@ -191,16 +209,20 @@ propagates to the front-end types with no Project-zone edit.
 ## 7. Acceptance criteria — testable
 
 1. **End-to-end render.** A real page authored in `@press/cms` (containing a
-   `press.hero` **and** a `custom.callout`), fetched over REST by `apps/web`,
-   renders both blocks as server-rendered HTML. Verified by an HTTP check on the
-   rendered markup (both blocks' content present).
+   `press.hero` with an **image** **and** a `custom.callout`), fetched over REST by
+   `apps/web`, renders both blocks as server-rendered HTML. Verified by an HTTP check
+   on the rendered markup (both blocks' content present, and the Hero's image `src`
+   resolved against the CMS base URL — proving media serialization crosses the
+   contract).
 2. **Type-sync fidelity.** With the CMS booted, `sync-types` then `tsc --noEmit`
    on `@press/web` + `apps/web` succeeds; `getPage()` and `BlockRenderer` props are
    typed from the generated types, including `custom.callout`'s fields.
 3. **Schema-change propagation.** Changing a block's schema in the CMS and
-   re-running `sync-types` updates the generated types accordingly, and the front-
-   end still type-checks (or fails loudly if a consumer relied on a removed field —
-   the desired behavior).
+   re-running `sync-types` updates the generated types accordingly. Two cases, both
+   required: (a) an **additive** change (new field) re-syncs and `tsc --noEmit` still
+   passes; (b) a **destructive** change (removed field a consumer used) makes `tsc`
+   **fail at the consumer site** — the loud-failure behavior is the pass condition,
+   not silent drift.
 4. **Project-zone cleanliness.** Type-sync writes **nothing** into `apps/web`;
    generated types live only in the engine zone. Verified by `git status` after a
    sync (no Project-zone change).
