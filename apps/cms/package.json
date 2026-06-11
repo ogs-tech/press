@@ -15,7 +15,7 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
-    "@press/cms": "0.3.1",
+    "@press/cms": "0.3.2",
     "@strapi/plugin-cloud": "5.48.0",
     "@strapi/plugin-users-permissions": "5.48.0",
     "@strapi/strapi": "5.48.0",
