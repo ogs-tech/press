@@ -28,7 +28,10 @@ console.log(`> pnpm update @press/cms (${fromV} -> ${toV}) from Verdaccio`);
 sh(`pnpm --filter cms update @press/cms@${toV}`);
 
 // 2. Snapshot what changed on disk.
-const changed = sh("git status --porcelain")
+// NB: read porcelain RAW (not via sh()'s .trim(), which would strip the leading
+// status space of the FIRST line and shift its path by one char). Each porcelain
+// line is `XY <path>`, so the path always starts at index 3.
+const changed = execSync("git status --porcelain", { encoding: "utf8" })
   .split("\n")
   .filter(Boolean)
   .map((l) => l.slice(3));
