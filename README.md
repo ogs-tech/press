@@ -62,8 +62,14 @@ pnpm --filter cms start
 # 5. Prove host-thinness (no engine code in the Project zone)
 node scripts/assert-no-engine-in-host.mjs
 
-# 6. Prove non-breakage of an engine update (run from a clean tree, host on the
-#    "from" version). Publishes 0.2.0 first, then:
+# 6. Prove non-breakage of an engine update.
+#    First publish the update target (bump packages/press-cms to 0.2.0, build,
+#    publish) — contract-check.mjs does NOT publish, it only runs `pnpm update`:
+#      # set packages/press-cms/package.json "version": "0.2.0"
+#      pnpm --filter @press/cms build
+#      ( cd packages/press-cms && npm publish --registry http://localhost:4873 \
+#          --userconfig "$PWD/../../.npmrc" )
+#    Then, from a CLEAN git tree with the host on the "from" version (0.1.0):
 node scripts/contract-check.mjs 0.1.0 0.2.0
 #    → "CONTRACT HELD" when only apps/cms/package.json (@press/cms) + lockfile changed.
 ```
