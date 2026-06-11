@@ -1,0 +1,31 @@
+{
+  "name": "@press/web",
+  "version": "0.1.0",
+  "description": "press engine — front-end renderer + CMS→TS type-sync",
+  "license": "MIT",
+  "author": "Odenir Gomes",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./types": { "types": "./src/types/index.ts", "default": "./src/types/index.ts" }
+  },
+  "bin": { "press-sync-types": "./bin/sync-types.ts" },
+  "scripts": {
+    "sync-types": "tsx bin/sync-types.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "react": "^19",
+    "tsx": "^4.19.0",
+    "typescript": "^5",
+    "vitest": "^2.1.0"
+  }
+}
