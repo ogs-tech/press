@@ -129,3 +129,8 @@ dist
 build
 .strapi-updater.json
 .strapi-cloud.json
+
+############################
+# Strapi generated types (build artifact)
+############################
+types/generated
