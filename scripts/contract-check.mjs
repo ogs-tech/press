@@ -11,7 +11,9 @@ if (!fromV || !toV) {
 }
 
 const sh = (cmd, opts = {}) =>
-  execSync(cmd, { stdio: "pipe", encoding: "utf8", ...opts }).trim();
+  // execSync returns null when stdio is "inherit" (output not piped back), so
+  // guard the .trim() — callers like the build step inherit stdio for live logs.
+  (execSync(cmd, { stdio: "pipe", encoding: "utf8", ...opts }) ?? "").trim();
 
 // Allowed delta (spec §8.1): only the dependency version line + the lockfile.
 const ALLOWED_FILES = new Set(["apps/cms/package.json", "pnpm-lock.yaml"]);
@@ -62,7 +64,9 @@ console.log("> build host");
 sh("pnpm --filter cms build", { stdio: "inherit" });
 
 console.log("> boot smoke");
-const boot = `( pnpm --filter cms start & SP=$!; \
+// Redirect Strapi's verbose startup output to a log file so it doesn't flood the
+// execSync pipe; only the BOOTOK marker comes back on stdout.
+const boot = `( pnpm --filter cms start > /tmp/contract-boot.log 2>&1 & SP=$!; \
   for i in $(seq 1 60); do c=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:1337/_health||true); \
   [ "$c" = "204" ] && { echo BOOTOK; break; }; sleep 2; done; kill $SP 2>/dev/null )`;
 const out = sh(boot, { shell: "/bin/bash" });
