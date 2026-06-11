@@ -1,6 +1,6 @@
 {
   "name": "@press/cms",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "press engine — content-types and reference blocks",
   "keywords": [],
   "license": "MIT",
@@ -16,7 +16,9 @@
       "default": "./dist/server/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "strapi-plugin build",
     "watch": "strapi-plugin watch",
