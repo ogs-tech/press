@@ -12,7 +12,11 @@ const PAGE_UID = 'plugin::press-cms.page';
  * the App Router's notFound().
  */
 const page = ({ strapi }: { strapi: Core.Strapi }) => {
-  const populate = () => {
+  // Returns the document-service `populate` VALUE for the page body DZ — i.e.
+  // `{ body: { on: {...} } }`. It must be assigned to the `populate` KEY of the
+  // query (not spread into the query root); spreading drops it and Strapi omits
+  // the dynamic zone entirely from the response.
+  const bodyPopulate = () => {
     const ct = strapi.contentType(PAGE_UID as any) as any;
     const components: string[] = ct?.attributes?.body?.components ?? [];
     return buildBodyPopulate(components);
@@ -22,7 +26,7 @@ const page = ({ strapi }: { strapi: Core.Strapi }) => {
     async find(ctx: any) {
       const data = await strapi.documents(PAGE_UID as any).findMany({
         status: 'published',
-        ...populate(),
+        populate: bodyPopulate(),
       });
       ctx.body = { data };
     },
@@ -33,7 +37,7 @@ const page = ({ strapi }: { strapi: Core.Strapi }) => {
         filters: { slug },
         status: 'published',
         limit: 1,
-        ...populate(),
+        populate: bodyPopulate(),
       });
       if (!doc) return ctx.notFound();
       ctx.body = { data: doc };
