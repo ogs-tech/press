@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import heroSchema from './components/hero.json';
+import { toGlobalId } from './lib/global-id';
 
 /**
  * Engine-shipped Dynamic-Zone components.
@@ -10,8 +11,9 @@ import heroSchema from './components/hero.json';
  * during the plugin `register` lifecycle.
  *
  * Boot order (see @strapi/core/dist/Strapi.js `load`):
- *   1. providers.register  -> loadApplicationContext (app components loaded)
- *   2. plugins REGISTER     -> THIS hook (we inject press.hero)
+ *   1. providers.register  -> loadApplicationContext (app components AND plugin
+ *      content-types loaded in parallel; module.load() registers CTs before register)
+ *   2. plugins REGISTER     -> THIS hook (we inject press.hero, then admit custom.*)
  *   3. bootstrap            -> transformContentTypesToModels([...contentTypes, ...components])
  *
  * The injected object mirrors the exact shape produced by Strapi's own loader
@@ -22,28 +24,14 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
   { category: 'press', name: 'hero', schema: heroSchema as Record<string, unknown> },
 ];
 
-/**
- * Mirrors lodash `_.upperFirst(_.camelCase(input))` for the `component_<uid>`
- * globalId derivation used by Strapi's component loader. Avoids a runtime
- * dependency on lodash (whose CJS default import breaks the Vite/Rollup bundle).
- */
-const toGlobalId = (input: string): string => {
-  const camel = input
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
-    .trim()
-    .split(/\s+/)
-    .map((word, index) => (index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()))
-    .join('');
-  return camel.charAt(0).toUpperCase() + camel.slice(1);
-};
-
 const register = ({ strapi }: { strapi: Core.Strapi }) => {
-  const registry = strapi.get('components');
+  const componentRegistry = strapi.get('components');
 
+  // Step 1: inject engine-owned components (press.*)
   for (const { category, name, schema } of ENGINE_COMPONENTS) {
     const uid = `${category}.${name}`;
 
-    if (registry.get(uid)) {
+    if (componentRegistry.get(uid)) {
       strapi.log.warn(`[press-cms] component '${uid}' already registered; skipping engine injection`);
       continue;
     }
@@ -55,11 +43,53 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
       category,
       modelType: 'component',
       modelName: name,
-      globalId: (schema as { globalId?: string }).globalId || toGlobalId(`component_${uid}`),
+      // globalId is always derived deterministically — never taken from the JSON
+      // schema to avoid a footgun where a mis-set globalId silently diverges from
+      // the name Strapi uses internally.
+      globalId: toGlobalId(`component_${uid}`),
     };
 
-    registry.set(uid, component);
+    componentRegistry.set(uid, component);
     strapi.log.info(`[press-cms] injected engine component '${uid}'`);
+  }
+
+  // Step 2: admit all adopter custom.* components into the engine's page Dynamic Zone.
+  //
+  // Contract: any component the adopter places under <host>/src/components/custom/
+  // is automatically admitted into the engine's reference Dynamic Zone (body field
+  // on plugin::press-cms.page). The engine NEVER names specific adopter blocks;
+  // only the "custom" category is the stable extension-point contract.
+  //
+  // Timing: loadApplicationContext runs loadPlugins + loadComponents in parallel
+  // (Promise.all). module.load() registers plugin content-types synchronously when
+  // the plugin module is added, so plugin::press-cms.page IS present in the
+  // content-types registry by the time plugin register() fires.
+  const pageContentType = strapi.get('content-types').get('plugin::press-cms.page');
+
+  if (!pageContentType) {
+    strapi.log.warn('[press-cms] plugin::press-cms.page not found in content-types registry at register time; custom.* blocks cannot be admitted');
+    return;
+  }
+
+  const bodyAttr = (pageContentType.attributes as Record<string, { type: string; components?: string[] }>)?.body;
+
+  if (!bodyAttr || bodyAttr.type !== 'dynamiczone' || !Array.isArray(bodyAttr.components)) {
+    strapi.log.warn('[press-cms] page.body dynamic zone not found or has unexpected shape; skipping custom.* admission');
+    return;
+  }
+
+  const admitted: string[] = [];
+  for (const uid of componentRegistry.keys()) {
+    if (uid.startsWith('custom.') && !bodyAttr.components.includes(uid)) {
+      bodyAttr.components.push(uid);
+      admitted.push(uid);
+    }
+  }
+
+  if (admitted.length > 0) {
+    strapi.log.info(`[press-cms] admitted custom blocks into page Dynamic Zone: ${admitted.join(', ')}`);
+  } else {
+    strapi.log.debug('[press-cms] no custom.* components found to admit');
   }
 };
 

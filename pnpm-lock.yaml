@@ -945,7 +945,7 @@ packages:
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
   '@press/cms@0.1.0':
-    resolution: {integrity: sha512-tH9ChtXv/6iDsXELs9AZA3uaWdryB3faUUPdpX83q8cvnud1hrxjyZxmtcnvfjAo3mqMo4cZz5E4SFVixKkNrQ==}
+    resolution: {integrity: sha512-C/x5dwE4fdLe/ZYu/b1DnT/Bz07yYkhzDvSF6UIOwGL7pVb65bZS/jXUTFb95gXTJYnGScWSQtj4XgPNOM9/Aw==}
     peerDependencies:
       '@strapi/strapi': ^5.0.0
 

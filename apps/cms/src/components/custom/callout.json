@@ -1,0 +1,9 @@
+{
+  "collectionName": "components_custom_callouts",
+  "info": { "displayName": "Callout", "description": "Adopter-owned custom block (Project zone)" },
+  "options": {},
+  "attributes": {
+    "message": { "type": "string", "required": true },
+    "variant": { "type": "enumeration", "enum": ["info", "warning", "success"], "default": "info" }
+  }
+}
