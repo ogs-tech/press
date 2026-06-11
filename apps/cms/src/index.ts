@@ -1,20 +1,8 @@
-// import type { Core } from '@strapi/strapi';
-
+// apps/cms/src/index.ts — Project zone.
+// The host owns an INTENTIONALLY EMPTY lifecycle. All engine behavior ships
+// from @press/cms. If anything engine-related ever has to be added here, that is
+// a contract leak (spec §8).
 export default {
-  /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   *
-   * This gives you an opportunity to extend code.
-   */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
-
-  /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
-   */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register(/* { strapi } */) {},
+  bootstrap(/* { strapi } */) {},
 };
