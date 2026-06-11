@@ -1,0 +1,15 @@
+node_modules/
+.turbo/
+dist/
+build/
+.strapi/
+.cache/
+*.log
+.env
+.env.*
+!.env.example
+.tmp/
+*.db
+*.sqlite
+.verdaccio/
+.DS_Store
