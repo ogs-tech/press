@@ -11,7 +11,8 @@
     "dev": "turbo run dev",
     "cms:dev": "pnpm --filter cms develop",
     "cms:build": "pnpm --filter cms build",
-    "cms:start": "pnpm --filter cms start"
+    "cms:start": "pnpm --filter cms start",
+    "contract:check": "node scripts/contract-check.mjs"
   },
   "dependencies": {
     "@press/cms": "workspace:*"
