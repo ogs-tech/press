@@ -6,8 +6,13 @@
   "license": "MIT",
   "author": "Odenir Gomes",
   "type": "commonjs",
+  "main": "./index.js",
   "exports": {
     "./package.json": "./package.json",
+    ".": {
+      "require": "./index.js",
+      "default": "./index.js"
+    },
     "./strapi-server": {
       "types": "./dist/server/src/index.d.ts",
       "source": "./server/src/index.ts",
@@ -16,7 +21,7 @@
       "default": "./dist/server/index.js"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "index.js"],
   "scripts": {
     "build": "strapi-plugin build",
     "watch": "strapi-plugin watch",
