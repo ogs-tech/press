@@ -5,6 +5,7 @@
   "attributes": {
     "heading": { "type": "string", "required": true },
     "subheading": { "type": "string" },
-    "ctaLabel": { "type": "string" }
+    "ctaLabel": { "type": "string" },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] }
   }
 }
