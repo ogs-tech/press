@@ -259,4 +259,55 @@ script) reproduces the end-to-end render and the type-sync from a clean state.
 
 ## 11. Results
 
-_To be appended after implementation (mirrors Spec 0 §13)._
+**Outcome: PASS.** All §7 acceptance criteria met. Engine shipped as `@press/cms@0.3.2`
+(0.3.0 added `press.hero.image`; two integration fixes found at the live gates bumped
+it — see "Deviations" below). `@press/web@0.1.0` consumed by `apps/web` via `workspace:*`.
+
+- **AC1 (e2e render):** `scripts/e2e-check.mjs` → both `press.hero` (with image) and
+  `custom.callout` render as server-rendered HTML; hero image `src` resolved absolute
+  against `CMS_URL` (`/uploads/hero_….png` → `http://localhost:1337/uploads/…`).
+- **AC2 (type-sync fidelity):** `sync-types` then `tsc --noEmit` on `@press/web` and
+  `apps/web` passes; `getPage`/`BlockRenderer` props typed, incl. `custom.callout`.
+- **AC3 (propagation):** additive `eyebrow?` re-syncs, both typechecks pass; destructive
+  removal of `custom.callout.variant` makes `tsc` fail loudly at
+  `apps/web/blocks/custom/Callout.tsx` (`Property 'variant' does not exist`). Reverted.
+- **AC4 (Project-zone cleanliness):** `git status` empty after sync — `generated.ts` is
+  gitignored in the engine zone; nothing written under `apps/web/`.
+- **AC5 (custom-block contract):** emptying `press.blocks.ts` drops only the callout;
+  `press.hero` and the engine are unaffected — the engine never names the adopter's block.
+
+**Contract surfaces shipped (engine-owned):** REST `page` route (`/api/pages[/:slug]`,
+published-only, DZ-populated, `auth:false`, `prefix:''`), `/api/press/schema` (runtime
+registry view), and the existing `custom.*` admission. `@press/web` provides
+`BlockRenderer`, `Hero`, `getPage`, and the `sync-types` generator.
+
+**Key mechanics learned:** `config.auth:false` makes routes public with zero
+users-permissions seeding; **plugin content-api routes are namespaced under
+`/api/<plugin-id>` by default — `config.prefix:''` mounts them at the `/api` root** as
+the contract requires; Strapi 5 populates a dynamic zone via the per-component `on` map,
+and that populate object must be passed under the **`populate` key** (not spread into the
+query root, or the DZ is silently omitted); `getPage` runs in an RSC so the data fetch has
+no browser-CORS surface; the `workspace:` protocol symlinks `@press/web` despite
+`.npmrc`'s registry routing. Published-`@press/web` type delivery remains deferred to
+Spec 4/5.
+
+**Deviations / fixes found at the live gates (not anticipated by the plan):**
+1. **Route prefixing (→0.3.1):** plugin content-api routes mounted under
+   `/api/press-cms/…`; added `config.prefix:''` so they serve at `/api/pages`,
+   `/api/press/schema` as the contract specifies.
+2. **DZ populate wiring (→0.3.2):** the page controller spread the populate object into
+   the `findMany` root instead of assigning it to `populate:`, so pages serialized
+   *without* `body`. Caught by the first real seeded fetch (AC1 prep), confirmed by an
+   in-process probe, fixed.
+3. **`@types/react` 18/19 skew (apps/web `tsconfig`):** this pnpm monorepo runs Strapi
+   on React 18 and Next on React 19; hoisted `next` bound to the repo-root
+   `@types/react@18` while the app + symlinked `@press/web` source used 19, breaking the
+   AC2 typecheck. Fixed with `typeRoots` + `react`/`react-dom` `paths` scoped to
+   `apps/web` (Strapi side untouched). Root cause pinned with `tsc --explainFiles`.
+4. **`Block` index signature (`@press/web`):** `BlockRenderer`'s `Block` had a
+   `[key:string]: unknown` index signature the sync-generated interfaces can't satisfy,
+   so `PageBody` failed to type-check as `blocks` — removed (the renderer never indexed
+   it dynamically).
+5. **Seed Strapi boot (`scripts/seed-e2e.mjs`):** Strapi's `.mjs` build does bare
+   `lodash/fp` directory imports Node's ESM loader rejects; the seed loads Strapi through
+   `createRequire` (CJS) instead.

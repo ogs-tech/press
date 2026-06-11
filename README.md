@@ -80,3 +80,30 @@ node scripts/contract-check.mjs 0.1.0 0.2.0
   spike); gitignore it before any shared/non-private repo.
 - This skeleton (`packages/press-cms` + `apps/cms` + the contract scripts) is the
   foundation that the later press specs build on.
+
+## Run the web engine + type-sync (Spec 1)
+
+Prereqs: engine published (`@press/cms@0.3.2`) and the host built (see "Run the
+spike"). `apps/web/.env` holds `CMS_URL=http://localhost:1337` (gitignored).
+
+```bash
+# 1. Seed a page (hero+image + custom callout) — CMS must be STOPPED for this:
+( cd apps/cms && node ../../scripts/seed-e2e.mjs )
+
+# 2. Start the CMS:
+pnpm --filter cms start            # http://localhost:1337
+
+# 3. Sync CMS schema → @press/web types (engine zone, gitignored):
+pnpm --filter @press/web sync-types
+
+# 4. Typecheck the contract (AC2):
+pnpm --filter @press/web typecheck && pnpm --filter web typecheck
+
+# 5. End-to-end render (AC1) — builds + starts apps/web on :3000, asserts both
+#    blocks render server-side and the hero image src is absolute against CMS_URL:
+node scripts/e2e-check.mjs
+#    → "E2E PASS: hero + callout server-rendered; image src = http://localhost:1337/uploads/..."
+```
+
+Contract surfaces (all engine-owned): `GET /api/pages`, `GET /api/pages/:slug`
+(published-only, DZ-populated), `GET /api/press/schema` (type-sync source of truth).
