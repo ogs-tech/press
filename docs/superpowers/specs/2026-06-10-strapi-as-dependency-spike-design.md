@@ -13,7 +13,7 @@ updated_at: 2026-06-10
 > This is a **spike spec** — spec 0 of the press beta and the hard gate for every
 > other spec. It exists to answer one feasibility question before the rest of the
 > engine is committed, per [beta-prd.md §8, Risk #1](../../beta-prd.md). It fixes
-> the *experiment and its acceptance criteria*; the resulting architecture becomes
+> the _experiment and its acceptance criteria_; the resulting architecture becomes
 > the foundational skeleton of `@press/cms` and bootstraps the monorepo.
 
 **TL;DR** — Prove that Strapi 5 can be delivered as a versioned, updatable
@@ -30,7 +30,7 @@ project still builds and boots. If this fails, the press framework concept fails
 Strapi is a full application, not a library, and wrapping it as a consumable,
 updatable package may not be cleanly feasible. If it is not, Phase 0 cannot be
 reached and the framework concept collapses. The PRD's instruction is explicit:
-*"spike it before committing the rest of the engine."*
+_"spike it before committing the rest of the engine."_
 
 This spec is the realization of that instruction. It is the first of six specs in
 the beta roadmap and the only hard gate — specs 1–5 (`@press/web`, type-sync,
@@ -120,11 +120,11 @@ from `node_modules`?** Strapi plugins can ship content-types; components
 conventionally live in the app's `src/components`. The architecture is therefore a
 decision tree, not a single path.
 
-| Path | Mechanism | When |
-|---|---|---|
-| **A — thin host + fat plugin** *(primary)* | Engine content-types **and** components ship from the `@press/cms` plugin; host `src/` holds only adopter custom blocks | Default. Chosen if the §6 pivot confirms components are plugin-shippable. Keeps the host in standard Strapi-app shape, so `strapi develop/build/deploy` works unmodified — this pays off in specs 3 (CLI) and 5 (deploy). |
-| **B — programmatic boot wrapper** *(fallback)* | `@press/cms` exports `createPressCms()` wrapping `createStrapi`, injecting engine content-types/components in memory; host shrinks to a ~5-line entry | Adopted only if A fails. More deterministic injection, but fights the standard Strapi CLI. |
-| **C — generated host, patched on upgrade** *(failure signal)* | Host files patched by an upgrade step on each bump | **Not built.** If both A and B leak, this is the **stop signal**: reference blocks would be forced into the owned host = structural leak. The contract is weaker than specced — revisit [beta-prd.md](../../beta-prd.md) before continuing the roadmap. |
+| Path                                                          | Mechanism                                                                                                                                             | When                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A — thin host + fat plugin** _(primary)_                    | Engine content-types **and** components ship from the `@press/cms` plugin; host `src/` holds only adopter custom blocks                               | Default. Chosen if the §6 pivot confirms components are plugin-shippable. Keeps the host in standard Strapi-app shape, so `strapi develop/build/deploy` works unmodified — this pays off in specs 3 (CLI) and 5 (deploy).                               |
+| **B — programmatic boot wrapper** _(fallback)_                | `@press/cms` exports `createPressCms()` wrapping `createStrapi`, injecting engine content-types/components in memory; host shrinks to a ~5-line entry | Adopted only if A fails. More deterministic injection, but fights the standard Strapi CLI.                                                                                                                                                              |
+| **C — generated host, patched on upgrade** _(failure signal)_ | Host files patched by an upgrade step on each bump                                                                                                    | **Not built.** If both A and B leak, this is the **stop signal**: reference blocks would be forced into the owned host = structural leak. The contract is weaker than specced — revisit [beta-prd.md](../../beta-prd.md) before continuing the roadmap. |
 
 The decision between A and B is **the first spike task** (§6, T1); it gates
 everything after it.
@@ -179,7 +179,7 @@ type/`__component` identifier and the custom-block interface used by
 
 After `pnpm update @press/cms` (v0.1.0 → v0.2.0):
 
-1. **Allowed delta only.** The *only* permitted on-disk change in the Project zone
+1. **Allowed delta only.** The _only_ permitted on-disk change in the Project zone
    is the `@press/cms` version in `apps/cms/package.json` plus the lockfile. Every
    other Project-zone path (`config/`, `src/`, `press.config.ts`, `.env`) must be
    **byte-identical**, verified by `git diff`.
@@ -221,12 +221,12 @@ Because the deliverable is foundational, this script is kept and hardened in spe
 
 ## 11. Risks & stop signals
 
-| Risk | Signal | Response |
-|---|---|---|
-| Components not shippable by plugin (A) **nor** injectable programmatically (B) | T1/T2 fail on both paths | **Stop signal C.** Reference blocks would be forced into the owned host = structural leak. Contract is weaker than specced — revisit beta-prd.md before continuing. |
-| Admin build does not surface plugin-provided components | T2 admin check fails on A | Degrade to B; if B's admin also fails, document as a hard limitation. |
-| `pnpm update` rewrites more of `package.json` than the dependency range | T4 acceptance #1 fails on an unexpected field | Investigate whether the extra change is package-manager-mechanical (acceptable — refine the allowed-delta definition) or engine-induced (a real leak). |
-| Strapi 6 lands during the spike | n/a | Out of spike scope; pin Strapi 5.x for the spike, record the pin in this spec's results section. |
+| Risk                                                                           | Signal                                        | Response                                                                                                                                                            |
+| ------------------------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Components not shippable by plugin (A) **nor** injectable programmatically (B) | T1/T2 fail on both paths                      | **Stop signal C.** Reference blocks would be forced into the owned host = structural leak. Contract is weaker than specced — revisit beta-prd.md before continuing. |
+| Admin build does not surface plugin-provided components                        | T2 admin check fails on A                     | Degrade to B; if B's admin also fails, document as a hard limitation.                                                                                               |
+| `pnpm update` rewrites more of `package.json` than the dependency range        | T4 acceptance #1 fails on an unexpected field | Investigate whether the extra change is package-manager-mechanical (acceptable — refine the allowed-delta definition) or engine-induced (a real leak).              |
+| Strapi 6 lands during the spike                                                | n/a                                           | Out of spike scope; pin Strapi 5.x for the spike, record the pin in this spec's results section.                                                                    |
 
 ## 12. Definition of done
 
@@ -244,5 +244,8 @@ spec**.
 
 ## 13. Results
 
-> _To be appended when the spike completes (chosen path, Strapi 5.x pin, acceptance
-> evidence, or the recorded stop signal)._
+- **Strapi pin:** `5.48.0` (spec §4, §11).
+- **Plugin load mechanism:** Strapi auto-discovery (host enables `{ "press-cms": { enabled: true } }`, no explicit `resolve`; engine ships `strapi.kind: "plugin"`). [decided in Task 3]
+- **T1 / pivot decision:** Path A. Evidence: A2 — the engine's plugin `register` lifecycle injects `press.hero` into `strapi.get('components')` (mirroring the shape from `@strapi/core/dist/loaders/components.js`) before `bootstrap()` builds DB models; the admin Content-Type Builder API lists `press.hero` (heading/subheading/ctaLabel) and a `Page` entry with a `press.hero` block saved via the content-manager API (HTTP 201). A1 (declarative `components/hero.json` in the plugin) is not auto-registered by Strapi — confirmed there is no declarative plugin-component API; Strapi only scans the host app's `src/components`.
+- **Date:** 2026-06-11.
+- _(Acceptance evidence appended in Task 9 / Task 10.)_

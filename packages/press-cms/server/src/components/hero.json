@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_press_heroes",
+  "info": { "displayName": "Hero", "description": "Reference hero block shipped by the press engine" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string", "required": true },
+    "subheading": { "type": "string" },
+    "ctaLabel": { "type": "string" }
+  }
+}
