@@ -42,7 +42,9 @@ const SCALARS: Record<string, string> = {
 /** Maps a single Strapi attribute to its TS type expression. */
 export const tsTypeForAttribute = (attr: Attr): string => {
   if (attr.type === 'enumeration' && Array.isArray(attr.enum)) {
-    return attr.enum.map((v) => `'${v}'`).join(' | ');
+    return attr.enum.length
+      ? attr.enum.map((v) => `'${v}'`).join(' | ')
+      : 'never';
   }
   if (attr.type === 'media') {
     return attr.multiple ? 'PressMedia[]' : 'PressMedia';

@@ -26,6 +26,10 @@ describe('tsTypeForAttribute', () => {
       .toBe("'info' | 'warning'");
   });
 
+  it('maps an empty enum to never', () => {
+    expect(tsTypeForAttribute({ type: 'enumeration', enum: [] })).toBe('never');
+  });
+
   it('maps media to PressMedia, honoring `multiple`', () => {
     expect(tsTypeForAttribute({ type: 'media', multiple: false })).toBe('PressMedia');
     expect(tsTypeForAttribute({ type: 'media', multiple: true })).toBe('PressMedia[]');
