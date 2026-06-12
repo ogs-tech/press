@@ -13,6 +13,13 @@ cms/.cache/
 cms/.strapi/
 cms/dist/
 cms/build/
+cms/types/
+cms/.strapi-updater.json
+cms/.strapi-cloud.json
+
+# uploaded media is runtime data, not source (keep the dir, drop the files)
+cms/public/uploads/*
+!cms/public/uploads/.gitkeep
 
 # env + secrets
 .env

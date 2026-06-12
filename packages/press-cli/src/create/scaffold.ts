@@ -137,9 +137,9 @@ export function scaffold(opts: ScaffoldOptions): void {
 
   // 2. Static cms host tree, then its gitkeep markers.
   cpSync(path.join(templatesDir, 'cms'), path.join(target, 'cms'), { recursive: true });
-  for (const dir of ['api', 'extensions']) {
-    const marker = path.join(target, 'cms', 'src', dir, 'gitkeep');
-    if (existsSync(marker)) renameSync(marker, path.join(target, 'cms', 'src', dir, '.gitkeep'));
+  for (const dir of ['src/api', 'src/extensions', 'public/uploads']) {
+    const marker = path.join(target, 'cms', dir, 'gitkeep');
+    if (existsSync(marker)) renameSync(marker, path.join(target, 'cms', dir, '.gitkeep'));
   }
 
   // 3. Generated manifests + infra.
