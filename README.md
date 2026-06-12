@@ -154,6 +154,45 @@ git status --porcelain       # → no changes to press.config.ts (or the host): 
                              #   engine wrote nothing (build artifacts under .next/ are gitignored)
 ```
 
+## Run the CLI (Spec 3)
+
+The `press` CLI wraps the engine into the **create → dev → build → deploy** flow.
+It writes only the adopter's Project zone; the Next host is engine-owned and
+materialized to a gitignored `.press/web/` on every dev/build. Proven end-to-end
+against the local Verdaccio registry by `scripts/cli-e2e.mjs`.
+
+```bash
+# 0. Registry up + engine present (see "Run the spike" for @press/cms@0.3.2):
+scripts/registry.sh start
+
+# 1. Unit contracts for the CLI (dispatch, materialize, scaffold, deploy prereqs):
+pnpm --filter @press/cli test
+
+# 2. Full acceptance gate — publishes @press/web + @press/cli, scaffolds a fresh
+#    project, installs, then exercises create→dev→build→deploy (AC1–AC5):
+node scripts/cli-e2e.mjs
+#    → AC1 PASS … AC5 PASS … "CLI-E2E PASS: AC1–AC5 green."
+```
+
+### What `press create` writes (the ultra-thin Project zone)
+
+```
+my-site/
+├─ press.config.ts          # whitelabel identity + SEO (Spec 2)
+├─ blocks/custom/           # adopter custom blocks + the block map (index.ts)
+├─ content/seed.mjs         # sample home page so first `press dev` renders
+├─ cms/                     # the one visible host — a minimal Strapi app
+├─ package.json             # scripts call `press` (dev/build/deploy)
+├─ pnpm-workspace.yaml      # cms is a workspace member
+├─ .npmrc / .gitignore / .nvmrc
+└─ (NO app/ or next.config — the Next host is materialized to .press/web/)
+```
+
+`press dev` materializes `.press/web/`, seeds, boots cms (`:1337`), syncs types,
+then boots web (`:3000`). `press build` materializes + builds both halves.
+`press deploy` validates prereqs and emits the Spec 5 path (the guide ships in
+Spec 5). `.press/` is engine territory — regenerated every run, never edited.
+
 ## Update path + contract guard (Spec 4)
 
 The non-breakage promise (PRD Q2) is enforced continuously. An adopter updates the
