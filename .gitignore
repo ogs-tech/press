@@ -13,3 +13,6 @@ build/
 *.sqlite
 .verdaccio/
 .DS_Store
+
+# Git worktrees are local-only workspace; never track them
+.claude/worktrees/
