@@ -107,3 +107,55 @@ node scripts/e2e-check.mjs
 
 Contract surfaces (all engine-owned): `GET /api/pages`, `GET /api/pages/:slug`
 (published-only, DZ-populated), `GET /api/press/schema` (type-sync source of truth).
+
+## Run the whitelabel config (Spec 2)
+
+Identity + SEO live in one root `press.config.ts` (Project zone), consumed by
+`@press/web` through `defineConfig` / `resolveConfig` / `buildMetadata`. Prereqs:
+the CMS seeded + running on `:1337` and types synced (see "Run the web engine").
+
+```bash
+# 1. Unit contract for the engine helpers (defaults, template, absolute OG):
+pnpm --filter @press/web test
+
+# 2. Type the host — compiles the root press.config.ts through the alias (AC4 base):
+pnpm --filter web typecheck
+
+# 3. SEO-from-config render (AC1) + brand identity (AC2) on the real markup:
+node scripts/e2e-check.mjs
+#    → both PASS lines print (Spec 2 first, then the Spec 1 hero+callout check):
+#      "E2E PASS (Spec 2): title/description/og/canonical/lang/favicon from config"
+#      "E2E PASS: hero + callout server-rendered; image src = ..."
+
+# 4. Default vs. override (AC3). The OVERRIDE is proven above (the rendered
+#    <title> shows the custom 'E2E Home | Acme' template). The DEFAULT case is
+#    proven by the unit test that omits seo.titleTemplate and asserts '%s':
+pnpm --filter @press/web exec vitest run src/config/resolve-config.test.ts
+```
+
+### Type guard — loud fail (AC4)
+
+A destructive change to the engine's config type must break at the adopter's
+`press.config.ts`, not silently drift:
+
+```bash
+# Temporarily rename the engine field, e.g. in
+# packages/press-web/src/config/types.ts rename PressConfig `seo.titleTemplate`
+# to `seo.titleTpl`, then:
+pnpm --filter web typecheck
+#    → tsc FAILS pointing at press.config.ts:
+#      "Object literal may only specify known properties, and 'titleTemplate'
+#       does not exist in type ..." — the loud failure IS the pass condition.
+# Revert the rename to restore green.
+```
+
+### Project-zone cleanliness (AC5)
+
+The engine never writes `press.config.ts`. After a build/sync/render the root
+file is untouched:
+
+```bash
+node scripts/e2e-check.mjs   # build + start + assert
+git status --porcelain       # → no changes to press.config.ts (or the host): the
+                             #   engine wrote nothing (build artifacts under .next/ are gitignored)
+```
