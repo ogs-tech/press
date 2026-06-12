@@ -59,6 +59,26 @@ export function assertGreen(root) {
   }
 }
 
+/**
+ * Generate `packages/press-web/src/types/generated.ts` ON DISK before the publish
+ * phase, so it ships inside every @press/web tarball (see press-web/.npmignore: the
+ * tarball intentionally carries generated.ts, and "the guard runs sync-types before
+ * publishing"). Without this the very first publish packs a tarball whose
+ * `@press/web/types` re-export resolves to a missing module, and the GREEN baseline
+ * build fails with `'@press/web/types' has no exported member 'CustomCallout'`.
+ * Boots the CMS over HTTP (sync-types fetches /api/press/schema), syncs, stops.
+ */
+export function pregenerateTypes(root) {
+  stopCms(); // seed boots Strapi in-process; the port must be free first.
+  shInherit(`node ../../scripts/seed-e2e.mjs`, { cwd: join(root, 'apps/cms') });
+  startCms(root);
+  try {
+    shInherit(`pnpm --filter @press/web sync-types`, { cwd: root });
+  } finally {
+    stopCms();
+  }
+}
+
 /** THE update path the real adopter runs (spec §2.1): bump both @press/* to vN+1. */
 export function runUpdate(root, { cms, web }) {
   shInherit(`pnpm --filter cms update @press/cms@${cms}`, { cwd: root });
@@ -82,6 +102,9 @@ export function restoreAdopter(root) {
     shInherit(`git checkout -- apps/cms/package.json apps/web/package.json pnpm-lock.yaml`, { cwd: root });
     shInherit(`pnpm install --no-frozen-lockfile`, { cwd: root });
   } catch (e) {
+    // A failed restore leaves the workspace dirty; it must not be reported as a
+    // clean, green run. Fail the process so CI surfaces the un-restored state.
     console.warn('[guard] adopter restore failed:', e.message);
+    process.exitCode = 1;
   }
 }
