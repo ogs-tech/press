@@ -1,6 +1,6 @@
 {
   "name": "@press/web",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "press engine — front-end renderer + CMS→TS type-sync",
   "license": "MIT",
   "author": "Odenir Gomes",

@@ -12,5 +12,6 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "bin"]
+  "include": ["src", "bin"],
+  "exclude": ["node_modules", "dist", "host-template"]
 }
