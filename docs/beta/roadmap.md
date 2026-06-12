@@ -23,7 +23,7 @@ and cheaply.
 | **1** | `@press/web` + type-sync contract (incl. custom-block render, end-to-end) | Q2 — type/block contract CMS→front-end | 0 | ✅ Done |
 | **2** | Whitelabel config `press.config.ts` | Contract boundary | 0, 1 | ✅ Done |
 | **3** | CLI surface `press create / dev / build / deploy` | Q1 — create→deploy flow | 0, 1, 2 | ✅ Done |
-| 4 | Update path + CI contract guard | Q2 — non-breakage survives an update cycle | 0, 1 | Planned |
+| **4** | Update path + CI contract guard | Q2 — non-breakage survives an update cycle | 0, 1 | ✅ Done |
 | 5 | Deploy guide (managed + self-hosted) | Q1 — first deploy unaided | 3 | Planned |
 
 ## Spec 0 — outcome (done)
