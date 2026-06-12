@@ -8,26 +8,11 @@ export function lastEngineTag() {
   return tags[0] ?? null;
 }
 
-export const shortSha = () => sh('git rev-parse --short HEAD');
 export const headCommit = () => sh('git rev-parse HEAD');
 
 /** Commit a tag points at (for the "tag == HEAD" fast path). */
 export function tagCommit(tag) {
   return sh(`git rev-list -n 1 ${tag}`);
-}
-
-/**
- * Candidate version for the vN+1 publish. Returns HEAD's version when it differs
- * from the baseline; otherwise a synthetic `<version>-contract.<sha>` prerelease so
- * the candidate is always a DISTINCT published artifact from the baseline even when
- * nobody bumped the version (spec §4.1). Note the synthetic tag is a prerelease, so
- * it sorts *below* the base version in semver — the guard does not rely on ordering;
- * the orchestrator pins the adopter to this exact version (with an `add` fallback if
- * `pnpm update` refuses the prerelease range).
- */
-export function candidateVersion(headVersion, baselineVersion) {
-  if (headVersion !== baselineVersion) return headVersion;
-  return `${headVersion}-contract.${shortSha()}`;
 }
 
 /**
