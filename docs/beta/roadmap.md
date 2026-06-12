@@ -22,7 +22,7 @@ and cheaply.
 | **0** | Spike `@press/cms` (Strapi-as-dependency) + monorepo bootstrap | Risk #1 — CMS is wrappable as a versioned, updatable dependency | — | ✅ Done |
 | **1** | `@press/web` + type-sync contract (incl. custom-block render, end-to-end) | Q2 — type/block contract CMS→front-end | 0 | ✅ Done |
 | **2** | Whitelabel config `press.config.ts` | Contract boundary | 0, 1 | ✅ Done |
-| **3** | CLI surface `press create / dev / build / deploy` | Q1 — create→deploy flow | 0, 1, 2 | ◐ Design approved |
+| **3** | CLI surface `press create / dev / build / deploy` | Q1 — create→deploy flow | 0, 1, 2 | ✅ Done |
 | 4 | Update path + CI contract guard | Q2 — non-breakage survives an update cycle | 0, 1 | Planned |
 | 5 | Deploy guide (managed + self-hosted) | Q1 — first deploy unaided | 3 | Planned |
 
@@ -67,7 +67,7 @@ admin branding were deferred to keep the public contract small (PRD §8). The
 `apps/cms/press.config.ts` placeholder was reconciled to root. Run guide in
 `README.md`; non-breakage *across an update* is Spec 4's job, not Spec 2's.
 
-## Spec 3 — scope (design approved)
+## Spec 3 — outcome (done)
 
 The first end-user surface: the `press` CLI. Wraps the now-proven engine
 (`@press/cms` + `@press/web` + `press.config.ts`) into the **create → dev →
@@ -80,6 +80,17 @@ contract-leak surface; (2) **`create`/`dev`/`build` real, `deploy` thin** — th
 managed + self-hosted guide is Spec 5; (3) **draft preview deferred again**, but
 config wiring into `press dev / build` stays in. Full design:
 [Spec 3 design](../superpowers/specs/2026-06-11-press-cli-design.md).
+
+**Outcome (done).** `@press/cli` ships `create`/`dev`/`build`/`deploy`;
+`@press/web@0.2.0` ships the Next host template the CLI materializes to a
+gitignored `.press/web/`. `press create` writes the §6 ultra-thin manifest (no
+committed web host) and installs it; `press dev`/`build` boot/build the whole
+stack consuming `press.config.ts`; `press deploy` is the thin Spec 5-delegating
+surface. All five acceptance criteria pass via `scripts/cli-e2e.mjs` against the
+local Verdaccio registry (real tarballs of `@press/web` + `@press/cli`), and
+`git status` stays clean after create→dev→build — the create-time footprint adds
+zero Project-zone surface. The deploy guide is Spec 5; the non-breakage proof
+across an update is Spec 4.
 
 ## Cadence
 
