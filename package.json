@@ -12,7 +12,7 @@
     "cms:dev": "pnpm --filter cms develop",
     "cms:build": "pnpm --filter cms build",
     "cms:start": "pnpm --filter cms start",
-    "contract:check": "node scripts/contract-check.mjs"
+    "guard": "node scripts/contract-guard.mjs"
   },
   "devDependencies": {
     "@press/web": "workspace:*",

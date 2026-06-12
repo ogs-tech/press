@@ -34,8 +34,9 @@ Dynamic-Zone reference blocks from `node_modules` by injecting components at the
 plugin's `register` lifecycle (Path A), and admits adopter custom blocks into
 the engine's dynamic zone. The non-breakage contract was exercised for real:
 `@press/cms` `0.1.0 → 0.2.0` left the Project zone byte-identical and the project
-still built and booted, verified by `scripts/contract-check.mjs`. Engine and host
-were published to/consumed from a local Verdaccio registry as real packages.
+still built and booted. That one-off check is now subsumed by the standing Spec 4
+contract guard (`scripts/contract-guard.mjs`). Engine and host were published
+to/consumed from a local Verdaccio registry as real packages.
 
 ## Spec 1 — outcome (done)
 

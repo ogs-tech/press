@@ -274,3 +274,48 @@ orchestrator (no duplicated, divergent contract logic left behind).
 | A `packages/**` PR doesn't bump the engine version | Update would be a no-op `old == old` | Synthetic `X.Y.Z-contract.<shortsha>` candidate guarantees a real code delta regardless of version bump (§4.1). |
 | Boot-204 false-passes a missing Dynamic-Zone component | Guard green but a reference block silently 500s on entry creation | Steps 5 & 10 seed and render a real entry (Spec 0 lesson), not `/_health` alone — a missing DZ component fails the render check. |
 | The guard's contract logic drifts from the (still-present) `contract-check.mjs` | Two sources of "what's an allowed delta," disagreeing | Fold `contract-check` into the orchestrator; one definition of the allowed delta, both packages, no divergent copy. |
+
+## 11. Results
+
+- **Outcome:** PASS. `scripts/contract-guard.mjs` runs a real both-package,
+  render-deep update cycle against an ephemeral Verdaccio it starts/stops itself.
+- **AC1 (real cycle green):** with the `engine-v0.3.2` baseline, both `@press/cms`
+  and `@press/web` are published as baseline + candidate, the adopter is staged at
+  the baseline, `pnpm update @press/*` runs, and the seeded page renders `press.hero`
+  + `custom.callout` + the whitelabel `<head>` at both versions. `CONTRACT HELD`,
+  exit 0.
+- **AC2 (catches a leak):** dropping the custom-block render path in `@press/web`
+  (uncommitted) is published only as the candidate; the baseline stays green, the
+  file + boot checks pass, and the **post-update** render fails with
+  `E2E FAIL: callout message missing from HTML`, exit 1. Reverting restores green —
+  a clean RED/GREEN pair on identical shipped code.
+- **AC3 (CI gated/required):** `.github/workflows/contract-guard.yml` runs on
+  `packages/**` PRs + `workflow_dispatch`, Node 20 / pnpm 10, full history + tags,
+  Verdaccio in-job; `guard` is to be enabled as a required check on `main`.
+- **AC4 (bootstrap honest):** the first pre-tag run logged `BOOTSTRAP …` and exited 0.
+- **AC5 (local repro):** `node scripts/contract-guard.mjs` reproduces the cycle from a
+  clean tree; re-runs are robust.
+- **First release tag:** `engine-v0.3.2` (`@press/cms@0.3.2` + `@press/web@0.1.0`).
+- **`contract-check.mjs`:** removed; its allowed-delta logic is subsumed by the
+  generalized guard (one source of truth, both packages).
+
+### Implementation deltas vs. §4 (decided during execution)
+
+- **Content-addressed publish labels.** §4.1's candidate was `X.Y.Z-contract.<shortsha>`.
+  An uncommitted edit does not change the commit sha, so on a re-run the candidate
+  collided with a prior tarball and was silently reused — masking the AC2 regression.
+  Labels are now keyed on a hash of the engine **source** (`X.Y.Z-base.<srcHash>` /
+  `X.Y.Z-contract.<srcHash>`): always distinct artifacts, always a fresh tarball, never
+  a stale reuse. This also removes the need to mutate a shared registry (unpublish).
+- **`pregenerateTypes` before publishing.** `@press/web/src/types/generated.ts` is
+  gitignored, so a fresh checkout (and every published tarball) lacked it and the
+  baseline build failed on the missing `CustomCallout` export. The guard now runs
+  `sync-types` to disk before any publish; the clean-tag worktree reuses that file.
+- **Clean-tree baseline.** The fast path (build baseline from HEAD) is taken only when
+  the engine tree is clean; a dirty `packages/` (the AC2 regression) falls through to a
+  pristine tag worktree so the regression is tested as vN+1, never leaked into vN.
+- **Re-run hygiene (local only; CI is fresh per run):** clear `apps/web/.next` before
+  each build (incremental cache is keyed by source path, not engine version) and kill
+  any orphaned web server on `:3000` (`e2e-check` leaks it on assertion failure via
+  `process.exit` skipping its `finally`).
+- **Date:** 2026-06-12.

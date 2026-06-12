@@ -21,8 +21,8 @@ line + lockfile.
   - `config/plugins.ts` — enables the engine (`{ "press-cms": { enabled: true } }`).
   - `src/components/custom/` — adopter custom blocks (e.g. `callout.json`).
   - `press.config.ts` — whitelabel placeholder.
-- `scripts/` — `registry.sh` (Verdaccio helper), `contract-check.mjs` (the §9
-  non-breakage proof), `assert-no-engine-in-host.mjs` (host-thinness invariant).
+- `scripts/` — `registry.sh` (Verdaccio helper), `contract-guard.mjs` (the standing
+  Spec 4 contract guard), `assert-no-engine-in-host.mjs` (host-thinness invariant).
 
 ## Key mechanics (learned during the spike)
 
@@ -62,16 +62,10 @@ pnpm --filter cms start
 # 5. Prove host-thinness (no engine code in the Project zone)
 node scripts/assert-no-engine-in-host.mjs
 
-# 6. Prove non-breakage of an engine update.
-#    First publish the update target (bump packages/press-cms to 0.2.0, build,
-#    publish) — contract-check.mjs does NOT publish, it only runs `pnpm update`:
-#      # set packages/press-cms/package.json "version": "0.2.0"
-#      pnpm --filter @press/cms build
-#      ( cd packages/press-cms && npm publish --registry http://localhost:4873 \
-#          --userconfig "$PWD/../../.npmrc" )
-#    Then, from a CLEAN git tree with the host on the "from" version (0.1.0):
-node scripts/contract-check.mjs 0.1.0 0.2.0
-#    → "CONTRACT HELD" when only apps/cms/package.json (@press/cms) + lockfile changed.
+# 6. Prove non-breakage of an engine update — the standing contract guard runs the
+#    WHOLE vN -> vN+1 cycle for both engine packages and starts/stops its own
+#    Verdaccio (see "Update path + contract guard" below). No manual publish needed:
+node scripts/contract-guard.mjs       # or: pnpm guard  → "CONTRACT HELD"
 ```
 
 ## Notes
@@ -198,3 +192,50 @@ my-site/
 then boots web (`:3000`). `press build` materializes + builds both halves.
 `press deploy` validates prereqs and emits the Spec 5 path (the guide ships in
 Spec 5). `.press/` is engine territory — regenerated every run, never edited.
+
+## Update path + contract guard (Spec 4)
+
+The non-breakage promise (PRD Q2) is enforced continuously. An adopter updates the
+engine with the **minimal form** — no special command:
+
+```bash
+pnpm update @press/cms @press/web    # bump both engine packages
+pnpm --filter cms build && pnpm --filter cms start   # rebuild + boot
+```
+
+The **contract guard** proves that update never breaks the Project zone. It runs a
+real vN → vN+1 cycle for **both** engine packages against an ephemeral Verdaccio,
+then fails on any of three leak classes:
+
+| Class | What it means | Caught by |
+| --- | --- | --- |
+| **File leak** | A Project-zone file changed on disk after the update | content-hash of `apps/**` + `assert-no-engine-in-host.mjs` |
+| **Boot leak** | The host builds but no longer boots | `/_health` 204 boot smoke |
+| **Behavioral leak** | Boots, disk clean, but the adopter's custom block or whitelabel `<head>` stops rendering | seeded e2e render (`seed-e2e.mjs` + `e2e-check.mjs`) |
+
+Run it locally (starts/stops its own Verdaccio):
+
+```bash
+node scripts/contract-guard.mjs        # or: pnpm guard
+```
+
+- **Baseline** is built from the last `engine-v*` release tag (in a clean throwaway
+  worktree when the working tree is dirty); **candidate** is HEAD. Both are published
+  under **content-addressed** prerelease labels — `X.Y.Z-base.<srcHash>` and
+  `X.Y.Z-contract.<srcHash>`, where `<srcHash>` is a hash of the engine source. This
+  makes baseline and candidate distinct artifacts and guarantees a fresh tarball every
+  run (a shared/non-ephemeral registry can never serve a stale version). With no tag
+  yet it runs a logged BOOTSTRAP (harness-only, no regression coverage).
+- **CI:** `.github/workflows/contract-guard.yml` runs it on `packages/**` PRs and
+  manual dispatch; once it has run on a PR, enable `guard` as a required status check
+  on `main` (a repo branch-protection setting) so a leak blocks merge.
+
+### Reproduce the negative test (the guard actually catches a leak)
+
+In `packages/press-web/src/block-renderer.tsx`, change `{ ...referenceBlocks, ...components }`
+to `{ ...referenceBlocks }` (drops adopter custom blocks), then `node scripts/contract-guard.mjs`:
+the file + boot checks pass and the baseline render is green, but the **post-update**
+render fails with `E2E FAIL: callout message missing from HTML` and a non-zero exit.
+Revert to restore green. (The uncommitted edit lands only in the candidate; the
+baseline is built from the pristine tagged engine, so the failure is unambiguously the
+update's.)
