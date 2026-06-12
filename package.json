@@ -15,6 +15,7 @@
     "contract:check": "node scripts/contract-check.mjs"
   },
   "devDependencies": {
+    "@press/web": "workspace:*",
     "turbo": "2.9.18"
   },
   "pnpm": {

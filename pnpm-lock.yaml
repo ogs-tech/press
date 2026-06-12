@@ -11,6 +11,9 @@ importers:
 
   .:
     devDependencies:
+      '@press/web':
+        specifier: workspace:*
+        version: link:packages/press-web
       turbo:
         specifier: 2.9.18
         version: 2.9.18
@@ -106,6 +109,9 @@ importers:
 
   packages/press-web:
     dependencies:
+      next:
+        specifier: '>=15'
+        version: 15.5.19(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@19.2.7))(react@19.2.7)
       react-dom:
         specifier: '>=18'
         version: 18.3.1(react@19.2.7)
@@ -15355,6 +15361,30 @@ snapshots:
   negotiator@1.0.0: {}
 
   neo-async@2.6.2: {}
+
+  next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@19.2.7))(react@19.2.7):
+    dependencies:
+      '@next/env': 15.5.19
+      '@swc/helpers': 0.5.15
+      caniuse-lite: 1.0.30001797
+      postcss: 8.4.31
+      react: 19.2.7
+      react-dom: 18.3.1(react@19.2.7)
+      styled-jsx: 5.1.6(react@19.2.7)
+    optionalDependencies:
+      '@next/swc-darwin-arm64': 15.5.19
+      '@next/swc-darwin-x64': 15.5.19
+      '@next/swc-linux-arm64-gnu': 15.5.19
+      '@next/swc-linux-arm64-musl': 15.5.19
+      '@next/swc-linux-x64-gnu': 15.5.19
+      '@next/swc-linux-x64-musl': 15.5.19
+      '@next/swc-win32-arm64-msvc': 15.5.19
+      '@next/swc-win32-x64-msvc': 15.5.19
+      '@opentelemetry/api': 1.9.0
+      sharp: 0.34.5
+    transitivePeerDependencies:
+      - '@babel/core'
+      - babel-plugin-macros
 
   next@15.5.19(@opentelemetry/api@1.9.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
