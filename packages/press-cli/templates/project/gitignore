@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# engine-materialized host (regenerated every dev/build — never commit)
+.press/
+
+# next build output (also lives under .press/web/.next)
+.next/
+
+# strapi host artifacts
+cms/.tmp/
+cms/.cache/
+cms/.strapi/
+cms/dist/
+cms/build/
+
+# env + secrets
+.env
+cms/.env
+
+# misc
+*.tsbuildinfo
