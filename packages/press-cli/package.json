@@ -1,0 +1,24 @@
+{
+  "name": "@press/cli",
+  "version": "0.1.0",
+  "description": "press CLI — create / dev / build / deploy the press stack",
+  "license": "MIT",
+  "author": "Odenir Gomes",
+  "type": "commonjs",
+  "bin": { "press": "bin/press.js" },
+  "files": ["bin", "dist", "templates"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "commander": "^13.0.0",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5",
+    "vitest": "^2.1.0"
+  }
+}
