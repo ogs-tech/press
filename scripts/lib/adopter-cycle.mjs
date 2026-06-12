@@ -1,7 +1,7 @@
 // scripts/lib/adopter-cycle.mjs — the adopter side of the update cycle (spec §4.2).
 // Stages the REAL host (apps/cms + apps/web) at a version set, proves it green,
 // runs the update, and surfaces disk state for the orchestrator's leak asserts.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { sh, shInherit, bash } from './sh.mjs';
 
@@ -40,22 +40,48 @@ export function stopCms() {
 }
 
 /**
+ * Free port 3000 by killing whatever holds it. e2e-check starts apps/web on :3000 and
+ * is supposed to kill it, but it calls process.exit() on assertion failure — which
+ * skips its finally, so the next-server child is orphaned (reparented) and survives.
+ * A leaked server then answers the NEXT run's fetch with stale (e.g. regressed) HTML.
+ * The guard owns the web lifecycle here so a failed run can't poison the next one.
+ *
+ * Scoped to the PORT (via lsof), NOT a broad `pkill -f next-server`: under concurrent
+ * runs that would nuke an unrelated next-server (e.g. another worktree's dev server).
+ * `kill $P` is intentionally unquoted so bash word-splits multiple listener PIDs.
+ */
+export function stopWeb() {
+  try {
+    bash(`P=$(lsof -ti:3000 2>/dev/null); [ -n "$P" ] && kill $P 2>/dev/null; true`);
+  } catch {}
+}
+
+/**
  * Prove the staged project really works (spec §4.2 step 5 / step 10): seed a page
  * with press.hero + custom.callout, boot the CMS, sync types, then run the seeded
  * e2e render (blocks + whitelabel <head>). Throws on any failure.
  */
 export function assertGreen(root) {
   stopCms(); // seed boots Strapi in-process; the port must be free first.
+  stopWeb(); // free :3000 from any web server a prior (failed) run orphaned.
   shInherit(`node ../../scripts/seed-e2e.mjs`, { cwd: join(root, 'apps/cms') });
   startCms(root);
   try {
     shInherit(`pnpm --filter @press/web sync-types`, { cwd: root });
+    // Drop apps/web's Next build cache before building. e2e-check runs `next build`
+    // incrementally, and the cache is keyed by source PATH, not @press/web version —
+    // so a prior run's engine transpilation (e.g. a regressed BlockRenderer from the
+    // AC2 negative test) would otherwise survive a version swap and the build would
+    // render stale code. CI starts with an empty .next; this makes local re-runs safe.
+    rmSync(join(root, 'apps/web/.next'), { recursive: true, force: true });
     // e2e-check builds + starts apps/web itself and asserts both blocks + <head>.
     shInherit(`node scripts/e2e-check.mjs`, { cwd: root });
     // Host-thinness invariant (engine-in-host leak class).
     shInherit(`node scripts/assert-no-engine-in-host.mjs`, { cwd: root });
   } finally {
     stopCms();
+    stopWeb(); // e2e-check's web server leaks on assertion failure (process.exit
+               // skips its finally); kill it so :3000 is clean for the next stage.
   }
 }
 
