@@ -39,6 +39,9 @@
       ],
       "react-dom/*": [
         "./node_modules/@types/react-dom/*"
+      ],
+      "press.config": [
+        "../../press.config.ts"
       ]
     },
     "plugins": [

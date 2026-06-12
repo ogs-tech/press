@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
-import { BlockRenderer, getPage } from '@press/web';
+import { BlockRenderer, buildMetadata, getPage } from '@press/web';
 import { customBlocks } from '../../press.blocks';
+import { config } from '../../press-config';
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>;
@@ -9,7 +10,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const page = await getPage((slug ?? []).join('/') || 'home');
-  return { title: page?.title ?? 'Not found' };
+  return buildMetadata(config, page ? { title: page.title } : null);
 }
 
 export default async function CatchAllPage({ params }: PageProps) {
