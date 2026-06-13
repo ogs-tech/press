@@ -1,0 +1,4 @@
+.git
+cms/.tmp
+cms/.cache
+**/*.log

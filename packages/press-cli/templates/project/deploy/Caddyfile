@@ -1,0 +1,16 @@
+# deploy/Caddyfile — single public origin. The browser and the web host both reach
+# the CMS through THIS origin, so one CMS_URL works for the API fetch AND the media
+# <img src> the browser loads. For a real domain, replace :8080 with your hostname
+# (Caddy then auto-provisions HTTPS).
+:8080 {
+	# CMS surfaces — everything the browser or the web host needs from Strapi.
+	@cms path /api/* /admin* /uploads/* /content-manager/* /content-type-builder/* /upload/* /i18n/* /users-permissions/*
+	handle @cms {
+		reverse_proxy cms:1337
+	}
+
+	# Everything else is the Next web host.
+	handle {
+		reverse_proxy web:3000
+	}
+}

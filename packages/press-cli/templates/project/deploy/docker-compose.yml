@@ -1,0 +1,78 @@
+# deploy/docker-compose.yml — self-hosted press stack: Postgres + Strapi cms +
+# Next web + Caddy single-origin proxy. Run from the PROJECT ROOT after `press build`:
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env.deploy up -d --build
+# The build context is the project root (..), so images copy the host-installed
+# node_modules and the materialized .press/web — build-then-ship (see docs/beta/deploy.md).
+name: press
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME:-strapi}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-strapi}
+      POSTGRES_DB: ${DATABASE_NAME:-strapi}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-strapi}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # One-shot: boots Strapi programmatically against Postgres, writes the sample
+  # page, exits. Runs before cms serves traffic (the seed needs the server DOWN).
+  seed:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.cms
+    command: ["node", "content/seed.mjs"]
+    working_dir: /app/cms
+    env_file: [.env.deploy]
+    environment:
+      DATABASE_URL: postgres://${DATABASE_USERNAME:-strapi}:${DATABASE_PASSWORD:-strapi}@db:5432/${DATABASE_NAME:-strapi}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  cms:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.cms
+    restart: unless-stopped
+    env_file: [.env.deploy]
+    environment:
+      DATABASE_URL: postgres://${DATABASE_USERNAME:-strapi}:${DATABASE_PASSWORD:-strapi}@db:5432/${DATABASE_NAME:-strapi}
+    depends_on:
+      db:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    expose: ["1337"]
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    restart: unless-stopped
+    environment:
+      CMS_URL: ${CMS_URL}
+    extra_hosts:
+      # Lets the web container reach the host-published Caddy origin (Linux CI).
+      - "host.docker.internal:host-gateway"
+    depends_on: [cms]
+    expose: ["3000"]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "${PUBLISH_PORT:-8080}:8080"
+    depends_on: [web, cms]
+
+volumes:
+  db-data:
