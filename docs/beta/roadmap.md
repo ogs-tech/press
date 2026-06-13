@@ -3,7 +3,7 @@ title: "Roadmap — press beta"
 internal_name: press-cli
 status: Beta
 created_at: 2026-06-11
-updated_at: 2026-06-11
+updated_at: 2026-06-12
 source_prd: docs/beta-prd.md
 ---
 
@@ -92,6 +92,35 @@ local Verdaccio registry (real tarballs of `@press/web` + `@press/cli`), and
 `git status` stays clean after create→dev→build — the create-time footprint adds
 zero Project-zone surface. The deploy guide is Spec 5; the non-breakage proof
 across an update is Spec 4.
+
+## Spec 4 — outcome (done)
+
+Non-breakage **survives a real update cycle**, and CI now enforces it. The
+standing guard `scripts/contract-guard.mjs` starts/stops its own ephemeral
+Verdaccio, publishes both `@press/cms` and `@press/web` as baseline + candidate,
+stages the adopter at the baseline, runs `pnpm update @press/*`, and asserts the
+seeded page still renders `press.hero` + `custom.callout` + the whitelabel
+`<head>` at both versions — a render-deep cycle, not a file-diff. The full
+AC1–AC5 set passed: real cycle green (`CONTRACT HELD`, exit 0); a dropped
+custom-block render path in the candidate is caught **post-update**
+(`callout message missing`, exit 1) with a clean RED/GREEN pair on identical
+shipped code; `.github/workflows/contract-guard.yml` gates `packages/**` PRs +
+`workflow_dispatch` (Node 20 / pnpm 10, Verdaccio in-job; `guard` to be flipped
+to a required check on `main`); the pre-tag bootstrap run exited honestly; and a
+clean-tree local repro re-runs robustly. First release tag `engine-v0.3.2`
+(`@press/cms@0.3.2` + `@press/web@0.1.0`); the old `contract-check.mjs` is
+removed, its allowed-delta logic subsumed by the generalized guard (one source of
+truth, both packages). Key execution deltas: publish labels are
+**content-addressed** (`X.Y.Z-base.<srcHash>` / `-contract.<srcHash>`) so an
+uncommitted edit always yields a fresh tarball (no stale-reuse masking a
+regression); types are pre-generated to disk before publish; a dirty `packages/`
+falls through to a pristine tag worktree so the regression is tested as vN+1.
+Full design + Results: [Spec 4 design](../superpowers/specs/2026-06-11-press-update-contract-guard-design.md).
+
+**Merge note.** Shipped on `worktree-spec-4-contract-guard` (forked at `0f0d5d4`,
+before Spec 3 bumped `@press/web` to 0.2.0 + added `host-template/`). Landing it
+on `main` needs `packages/press-web` reconciliation; the guard intentionally
+keeps the 0.1.0 baseline.
 
 ## Cadence
 
