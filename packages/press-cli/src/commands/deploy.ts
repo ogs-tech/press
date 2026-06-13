@@ -11,9 +11,10 @@ export interface PrereqResult {
 }
 
 /**
- * Checks the create->deploy vocabulary is satisfiable: a web build is present
- * (.press/web/.next) and the cms host has its infra env (cms/.env). Pure-ish
- * (fs existence only) so it is unit-testable without booting anything.
+ * Checks a deploy is launchable: a production web build exists (.press/web/.next),
+ * the cms host has its infra env (cms/.env), and the self-hosted deploy kit is
+ * present (deploy/docker-compose.yml). Pure fs existence — unit-testable without
+ * booting anything.
  */
 export function validateDeployPrereqs(root: string): PrereqResult {
   const errors: string[] = [];
@@ -23,27 +24,32 @@ export function validateDeployPrereqs(root: string): PrereqResult {
   if (!existsSync(path.join(root, 'cms', '.env'))) {
     errors.push('cms/.env missing — required infra/secrets are not set.');
   }
+  if (!existsSync(path.join(root, 'deploy', 'docker-compose.yml'))) {
+    errors.push('deploy kit missing — deploy/docker-compose.yml not found (expected from `press create`).');
+  }
   return { ok: errors.length === 0, errors };
 }
 
-const SPEC5_PATH = `
-press deploy (preview) — the full guide ships in Spec 5.
+const GUIDE_PATH = `
+press deploy — two documented paths (full guide: docs/beta/deploy.md).
 
-  Two documented targets will be supported:
-    • managed     — a hosted cms + a Next host on a managed platform
-    • self-hosted — your own cms + web behind a reverse proxy
+  Recommended — SELF-HOSTED (Docker Compose, low/no recurring cost):
+    1. cp deploy/.env.deploy.example deploy/.env.deploy   # then fill the secrets
+    2. docker compose -f deploy/docker-compose.yml --env-file deploy/.env.deploy up -d --build
+    3. open http://localhost:8080  (point PUBLISH_PORT/CMS_URL at your domain for prod)
 
-  Prereqs validated here:
-    • a production build is present (press build)
-    • cms infra/secrets are set (cms/.env)
+  Optional — MANAGED (Strapi Cloud + Vercel, ~US$38/mo for a real site):
+    Deploy cms to Strapi Cloud, then web to Vercel with CMS_URL set to the live
+    cms origin. Steps + caveats in docs/beta/deploy.md.
 
-  Next: follow the Spec 5 deploy guide for your chosen target.
+  Deploy order is always cms first (it owns the public origin + DB), then web wired
+  to the live CMS_URL.
 `;
 
 /**
- * Thin, delegating command surface (spec §2.2/§5): validates prereqs and emits
- * the documented Spec 5 path. No provider orchestration in this spec — that, and
- * the guide itself, are Spec 5.
+ * Finalized command surface (Spec 5): validates prereqs and emits the documented
+ * self-hosted + managed paths. press does not orchestrate the provider for the
+ * adopter — it hands them a verified, copy-pasteable path.
  */
 export async function deployCommand(opts: DeployOptions): Promise<void> {
   const r = validateDeployPrereqs(opts.cwd);
@@ -51,5 +57,5 @@ export async function deployCommand(opts: DeployOptions): Promise<void> {
     for (const e of r.errors) console.error(`deploy: ${e}`);
     throw new Error('deploy prerequisites not met');
   }
-  console.log(SPEC5_PATH);
+  console.log(GUIDE_PATH);
 }

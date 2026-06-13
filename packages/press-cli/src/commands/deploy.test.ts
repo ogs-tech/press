@@ -22,11 +22,13 @@ describe('validateDeployPrereqs', () => {
     expect(r.errors.join(' ')).toMatch(/build/i);
   });
 
-  it('passes when a web build and cms/.env are present', () => {
+  it('passes when build, cms/.env, and the deploy kit are all present', () => {
     const root = scratch();
     mkdirSync(path.join(root, '.press', 'web', '.next'), { recursive: true });
     mkdirSync(path.join(root, 'cms'), { recursive: true });
     writeFileSync(path.join(root, 'cms', '.env'), 'PORT=1337\n');
+    mkdirSync(path.join(root, 'deploy'), { recursive: true });
+    writeFileSync(path.join(root, 'deploy', 'docker-compose.yml'), 'name: press\n');
     const r = validateDeployPrereqs(root);
     expect(r.ok).toBe(true);
     expect(r.errors).toHaveLength(0);
@@ -38,5 +40,15 @@ describe('validateDeployPrereqs', () => {
     const r = validateDeployPrereqs(root);
     expect(r.ok).toBe(false);
     expect(r.errors.join(' ')).toMatch(/\.env/);
+  });
+
+  it('fails when the self-hosted deploy kit is missing', () => {
+    const root = scratch();
+    mkdirSync(path.join(root, '.press', 'web', '.next'), { recursive: true });
+    mkdirSync(path.join(root, 'cms'), { recursive: true });
+    writeFileSync(path.join(root, 'cms', '.env'), 'PORT=1337\n');
+    const r = validateDeployPrereqs(root);
+    expect(r.ok).toBe(false);
+    expect(r.errors.join(' ')).toMatch(/deploy kit|docker-compose/i);
   });
 });
