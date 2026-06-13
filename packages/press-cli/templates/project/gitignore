@@ -24,6 +24,8 @@ cms/public/uploads/*
 # env + secrets
 .env
 cms/.env
+cms/.env.production
+deploy/.env.deploy
 
 # misc
 *.tsbuildinfo

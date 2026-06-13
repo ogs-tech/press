@@ -142,7 +142,17 @@ export function scaffold(opts: ScaffoldOptions): void {
     if (existsSync(marker)) renameSync(marker, path.join(target, 'cms', dir, '.gitkeep'));
   }
 
-  // 3. Generated manifests + infra.
+  // 3. Self-hosted deploy kit (Spec 5). The kit itself (deploy/* and
+  // cms/.env.production.example) lands via the wholesale template copies above;
+  // only the .dockerignore needs renaming — it ships as `.dockerignore.template`
+  // so it stays inert inside the CLI package, and becomes the project-root
+  // .dockerignore here.
+  renameSync(
+    path.join(target, 'deploy', '.dockerignore.template'),
+    path.join(target, '.dockerignore'),
+  );
+
+  // 4. Generated manifests + infra.
   writeFileSync(path.join(target, 'package.json'), rootPackageJson(name));
   writeFileSync(path.join(target, 'cms', 'package.json'), cmsPackageJson(name));
   writeFileSync(path.join(target, 'cms', '.env'), renderCmsEnv());

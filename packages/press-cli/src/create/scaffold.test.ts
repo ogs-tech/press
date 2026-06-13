@@ -49,6 +49,32 @@ describe('scaffold', () => {
     expect(readFileSync(path.join(target, '.npmrc'), 'utf8')).toContain('@press:registry=http://localhost:4873');
   });
 
+  it('writes the self-hosted deploy kit', () => {
+    const target = path.join(scratchParent(), 'my-site');
+    scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
+    for (const f of [
+      'deploy/docker-compose.yml',
+      'deploy/Dockerfile.cms',
+      'deploy/Dockerfile.web',
+      'deploy/Caddyfile',
+      'deploy/.env.deploy.example',
+      'cms/.env.production.example',
+      '.dockerignore',
+    ]) {
+      expect(existsSync(path.join(target, f)), `missing ${f}`).toBe(true);
+    }
+    // The inert package-side name must not ship into the project.
+    expect(existsSync(path.join(target, 'deploy', '.dockerignore.template'))).toBe(false);
+  });
+
+  it('gitignores the filled-in deploy secrets but keeps the examples', () => {
+    const target = path.join(scratchParent(), 'my-site');
+    scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
+    const gi = readFileSync(path.join(target, '.gitignore'), 'utf8');
+    expect(gi).toMatch(/deploy\/\.env\.deploy$/m);
+    expect(gi).toMatch(/cms\/\.env\.production$/m);
+  });
+
   it('generates unique Strapi secrets per project', () => {
     const a = path.join(scratchParent(), 'a');
     const b = path.join(scratchParent(), 'b');
