@@ -239,3 +239,32 @@ render fails with `E2E FAIL: callout message missing from HTML` and a non-zero e
 Revert to restore green. (The uncommitted edit lands only in the candidate; the
 baseline is built from the pristine tagged engine, so the failure is unambiguously the
 update's.)
+
+## Run the deploy (Spec 5)
+
+press ships two deploy paths; the full guide is `docs/beta/deploy.md`.
+
+- **Self-hosted (recommended)** — `deploy/docker-compose.yml` brings up Postgres +
+  cms + web + a Caddy single-origin proxy. From a created project root:
+
+  ```bash
+  press build
+  cp deploy/.env.deploy.example deploy/.env.deploy   # fill secrets + CMS_URL
+  docker compose -f deploy/docker-compose.yml --env-file deploy/.env.deploy up -d --build
+  ```
+
+- **Managed** — Strapi Cloud (cms) + Vercel (web); steps + cost in the guide.
+
+The self-hosted path is proven end-to-end in production mode (Postgres, `strapi start`,
+`next start`) by the deploy smoke harness:
+
+```bash
+pnpm deploy:smoke
+#  → "DEPLOY SMOKE PASS: ... rendered hero + callout + whitelabel head through Caddy."
+```
+
+- **build-then-ship is same-arch:** the images copy the host-built `node_modules` +
+  artifacts, so build on the OS/arch you run on (Linux VPS or CI). See the guide's
+  caveat for the cross-platform (registry-install) alternative.
+- **CI:** `.github/workflows/deploy-smoke.yml` runs the smoke on Linux for changes to
+  the deploy kit, the harness, or the web host template (plus manual dispatch).
