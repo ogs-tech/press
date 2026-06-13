@@ -24,7 +24,7 @@ and cheaply.
 | **2** | Whitelabel config `press.config.ts` | Contract boundary | 0, 1 | ✅ Done |
 | **3** | CLI surface `press create / dev / build / deploy` | Q1 — create→deploy flow | 0, 1, 2 | ✅ Done |
 | **4** | Update path + CI contract guard | Q2 — non-breakage survives an update cycle | 0, 1 | ✅ Done |
-| 5 | Deploy guide (managed + self-hosted) | Q1 — first deploy unaided | 3 | Planned |
+| **5** | Deploy guide (managed + self-hosted) | Q1 — first deploy unaided | 3 | ✅ Done |
 
 ## Spec 0 — outcome (done)
 
@@ -121,6 +121,35 @@ Full design + Results: [Spec 4 design](../superpowers/specs/2026-06-11-press-upd
 before Spec 3 bumped `@press/web` to 0.2.0 + added `host-template/`). Landing it
 on `main` needs `packages/press-web` reconciliation; the guard intentionally
 keeps the 0.1.0 baseline.
+
+## Spec 5 — outcome (done)
+
+An external adopter can reach **first deploy unaided** (PRD Q1) via two documented
+paths. **Self-hosted (primary)** is a `deploy/` kit dropped by `press create`:
+`docker-compose.yml` (Postgres 16 + cms + web + a Caddy single-origin proxy + a
+one-shot seed), `Dockerfile.cms`/`Dockerfile.web`, a `Caddyfile`, and
+`.env.deploy.example`. **Managed (documented, cost-flagged ~US$38/mo)** is Strapi
+Cloud (cms) + Vercel (web), including the materialized-host wrinkle (no committed
+Next app → Vercel build command `pnpm press build`, output `.press/web/.next`,
+`@press/*` token via `.npmrc`).
+
+The crux Spec 5 solved: the web host reads **`CMS_URL` at runtime** for both the
+API fetch *and* the hero image `src` it emits into browser-loaded HTML, so
+`CMS_URL` must be the **public** cms origin — the kit routes web + cms through one
+Caddy origin so a single `CMS_URL` satisfies both. The materialized web host is
+shipped via **build-then-ship** (the image copies host-built `node_modules` +
+`.press/web/.next` and only runs them; same-arch by design, caveat documented).
+Two real kit defects were fixed en route: the cms host now depends on **`pg`**
+(Strapi 5 bundles no DB driver, so a Postgres deploy needs it), and the compose
+seed one-shot runs `../content/seed.mjs` from the cms cwd (matching `press dev`).
+
+`scripts/deploy-smoke.mjs` (`pnpm deploy:smoke`) proves the self-hosted path
+end-to-end in **production mode against Postgres** — publish engine → `press
+create` → `press build` → `docker compose up --build` → assert the seeded `/home`
+renders hero + custom callout + whitelabel `<head>` + an absolute image `src`
+through Caddy. It is gated in CI by `.github/workflows/deploy-smoke.yml` (Linux —
+the same-arch happy case) on deploy-kit / harness / host-template changes.
+Full guide: [deploy.md](./deploy.md).
 
 ## Cadence
 
