@@ -12,7 +12,8 @@
     "cms:dev": "pnpm --filter cms develop",
     "cms:build": "pnpm --filter cms build",
     "cms:start": "pnpm --filter cms start",
-    "guard": "node scripts/contract-guard.mjs"
+    "guard": "node scripts/contract-guard.mjs",
+    "deploy:smoke": "node scripts/deploy-smoke.mjs"
   },
   "devDependencies": {
     "@press/web": "workspace:*",
