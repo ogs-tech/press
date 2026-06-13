@@ -1,0 +1,44 @@
+name: deploy-smoke
+
+# The self-hosted deploy path can only break when the deploy kit, the smoke
+# harness, or the materialized web host template changes. PRs touching only the
+# adopter layer or docs don't pay the (Docker-heavy) cost.
+on:
+  pull_request:
+    paths:
+      - 'packages/press-cli/templates/project/deploy/**'
+      - 'scripts/deploy-smoke.mjs'
+      - 'packages/press-web/host-template/**'
+  workflow_dispatch: {}
+
+# One run per ref; a new push cancels the in-flight smoke.
+concurrency:
+  group: deploy-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4   # version read from package.json packageManager
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # GitHub-hosted Ubuntu runners ship Docker + Compose; build-then-ship is
+      # same-arch here (Linux build host -> Linux containers), so the harness can
+      # copy the host-installed node_modules. The compose extra_hosts maps
+      # host.docker.internal on Linux — no extra setup needed.
+      - name: Run the deploy smoke
+        run: pnpm deploy:smoke
