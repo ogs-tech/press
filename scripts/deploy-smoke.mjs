@@ -86,8 +86,10 @@ async function main() {
     publish('@press/cli', path.join(ROOT, 'packages/press-cli'));
 
     // 2. scaffold + install the throwaway project against Verdaccio (`press
-    //    create` runs `pnpm install` itself).
-    sh(`node "${PRESS_BIN}" create "${project}" --registry ${REGISTRY_URL}`, { cwd: ROOT });
+    //    create` runs `pnpm install` itself). Pass a BARE name with cwd=parent —
+    //    `press create` uses the name argument as the package name, so an absolute
+    //    path would yield an invalid Strapi package name (mirrors cli-e2e.mjs).
+    sh(`node "${PRESS_BIN}" create site --registry ${REGISTRY_URL}`, { cwd: tmp });
 
     // 3. production build of both halves.
     sh(`node "${PRESS_BIN}" build`, { cwd: project });
