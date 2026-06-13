@@ -9,6 +9,10 @@ on:
       - 'packages/press-cli/templates/project/deploy/**'
       - 'scripts/deploy-smoke.mjs'
       - 'packages/press-web/host-template/**'
+      # The smoke asserts literal strings from these template files (seed content
+      # + the whitelabel <title> template), so changes to them must re-gate.
+      - 'packages/press-cli/templates/project/content/seed.mjs'
+      - 'packages/press-cli/templates/project/press.config.ts'
   workflow_dispatch: {}
 
 # One run per ref; a new push cancels the in-flight smoke.

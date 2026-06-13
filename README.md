@@ -182,6 +182,7 @@ my-site/
 ├─ blocks/custom/           # adopter custom blocks + the block map (index.ts)
 ├─ content/seed.mjs         # sample home page so first `press dev` renders
 ├─ cms/                     # the one visible host — a minimal Strapi app
+├─ deploy/                  # self-hosted Docker Compose kit (Spec 5)
 ├─ package.json             # scripts call `press` (dev/build/deploy)
 ├─ pnpm-workspace.yaml      # cms is a workspace member
 ├─ .npmrc / .gitignore / .nvmrc
