@@ -80,6 +80,10 @@ function cmsPackageJson(name: string): string {
           '@strapi/plugin-users-permissions': VERSIONS.strapi,
           '@strapi/strapi': VERSIONS.strapi,
           'better-sqlite3': '12.8.0',
+          // Postgres driver for the production/self-hosted deploy (Spec 5). Strapi
+          // does not bundle DB drivers; knex needs `pg` present whenever
+          // DATABASE_CLIENT=postgres. sqlite dev keeps using better-sqlite3.
+          pg: '8.13.1',
           react: '^18.0.0',
           'react-dom': '^18.0.0',
           'react-router-dom': '^6.0.0',

@@ -27,7 +27,10 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.cms
-    command: ["node", "content/seed.mjs"]
+    # cwd is the cms host so compileStrapi() auto-discovers the app; the seed
+    # script itself lives at the PROJECT root (../content/seed.mjs), matching how
+    # `press dev` runs it (node <root>/content/seed.mjs with cwd=cms).
+    command: ["node", "../content/seed.mjs"]
     working_dir: /app/cms
     env_file: [.env.deploy]
     environment:
