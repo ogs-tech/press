@@ -1,10 +1,10 @@
 packages:
   - "packages/*"
   # The in-repo dogfood: the real `press create` output, consumed via workspace:*
-  # for a fast dev loop. Its cms + core are their own workspace members so the cms
-  # host resolves @press/cms and the web zone resolves <name>-core by symlink (the
+  # for a fast dev loop. Its cms + shared are their own workspace members so the cms
+  # host resolves @press/cms and the web zone resolves <name>-shared by symlink (the
   # project's own pnpm-workspace.yaml is dropped — pnpm has one workspace root,
   # this repo). Regenerate with `pnpm play:create`.
   - "apps/playground"
   - "apps/playground/cms"
-  - "apps/playground/core"
+  - "apps/playground/shared"

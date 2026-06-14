@@ -5,7 +5,7 @@ node_modules/
 .press/
 
 # generated content types (written from the live CMS schema by `press dev`)
-core/types/generated.ts
+shared/types/generated.ts
 
 # next build output (also lives under .press/web/.next)
 .next/
@@ -27,8 +27,6 @@ cms/public/uploads/*
 # env + secrets
 .env
 cms/.env
-cms/.env.production
-deploy/.env.deploy
 
 # misc
 *.tsbuildinfo

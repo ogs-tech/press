@@ -149,7 +149,10 @@ create` → `press build` → `docker compose up --build` → assert the seeded 
 renders hero + custom callout + whitelabel `<head>` + an absolute image `src`
 through Caddy. It is gated in CI by `.github/workflows/deploy-smoke.yml` (Linux —
 the same-arch happy case) on deploy-kit / harness / host template changes.
-Full guide: [deploy.md](./deploy.md).
+
+> **Removed (2026-06-14).** The deploy feature (kit, `press deploy`, smoke
+> harness, managed/self-hosted guide) was dropped as out-of-scope for the beta.
+> The text above is retained as a record of what Spec 5 shipped.
 
 ## Cadence
 

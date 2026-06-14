@@ -11,8 +11,6 @@
     "play": "pnpm --filter playground dev",
     "play:create": "tsx scripts/playground-create.ts",
     "play:build": "pnpm --filter playground build",
-    "play:deploy": "pnpm --filter playground deploy",
-    "deploy:smoke": "node scripts/deploy-smoke.mjs",
     "publish:local": "bash scripts/publish-local.sh"
   },
   "devDependencies": {

@@ -8,9 +8,9 @@
  *
  * Steps:
  *   1. wipe apps/playground (engine-materialized + cms runtime state included)
- *   2. scaffold the three-zone project (web/cms/core) from the CLI templates
+ *   2. scaffold the three-zone project (web/cms/shared) from the CLI templates
  *   3. rewire @press/* + the scaffold's Verdaccio .npmrc → workspace links
- *   4. `pnpm install` to link the freshly-created core/ workspace member
+ *   4. `pnpm install` to link the freshly-created shared/ workspace member
  *
  * After this, `pnpm play` boots the regenerated stack (re-seeds the cms).
  */
@@ -41,7 +41,7 @@ const priorUuid: string | undefined = existsSync(priorCmsPkg)
 console.log(`> wipe ${path.relative(repoRoot, target)}`);
 rmSync(target, { recursive: true, force: true });
 
-console.log('> scaffold three-zone project (web/cms/core)');
+console.log('> scaffold three-zone project (web/cms/shared)');
 // The registry value is irrelevant here — the generated .npmrc is dropped below
 // and @press/* are relinked to the workspace.
 scaffold({ target, name, registry: 'http://localhost:4873' });
@@ -59,13 +59,13 @@ if (priorUuid) {
   writeFileSync(priorCmsPkg, JSON.stringify(cmsPkg, null, 2) + '\n');
 }
 
-// The dogfood shares THIS repo's single workspace root — its cms + core are
+// The dogfood shares THIS repo's single workspace root — its cms + shared are
 // registered in the root pnpm-workspace.yaml, so the scaffold's own nested
 // workspace file must be dropped (pnpm has one workspace root per tree).
 const nestedWorkspace = path.join(target, 'pnpm-workspace.yaml');
 if (existsSync(nestedWorkspace)) rmSync(nestedWorkspace);
 
-console.log('> pnpm install (links the new core/ workspace member)');
+console.log('> pnpm install (links the new shared/ workspace member)');
 execFileSync('pnpm', ['install'], { cwd: repoRoot, stdio: 'inherit' });
 
 console.log('\nplayground regenerated. Run `pnpm play` to boot it.\n');

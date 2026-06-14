@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe('scaffold', () => {
-  it('writes the three-zone adopter manifest (web/cms/core) and NO Next host', () => {
+  it('writes the three-zone adopter manifest (web/cms/shared) and NO Next host', () => {
     const target = path.join(scratchParent(), 'my-site');
     scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
 
@@ -25,9 +25,9 @@ describe('scaffold', () => {
     expect(has('web/config.ts')).toBe(true);
     expect(has('web/blocks/custom/Callout.tsx')).toBe(true);
     expect(has('web/blocks/custom/index.ts')).toBe(true);
-    // core zone (content-type contract)
-    expect(has('core/package.json')).toBe(true);
-    expect(has('core/types/index.ts')).toBe(true);
+    // shared zone (content-type contract)
+    expect(has('shared/package.json')).toBe(true);
+    expect(has('shared/types/index.ts')).toBe(true);
     // cms zone (schema stays auto-discovered by Strapi)
     expect(has('cms/config/plugins.ts')).toBe(true);
     expect(has('cms/src/components/custom/callout.json')).toBe(true);
@@ -52,41 +52,23 @@ describe('scaffold', () => {
     expect(has('app/layout.tsx')).toBe(false);
     expect(has('.press')).toBe(false);
 
-    // The adopter block is wired to the project-scoped core package, not the engine.
+    // The adopter block is wired to the project-scoped shared package, not the engine.
     const callout = readFileSync(path.join(target, 'web/blocks/custom/Callout.tsx'), 'utf8');
-    expect(callout).toContain("from 'my-site-core/types'");
-    expect(callout).not.toContain('__CORE_PKG__');
-    expect(readFileSync(path.join(target, 'core/package.json'), 'utf8')).toContain('"name": "my-site-core"');
-    expect(readFileSync(path.join(target, 'pnpm-workspace.yaml'), 'utf8')).toContain('"core"');
+    expect(callout).toContain("from 'my-site-shared/types'");
+    expect(callout).not.toContain('__SHARED_PKG__');
+    expect(readFileSync(path.join(target, 'shared/package.json'), 'utf8')).toContain('"name": "my-site-shared"');
+    expect(readFileSync(path.join(target, 'pnpm-workspace.yaml'), 'utf8')).toContain('"shared"');
 
     expect(readFileSync(path.join(target, 'package.json'), 'utf8')).toContain('"name": "my-site"');
     expect(readFileSync(path.join(target, '.npmrc'), 'utf8')).toContain('@press:registry=http://localhost:4873');
   });
 
-  it('writes the self-hosted deploy kit', () => {
+  it('ships no deploy kit', () => {
     const target = path.join(scratchParent(), 'my-site');
     scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
-    for (const f of [
-      'deploy/docker-compose.yml',
-      'deploy/Dockerfile.cms',
-      'deploy/Dockerfile.web',
-      'deploy/Caddyfile',
-      'deploy/.env.deploy.example',
-      'cms/.env.production.example',
-      '.dockerignore',
-    ]) {
-      expect(existsSync(path.join(target, f)), `missing ${f}`).toBe(true);
+    for (const f of ['deploy', '.dockerignore', 'cms/.env.production.example']) {
+      expect(existsSync(path.join(target, f)), `unexpected ${f}`).toBe(false);
     }
-    // The inert package-side name must not ship into the project.
-    expect(existsSync(path.join(target, 'deploy', '.dockerignore.template'))).toBe(false);
-  });
-
-  it('gitignores the filled-in deploy secrets but keeps the examples', () => {
-    const target = path.join(scratchParent(), 'my-site');
-    scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
-    const gi = readFileSync(path.join(target, '.gitignore'), 'utf8');
-    expect(gi).toMatch(/deploy\/\.env\.deploy$/m);
-    expect(gi).toMatch(/cms\/\.env\.production$/m);
   });
 
   it('generates unique Strapi secrets per project', () => {

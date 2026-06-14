@@ -4,7 +4,7 @@
 //
 // The PROJECT's concrete content types (the `custom.*` blocks, the discriminated
 // PageBody union) are NOT here — they are generated from the live CMS schema into
-// the adopter's `core/types/` zone by `press dev` (sync-types). The engine never
+// the adopter's `shared/types/` zone by `press dev` (sync-types). The engine never
 // depends on a project's generated types; the project depends on these.
 
 /** A media field as serialized by the CMS REST contract. */

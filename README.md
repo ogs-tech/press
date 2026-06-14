@@ -11,13 +11,12 @@ cd my-site
 pnpm dev          # cms on :1337/admin, web on :3000
 ```
 
-One project, four commands: **create → dev → build → deploy**.
+One project, three commands: **create → dev → build**.
 
 ## Requirements
 
 - **Node 20.x** (`engines` pins `>=20 <21`)
 - **pnpm 10.x**
-- **Docker** (only for the self-hosted deploy path)
 
 ## Install
 
@@ -47,13 +46,10 @@ pnpm dev
 
 # 3. Build deployable artifacts for both halves
 pnpm build
-
-# 4. Deploy — validates prereqs and prints the copy-pasteable deploy path
-pnpm deploy
 ```
 
-`pnpm dev` / `build` / `deploy` are thin aliases the scaffold writes for
-`press dev` / `press build` / `press deploy`.
+`pnpm dev` / `build` are thin aliases the scaffold writes for
+`press dev` / `press build`.
 
 ## Commands
 
@@ -62,7 +58,6 @@ pnpm deploy
 | `press create <name>` | Scaffold a new project into `<name>/` and `pnpm install` it. `--registry <url>` points at the registry serving `@press/*` (default: npmjs; use `http://localhost:4873` until published). |
 | `press dev` | Materialize the web host, seed sample content, boot cms (`:1337`), sync CMS schema → web types, then boot web (`:3000`). |
 | `press build` | Materialize the web host, `strapi build` the cms, and `next build` the web. No live CMS is needed to build. |
-| `press deploy` | Check prereqs (a web build exists, `cms/.env` is set, the deploy kit is present) and emit the documented self-hosted + managed deploy paths. |
 
 Run `press --help` or `press <command> --help` for the full flag list.
 
@@ -78,10 +73,10 @@ my-site/
 ├─ blocks/custom/           # your React blocks + the block map (index.ts)
 ├─ content/seed.mjs         # sample home page so the first `press dev` renders something
 ├─ cms/                     # the one visible host — a minimal Strapi app
-├─ deploy/                  # self-hosted Docker Compose kit (Postgres + cms + web + Caddy)
-├─ package.json             # scripts: dev / build / deploy → press
-├─ pnpm-workspace.yaml      # cms is a workspace member
-└─ .npmrc / .gitignore / .nvmrc / .dockerignore
+├─ shared/                  # the content-type contract (<name>-shared/types)
+├─ package.json             # scripts: dev / build → press
+├─ pnpm-workspace.yaml      # cms + shared are workspace members
+└─ .npmrc / .gitignore / .nvmrc
 ```
 
 `.press/` is engine territory — regenerated every run, **never edit it**.
@@ -120,28 +115,6 @@ export const customBlocks: Record<string, ComponentType<any>> = {
 The materialized host passes this map to its block renderer, so your blocks
 render server-side alongside the engine's built-in blocks.
 
-## Deploy
-
-`press deploy` validates and prints two documented paths (full guide:
-[`docs/beta/deploy.md`](docs/beta/deploy.md)):
-
-**Self-hosted (recommended)** — one Docker Compose stack (Postgres + cms + web +
-a Caddy single-origin proxy):
-
-```bash
-pnpm build
-cp deploy/.env.deploy.example deploy/.env.deploy   # fill secrets + CMS_URL
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env.deploy up -d --build
-# → http://localhost:8080  (point the publish port / CMS_URL at your domain for prod)
-```
-
-**Managed** — Strapi Cloud (cms) + Vercel (web). Deploy order is always **cms
-first** (it owns the public origin + DB), then web wired to the live `CMS_URL`.
-
-> **Build where you run.** The images copy the host-built `node_modules` +
-> artifacts, so build on the same OS/arch you deploy to (a Linux VPS or CI). See
-> the guide for the cross-platform (registry-install) alternative.
-
 ## Updating the engine
 
 There is no special update command. Bump the dependencies and rebuild:
@@ -173,8 +146,8 @@ code.
 - `apps/playground/` — the in-repo dogfood: the real `press create` output,
   committed and consumed via `workspace:*` for a fast dev loop. Boot it with
   `pnpm play`.
-- `scripts/` — `cli-e2e.mjs` (the create→dev→build→deploy acceptance gate),
-  `deploy-smoke.mjs`, `registry.sh` (local Verdaccio helper).
+- `scripts/` — `cli-e2e.mjs` (the create→dev→build acceptance gate),
+  `registry.sh` (local Verdaccio helper).
 
 ### Working in the repo
 
@@ -182,11 +155,10 @@ code.
 pnpm install              # from the repo root (Node 20.x, pnpm 10.x)
 pnpm --filter @press/cli test         # CLI unit contracts
 pnpm play                             # boot the playground (press dev: cms :1337 + web :3000)
-node scripts/cli-e2e.mjs              # full create→dev→build→deploy acceptance gate
-pnpm deploy:smoke                     # self-hosted deploy proven end-to-end (Linux)
+node scripts/cli-e2e.mjs              # full create→dev→build acceptance gate
 ```
 
-`cli-e2e.mjs` runs the full `press create → dev → build → deploy` cycle against an
+`cli-e2e.mjs` runs the full `press create → dev → build` cycle against an
 ephemeral registry and asserts the Project zone stays pure (no engine or host file
 is ever committed into the generated project — AC4).
 

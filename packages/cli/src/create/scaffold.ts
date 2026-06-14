@@ -34,13 +34,13 @@ function rootPackageJson(name: string): string {
         name,
         version: '0.1.0',
         private: true,
-        scripts: { dev: 'press dev', build: 'press build', deploy: 'press deploy' },
+        scripts: { dev: 'press dev', build: 'press build' },
         dependencies: {
           '@press/cli': VERSIONS.pressCli,
           '@press/web': VERSIONS.pressWeb,
-          // The content-type contract (core/) — a workspace member so the
-          // materialized host + adopter blocks resolve `<name>-core/types`.
-          [`${name}-core`]: 'workspace:*',
+          // The content-type contract (shared/) — a workspace member so the
+          // materialized host + adopter blocks resolve `<name>-shared/types`.
+          [`${name}-shared`]: 'workspace:*',
           next: VERSIONS.next,
           react: VERSIONS.react,
           'react-dom': VERSIONS.react,
@@ -87,10 +87,6 @@ function cmsPackageJson(name: string): string {
           '@strapi/plugin-users-permissions': VERSIONS.strapi,
           '@strapi/strapi': VERSIONS.strapi,
           'better-sqlite3': '12.8.0',
-          // Postgres driver for the production/self-hosted deploy (Spec 5). Strapi
-          // does not bundle DB drivers; knex needs `pg` present whenever
-          // DATABASE_CLIENT=postgres. sqlite dev keeps using better-sqlite3.
-          pg: '8.13.1',
           react: '^18.0.0',
           'react-dom': '^18.0.0',
           'react-router-dom': '^6.0.0',
@@ -112,15 +108,15 @@ function cmsPackageJson(name: string): string {
 }
 
 /**
- * The content-type contract package (core/). Holds ONLY generated types
- * (types/generated.ts, written by `press dev`), exported as `<name>-core/types`.
+ * The content-type contract package (shared/). Holds ONLY generated types
+ * (types/generated.ts, written by `press dev`), exported as `<name>-shared/types`.
  * No runtime deps — it is pure `.d.ts`-shaped TS consumed by web + adopter blocks.
  */
-function corePackageJson(name: string): string {
+function sharedPackageJson(name: string): string {
   return (
     JSON.stringify(
       {
-        name: `${name}-core`,
+        name: `${name}-shared`,
         version: '0.1.0',
         private: true,
         type: 'module',
@@ -178,30 +174,20 @@ export function scaffold(opts: ScaffoldOptions): void {
     if (existsSync(marker)) renameSync(marker, path.join(target, 'cms', dir, '.gitkeep'));
   }
 
-  // 3. Self-hosted deploy kit (Spec 5). The kit itself (deploy/* and
-  // cms/.env.production.example) lands via the wholesale template copies above;
-  // only the .dockerignore needs renaming — it ships as `.dockerignore.template`
-  // so it stays inert inside the CLI package, and becomes the project-root
-  // .dockerignore here.
-  renameSync(
-    path.join(target, 'deploy', '.dockerignore.template'),
-    path.join(target, '.dockerignore'),
-  );
-
-  // 4. Generated manifests + infra.
+  // 3. Generated manifests + infra.
   writeFileSync(path.join(target, 'package.json'), rootPackageJson(name));
   writeFileSync(path.join(target, 'cms', 'package.json'), cmsPackageJson(name));
   writeFileSync(path.join(target, 'cms', '.env'), renderCmsEnv());
   writeFileSync(path.join(target, '.npmrc'), npmrc(registry));
 
-  // 5. The content-type contract package (core/) + wire the adopter block to it.
-  // The template ships `__CORE_PKG__` as a placeholder so it stays generic; the
-  // concrete `<name>-core` is the project-scoped workspace package name.
-  writeFileSync(path.join(target, 'core', 'package.json'), corePackageJson(name));
+  // 4. The content-type contract package (shared/) + wire the adopter block to it.
+  // The template ships `__SHARED_PKG__` as a placeholder so it stays generic; the
+  // concrete `<name>-shared` is the project-scoped workspace package name.
+  writeFileSync(path.join(target, 'shared', 'package.json'), sharedPackageJson(name));
   const calloutPath = path.join(target, 'web', 'blocks', 'custom', 'Callout.tsx');
   writeFileSync(
     calloutPath,
-    readFileSync(calloutPath, 'utf8').replaceAll('__CORE_PKG__', `${name}-core`),
+    readFileSync(calloutPath, 'utf8').replaceAll('__SHARED_PKG__', `${name}-shared`),
     'utf8',
   );
 }

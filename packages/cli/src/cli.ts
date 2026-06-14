@@ -3,14 +3,13 @@ import pkg from '../package.json';
 import { createCommand } from './commands/create';
 import { devCommand } from './commands/dev';
 import { buildCommand } from './commands/build';
-import { deployCommand } from './commands/deploy';
 
 /** Builds the configured commander program (extracted for testability). */
 export function buildProgram(): Command {
   const program = new Command();
   program
     .name('press')
-    .description('press CLI — create / dev / build / deploy the press stack')
+    .description('press CLI — create / dev / build the press stack')
     .version(pkg.version);
 
   program
@@ -31,11 +30,6 @@ export function buildProgram(): Command {
     .command('build')
     .description('Build deployable artifacts for cms + web')
     .action(() => buildCommand({ cwd: process.cwd() }));
-
-  program
-    .command('deploy')
-    .description('Validate prereqs and emit the deploy path (Spec 5)')
-    .action(() => deployCommand({ cwd: process.cwd() }));
 
   return program;
 }

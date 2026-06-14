@@ -4,8 +4,8 @@
  * types (the `custom.*` blocks + the discriminated PageBody union) to
  * `generated.ts`. Requires a booted CMS (Spec §10 accepted trade-off).
  *
- * Output lands in the ADOPTER's `core/types/` zone — `press dev` sets
- * PRESS_TYPES_DIR=<root>/core/types. The engine itself never consumes this file;
+ * Output lands in the ADOPTER's `shared/types/` zone — `press dev` sets
+ * PRESS_TYPES_DIR=<root>/shared/types. The engine itself never consumes this file;
  * the project does. Falls back to this package's src/types only for ad-hoc
  * generator runs.
  */

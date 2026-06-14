@@ -1,11 +1,10 @@
-// scripts/cli-e2e.mjs — Spec 3 acceptance gate (AC1–AC5).
+// scripts/cli-e2e.mjs — Spec 3 acceptance gate (AC1–AC4).
 // Publishes @press/web + @press/cli to Verdaccio, runs `press create` into a
-// scratch dir, installs, then exercises dev/build/deploy and asserts:
+// scratch dir, installs, then exercises dev/build and asserts:
 //   AC1 create → §6 manifest (web host ABSENT) + green install
 //   AC2 dev → cms+web boot, seeded page server-renders (hero + custom callout)
 //   AC3 build → built web reflects press.config.ts (<title>, canonical, og)
 //   AC4 purity → git status clean (no engine/host file is committed)
-//   AC5 deploy → thin command validates + emits the Spec 5 path
 //
 // Prereqs: scripts/registry.sh start; @press/cms@0.3.2 already published.
 // Usage: node scripts/cli-e2e.mjs
@@ -68,13 +67,13 @@ async function main() {
   sh(`node ${pressBin} create my-site --registry ${REGISTRY}`, { cwd: parent });
 
   const has = (rel) => existsSync(path.join(project, rel));
-  // Three-zone adopter files present (web/cms/core).
+  // Three-zone adopter files present (web/cms/shared).
   for (const f of [
     'web/config.ts',
     'web/blocks/custom/Callout.tsx',
     'web/blocks/custom/index.ts',
-    'core/package.json',
-    'core/types/index.ts',
+    'shared/package.json',
+    'shared/types/index.ts',
     'content/seed.mjs',
     'cms/config/plugins.ts',
     'cms/package.json',
@@ -145,18 +144,12 @@ async function main() {
     await new Promise((r) => setTimeout(r, 2000));
   }
 
-  // 5. press deploy → thin command validates + emits the Spec 5 path (AC5).
-  console.log('> press deploy');
-  const deployOut = shOut(`node ${pressBin} deploy`, { cwd: project });
-  if (!/Spec 5/.test(deployOut)) fail('AC5: deploy did not emit the Spec 5 path');
-  console.log('AC5 PASS: deploy validated prereqs and emitted the Spec 5 path.');
-
-  // 6. Project-zone purity — git status clean after dev+build+deploy (AC4).
+  // 5. Project-zone purity — git status clean after dev+build (AC4).
   const dirty = shOut('git status --porcelain', { cwd: project });
   if (dirty) fail(`AC4: working tree not clean after dev/build — leaked:\n${dirty}`);
   console.log('AC4 PASS: git status clean — no engine/host file committed; artifacts gitignored.');
 
-  console.log('\nCLI-E2E PASS: AC1–AC5 green.');
+  console.log('\nCLI-E2E PASS: AC1–AC4 green.');
   rmSync(parent, { recursive: true, force: true });
 }
 

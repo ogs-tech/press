@@ -4,13 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "press dev",
-    "build": "press build",
-    "deploy": "press deploy"
+    "build": "press build"
   },
   "dependencies": {
     "@press/cli": "workspace:*",
     "@press/web": "workspace:*",
-    "playground-core": "workspace:*",
+    "playground-shared": "workspace:*",
     "next": "^15.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
