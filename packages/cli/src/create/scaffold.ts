@@ -22,7 +22,7 @@ const VERSIONS = {
   // React 18: the whole press stack runs one React major. Strapi 5's admin is
   // React 18, and Next 15 supports react ^18.2.0 — pinning the web to 18 too
   // keeps a single react/react-dom instance across cms + web (no dual-major
-  // hoist hazard). The host-template uses no React-19-only API.
+  // hoist hazard). The host template uses no React-19-only API.
   react: '^18.3.1',
   strapi: '5.48.0',
 } as const;

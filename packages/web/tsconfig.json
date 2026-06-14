@@ -13,5 +13,5 @@
     "types": ["node"]
   },
   "include": ["src", "bin"],
-  "exclude": ["node_modules", "dist", "host-template"]
+  "exclude": ["node_modules", "dist", "templates"]
 }

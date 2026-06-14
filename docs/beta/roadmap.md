@@ -148,7 +148,7 @@ end-to-end in **production mode against Postgres** — publish engine → `press
 create` → `press build` → `docker compose up --build` → assert the seeded `/home`
 renders hero + custom callout + whitelabel `<head>` + an absolute image `src`
 through Caddy. It is gated in CI by `.github/workflows/deploy-smoke.yml` (Linux —
-the same-arch happy case) on deploy-kit / harness / host-template changes.
+the same-arch happy case) on deploy-kit / harness / host template changes.
 Full guide: [deploy.md](./deploy.md).
 
 ## Cadence

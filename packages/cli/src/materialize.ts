@@ -21,7 +21,7 @@ export function materialize(projectRoot: string, opts: MaterializeOptions = {}):
   const resolveFrom = opts.resolveFrom ?? projectRoot;
   const require = createRequire(path.join(resolveFrom, 'noop.js'));
   const webPkg = require.resolve('@press/web/package.json');
-  const templateDir = path.join(path.dirname(webPkg), 'host-template');
+  const templateDir = path.join(path.dirname(webPkg), 'templates', 'host');
 
   const dest = path.join(projectRoot, '.press', 'web');
   rmSync(dest, { recursive: true, force: true });

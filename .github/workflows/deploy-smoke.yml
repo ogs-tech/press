@@ -8,7 +8,7 @@ on:
     paths:
       - 'packages/cli/templates/project/deploy/**'
       - 'scripts/deploy-smoke.mjs'
-      - 'packages/web/host-template/**'
+      - 'packages/web/templates/host/**'
       # The smoke asserts literal strings from these template files (seed content
       # + the whitelabel <title> template), so changes to them must re-gate.
       - 'packages/cli/templates/project/content/seed.mjs'
