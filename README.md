@@ -65,8 +65,8 @@ The scaffold is **ultra-thin** — only the layer you own. There is no `app/` or
 my-site/
 ├─ press.config.ts          # brand identity + SEO — the single whitelabel source of truth
 ├─ blocks/custom/           # your React blocks + the block map (index.ts)
-├─ content/seed.mjs         # sample home page so the first `press dev` renders something
 ├─ cms/                     # the one visible host — a minimal Strapi app
+│  └─ scripts/seed.mjs      # sample home page so the first `press dev` renders something
 ├─ shared/                  # the content-type contract (<name>-shared/types)
 ├─ package.json             # scripts: dev / build → press
 ├─ pnpm-workspace.yaml      # cms + shared are workspace members

@@ -1,4 +1,4 @@
-// content/seed.mjs — Project-zone sample content. Boots the cms host
+// cms/scripts/seed.mjs — One-shot sample content for the cms host. Boots it
 // programmatically (CMS server must be STOPPED), uploads a tiny PNG, and creates
 // a PUBLISHED 'home' page with a press.hero + custom.callout so the first
 // `press dev` renders something. Idempotent: deletes any existing 'home' first.

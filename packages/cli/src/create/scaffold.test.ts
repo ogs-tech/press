@@ -34,8 +34,8 @@ describe('scaffold', () => {
     expect(has('cms/src/index.ts')).toBe(true);
     expect(has('cms/package.json')).toBe(true);
     expect(has('cms/.env')).toBe(true);
+    expect(has('cms/scripts/seed.mjs')).toBe(true);
     // infra
-    expect(has('content/seed.mjs')).toBe(true);
     expect(has('package.json')).toBe(true);
     expect(has('.gitignore')).toBe(true);
     expect(has('.nvmrc')).toBe(true);

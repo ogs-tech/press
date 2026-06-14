@@ -35,7 +35,7 @@ export async function devCommand(opts: DevOptions): Promise<void> {
   materialize(root);
 
   console.log('> seed sample content');
-  await run('node', [path.join(root, 'content', 'seed.mjs')], { cwd: cmsDir });
+  await run('node', [path.join(cmsDir, 'scripts', 'seed.mjs')], { cwd: cmsDir });
 
   console.log('> boot cms (:1337)');
   const cms = spawn('pnpm', ['-C', 'cms', 'develop'], {

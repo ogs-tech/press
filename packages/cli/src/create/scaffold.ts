@@ -144,8 +144,8 @@ function npmrc(): string {
 
 /**
  * Writes the ultra-thin Project zone (spec §6) into `target`: the adopter layer
- * (config + blocks/custom + content seed + a minimal cms Strapi host) plus the
- * infra files the stack needs (.npmrc, pnpm-workspace.yaml). It writes NO Next
+ * (config + blocks/custom + a minimal cms Strapi host, incl. its sample-content
+ * seed) plus the infra files the stack needs (.npmrc, pnpm-workspace.yaml). It writes NO Next
  * host — that absence is the ultra-thin guarantee (the host is materialized to
  * .press/web/ on dev/build).
  */
@@ -156,11 +156,11 @@ export function scaffold(opts: ScaffoldOptions): void {
   }
   mkdirSync(target, { recursive: true });
 
-  // 1. Static project-zone tree (config, blocks, content, workspace, nvmrc).
+  // 1. Static project-zone tree (config, blocks, workspace, nvmrc).
   cpSync(path.join(templatesDir, 'project'), target, { recursive: true });
   renameSync(path.join(target, 'gitignore'), path.join(target, '.gitignore'));
 
-  // 2. Static cms host tree, then its gitkeep markers.
+  // 2. Static cms host tree (incl. scripts/seed.mjs), then its gitkeep markers.
   cpSync(path.join(templatesDir, 'cms'), path.join(target, 'cms'), { recursive: true });
   for (const dir of ['src/api', 'src/extensions', 'public/uploads']) {
     const marker = path.join(target, 'cms', dir, 'gitkeep');
