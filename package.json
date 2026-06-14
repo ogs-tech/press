@@ -13,7 +13,8 @@
     "cms:build": "pnpm --filter cms build",
     "cms:start": "pnpm --filter cms start",
     "guard": "node scripts/contract-guard.mjs",
-    "deploy:smoke": "node scripts/deploy-smoke.mjs"
+    "deploy:smoke": "node scripts/deploy-smoke.mjs",
+    "publish:local": "bash scripts/publish-local.sh"
   },
   "devDependencies": {
     "@press/web": "workspace:*",

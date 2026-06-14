@@ -37,6 +37,16 @@ describe('resolveConfig', () => {
     expect(r.seo.defaultOgImage).toBe('/og.png');
   });
 
+  it('defaults routes.home to "home" when omitted', () => {
+    const r = resolveConfig({ brand: { name: 'Acme' } });
+    expect(r.routes.home).toBe('home');
+  });
+
+  it('lets the adopter override routes.home', () => {
+    const r = resolveConfig({ brand: { name: 'Acme' }, routes: { home: 'landing' } });
+    expect(r.routes.home).toBe('landing');
+  });
+
   it('passes defaultOgImage through (no throw) when site.url is malformed', () => {
     // 'not a url' has no scheme — URL.canParse returns false, so no resolution
     const r = resolveConfig({

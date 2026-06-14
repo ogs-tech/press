@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import { referenceBlocks } from './reference-blocks';
+import { blockKey } from './block-key';
 
 // Minimal structural shape the renderer needs from a dynamic-zone entry. No index
 // signature: the sync-generated component interfaces (PressHero, CustomCallout, …)
@@ -36,7 +37,7 @@ export function BlockRenderer({ blocks, components = {} }: BlockRendererProps) {
           }
           return null;
         }
-        return <Component key={block.id ?? i} {...block} />;
+        return <Component key={blockKey(block, i)} {...block} />;
       })}
     </>
   );

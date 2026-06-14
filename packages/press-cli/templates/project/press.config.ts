@@ -20,4 +20,9 @@ export default defineConfig({
     defaultDescription: 'An Acme content site.',
     defaultOgImage: '/og.png',
   },
+  routes: {
+    // Slug of the page served at the site root ('/'). The home page lives only
+    // at '/'; a direct hit on this slug redirects there.
+    home: 'home',
+  },
 });

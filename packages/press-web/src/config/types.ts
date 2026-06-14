@@ -20,6 +20,10 @@ export interface PressConfig {
     defaultDescription?: string;
     defaultOgImage?: string;
   };
+  routes?: {
+    /** Slug of the page served at the site root ('/'). Defaults to 'home'. */
+    home?: string;
+  };
 }
 
 /** Fully-resolved config: every default applied, ready for the engine helpers. */
@@ -38,5 +42,9 @@ export interface ResolvedPressConfig {
     defaultTitle: string;
     defaultDescription: string;
     defaultOgImage?: string;
+  };
+  routes: {
+    /** Slug served at the site root. The engine resolves '/' to this slug. */
+    home: string;
   };
 }

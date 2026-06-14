@@ -5,7 +5,7 @@ import type { PressConfig, ResolvedPressConfig } from './types';
  * input → same output, no I/O, no mutation — so the resolved value is safe to
  * hold as an immutable module constant under RSC/SSR (Spec §11, the Spec 1
  * lesson). Defaults: titleTemplate → '%s', locale → 'en', defaultTitle →
- * brand.name, favicon → '/favicon.ico'; defaultOgImage is resolved ABSOLUTE
+ * brand.name, favicon → '/favicon.ico', routes.home → 'home'; defaultOgImage is resolved ABSOLUTE
  * against site.url when both are present AND site.url is a parseable URL.
  * A malformed site.url (e.g. "localhost:3000" with no scheme) falls through
  * to passthrough — same behaviour as an absent site.url.
@@ -31,6 +31,9 @@ export function resolveConfig(config: PressConfig): ResolvedPressConfig {
       defaultOgImage: canResolve
         ? new URL(ogImage!, siteUrl).toString()
         : ogImage,
+    },
+    routes: {
+      home: config.routes?.home ?? 'home',
     },
   };
 }
