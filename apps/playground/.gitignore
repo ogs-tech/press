@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+# engine-materialized host (regenerated every dev/build — never commit)
+.press/
+
+# next build output (also lives under .press/web/.next)
+.next/
+
+# strapi host artifacts
+cms/.tmp/
+cms/.cache/
+cms/.strapi/
+cms/dist/
+cms/build/
+cms/types/
+cms/.strapi-updater.json
+cms/.strapi-cloud.json
+
+# uploaded media is runtime data, not source (keep the dir, drop the files)
+cms/public/uploads/*
+!cms/public/uploads/.gitkeep
+
+# env + secrets
+.env
+cms/.env
+cms/.env.production
+deploy/.env.deploy
+
+# misc
+*.tsbuildinfo

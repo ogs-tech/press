@@ -19,7 +19,11 @@ const VERSIONS = {
   pressWeb: '^0.2.0',
   pressCms: '^0.3.2',
   next: '^15.1.0',
-  react: '^19',
+  // React 18: the whole press stack runs one React major. Strapi 5's admin is
+  // React 18, and Next 15 supports react ^18.2.0 — pinning the web to 18 too
+  // keeps a single react/react-dom instance across cms + web (no dual-major
+  // hoist hazard). The host-template uses no React-19-only API.
+  react: '^18.3.1',
   strapi: '5.48.0',
 } as const;
 
@@ -40,8 +44,8 @@ function rootPackageJson(name: string): string {
         },
         devDependencies: {
           '@types/node': '^20',
-          '@types/react': '^19',
-          '@types/react-dom': '^19',
+          '@types/react': '^18',
+          '@types/react-dom': '^18',
           typescript: '^5',
         },
         pnpm: {

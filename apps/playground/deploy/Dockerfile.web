@@ -1,0 +1,13 @@
+# deploy/Dockerfile.web — build-then-ship Next runtime for the MATERIALIZED host.
+# Context = project root. Assumes `press build` already produced .press/web/.next on
+# the build host. The image only RUNS `next start` against that build; CMS_URL is
+# injected at runtime (the web host reads it per-request).
+FROM node:20-bookworm-slim
+ENV NODE_ENV=production
+WORKDIR /app
+
+COPY . .
+
+EXPOSE 3000
+# next start serves .press/web/.next. CMS_URL comes from the environment at runtime.
+CMD ["npx", "next", "start", ".press/web", "-p", "3000", "-H", "0.0.0.0"]

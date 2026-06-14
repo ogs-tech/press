@@ -8,15 +8,14 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
-    "cms:dev": "pnpm --filter cms develop",
-    "cms:build": "pnpm --filter cms build",
-    "cms:start": "pnpm --filter cms start",
-    "guard": "node scripts/contract-guard.mjs",
+    "play": "pnpm --filter playground dev",
+    "play:build": "pnpm --filter playground build",
+    "play:deploy": "pnpm --filter playground deploy",
     "deploy:smoke": "node scripts/deploy-smoke.mjs",
     "publish:local": "bash scripts/publish-local.sh"
   },
   "devDependencies": {
+    "@press/cms": "workspace:*",
     "@press/web": "workspace:*",
     "turbo": "2.9.18"
   },
@@ -29,7 +28,12 @@
       "sharp"
     ],
     "overrides": {
-      "esbuild": "0.28.0"
+      "@strapi/sdk-plugin>esbuild": "0.28.0",
+      "esbuild-loader>esbuild": "0.28.0",
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1",
+      "@types/react": "^18.3.31",
+      "@types/react-dom": "^18.3.7"
     }
   }
 }

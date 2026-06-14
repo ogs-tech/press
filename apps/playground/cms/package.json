@@ -1,0 +1,37 @@
+{
+  "name": "playground-cms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "press cms host (Strapi)",
+  "scripts": {
+    "build": "strapi build",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi"
+  },
+  "dependencies": {
+    "@press/cms": "workspace:*",
+    "@strapi/plugin-cloud": "5.48.0",
+    "@strapi/plugin-users-permissions": "5.48.0",
+    "@strapi/strapi": "5.48.0",
+    "better-sqlite3": "12.8.0",
+    "pg": "8.13.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.0.0 <=24.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "c0caee4d-fb4a-4d94-9890-67b34f1202b7"
+  }
+}

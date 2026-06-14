@@ -168,24 +168,25 @@ code.
   `page` content-type and injects reference Dynamic-Zone blocks.
 - `packages/press-web` — the **engine** web layer (`@press/web`): the Next host
   template, block renderer, config helpers, and CMS→types sync.
-- `apps/cms`, `apps/web` — in-repo hosts used to exercise the engine.
-- `scripts/` — `contract-guard.mjs` (the standing non-breakage guard),
-  `deploy-smoke.mjs`, `cli-e2e.mjs`, `registry.sh` (local Verdaccio helper).
+- `apps/playground/` — the in-repo dogfood: the real `press create` output,
+  committed and consumed via `workspace:*` for a fast dev loop. Boot it with
+  `pnpm play`.
+- `scripts/` — `cli-e2e.mjs` (the create→dev→build→deploy acceptance gate),
+  `deploy-smoke.mjs`, `registry.sh` (local Verdaccio helper).
 
 ### Working in the repo
 
 ```bash
 pnpm install              # from the repo root (Node 20.x, pnpm 10.x)
 pnpm --filter @press/cli test         # CLI unit contracts
+pnpm play                             # boot the playground (press dev: cms :1337 + web :3000)
 node scripts/cli-e2e.mjs              # full create→dev→build→deploy acceptance gate
-pnpm guard                            # contract guard: real vN→vN+1 engine update, must hold
 pnpm deploy:smoke                     # self-hosted deploy proven end-to-end (Linux)
 ```
 
-The contract guard runs a real `vN → vN+1` cycle for both engine packages against
-an ephemeral registry and fails on any of three leak classes — a changed
-Project-zone file, a host that stops booting, or a custom block / whitelabel head
-that stops rendering. It runs in CI on `packages/**` PRs.
+`cli-e2e.mjs` runs the full `press create → dev → build → deploy` cycle against an
+ephemeral registry and asserts the Project zone stays pure (no engine or host file
+is ever committed into the generated project — AC4).
 
 ### Design docs
 

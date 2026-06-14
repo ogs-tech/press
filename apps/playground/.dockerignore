@@ -1,0 +1,10 @@
+.git
+cms/.tmp
+cms/.cache
+**/*.log
+
+# Never bake filled-in secrets into the image — runtime env is injected by
+# docker compose (env_file/environment), so these must not enter the build context.
+deploy/.env.deploy
+cms/.env
+cms/.env.production
