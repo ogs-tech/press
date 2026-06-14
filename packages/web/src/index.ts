@@ -5,5 +5,5 @@ export { Hero } from './blocks/hero';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildMetadata } from './config/build-metadata';
-export type { Page, PageBody, PressMedia, PressHero } from './types';
+export type { Page, PageBody, PressMedia, PressHero, Block } from './types/base';
 export type { PressConfig, ResolvedPressConfig } from './config/types';

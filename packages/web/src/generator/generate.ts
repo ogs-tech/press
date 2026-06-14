@@ -1,7 +1,7 @@
 /**
  * Pure schema → TypeScript generator. Input is the JSON served by the engine's
  * `/api/press/schema` (the runtime contract). Output is plain, framework-agnostic
- * TS written to src/types/generated.ts. No Strapi types are referenced — the
+ * TS written to the adopter's core/types/generated.ts. No Strapi types are referenced — the
  * generator is decoupled from Strapi's internal type format on purpose (Spec
  * §5.2 rejected alternative 3).
  */

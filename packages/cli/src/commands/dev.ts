@@ -58,10 +58,10 @@ export async function devCommand(opts: DevOptions): Promise<void> {
     throw new Error('cms did not become healthy on :1337');
   }
 
-  console.log('> sync types (cms schema -> @press/web)');
+  console.log('> sync types (cms schema -> core/types)');
   await run('pnpm', ['exec', 'tsx', syncTypesScript(root)], {
     cwd: root,
-    env: { CMS_URL },
+    env: { CMS_URL, PRESS_TYPES_DIR: path.join(root, 'core', 'types') },
   });
 
   console.log('> boot web (:3000)');

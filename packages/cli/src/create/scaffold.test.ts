@@ -15,21 +15,27 @@ afterEach(() => {
 });
 
 describe('scaffold', () => {
-  it('writes the §6 adopter manifest and NO web host', () => {
+  it('writes the three-zone adopter manifest (web/cms/core) and NO Next host', () => {
     const target = path.join(scratchParent(), 'my-site');
     scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
 
     const has = (rel: string) => existsSync(path.join(target, rel));
 
-    expect(has('press.config.ts')).toBe(true);
-    expect(has('blocks/custom/Callout.tsx')).toBe(true);
-    expect(has('blocks/custom/index.ts')).toBe(true);
-    expect(has('content/seed.mjs')).toBe(true);
+    // web zone (config + blocks)
+    expect(has('web/config.ts')).toBe(true);
+    expect(has('web/blocks/custom/Callout.tsx')).toBe(true);
+    expect(has('web/blocks/custom/index.ts')).toBe(true);
+    // core zone (content-type contract)
+    expect(has('core/package.json')).toBe(true);
+    expect(has('core/types/index.ts')).toBe(true);
+    // cms zone (schema stays auto-discovered by Strapi)
     expect(has('cms/config/plugins.ts')).toBe(true);
     expect(has('cms/src/components/custom/callout.json')).toBe(true);
     expect(has('cms/src/index.ts')).toBe(true);
     expect(has('cms/package.json')).toBe(true);
     expect(has('cms/.env')).toBe(true);
+    // infra
+    expect(has('content/seed.mjs')).toBe(true);
     expect(has('package.json')).toBe(true);
     expect(has('.gitignore')).toBe(true);
     expect(has('.nvmrc')).toBe(true);
@@ -39,11 +45,19 @@ describe('scaffold', () => {
     expect(has('templates')).toBe(false);
     expect(has('gitignore')).toBe(false);
 
+    // The Next host is materialized on dev/build, never at create time.
     expect(has('app')).toBe(false);
     expect(has('next.config.ts')).toBe(false);
+    expect(has('web/next.config.ts')).toBe(false);
     expect(has('app/layout.tsx')).toBe(false);
-    expect(has('app/[...slug]/page.tsx')).toBe(false);
-    expect(has('web')).toBe(false);
+    expect(has('.press')).toBe(false);
+
+    // The adopter block is wired to the project-scoped core package, not the engine.
+    const callout = readFileSync(path.join(target, 'web/blocks/custom/Callout.tsx'), 'utf8');
+    expect(callout).toContain("from 'my-site-core/types'");
+    expect(callout).not.toContain('__CORE_PKG__');
+    expect(readFileSync(path.join(target, 'core/package.json'), 'utf8')).toContain('"name": "my-site-core"');
+    expect(readFileSync(path.join(target, 'pnpm-workspace.yaml'), 'utf8')).toContain('"core"');
 
     expect(readFileSync(path.join(target, 'package.json'), 'utf8')).toContain('"name": "my-site"');
     expect(readFileSync(path.join(target, '.npmrc'), 'utf8')).toContain('@press:registry=http://localhost:4873');

@@ -1,11 +1,13 @@
 #!/usr/bin/env tsx
 /**
- * Fetches the engine's runtime schema and writes src/types/generated.ts.
- * Requires a booted CMS (Spec §10 accepted trade-off — runtime is e2e anyway;
- * the CLI in Spec 3 will wire this into `press dev` so it is invisible later).
+ * Fetches the engine's runtime schema and writes the project's concrete content
+ * types (the `custom.*` blocks + the discriminated PageBody union) to
+ * `generated.ts`. Requires a booted CMS (Spec §10 accepted trade-off).
  *
- * Output lands in the ENGINE zone (this package), gitignored — never in apps/web
- * (Spec §4.1, AC4).
+ * Output lands in the ADOPTER's `core/types/` zone — `press dev` sets
+ * PRESS_TYPES_DIR=<root>/core/types. The engine itself never consumes this file;
+ * the project does. Falls back to this package's src/types only for ad-hoc
+ * generator runs.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -20,7 +22,7 @@ async function main() {
   const schema = (await res.json()) as PressSchema;
 
   const out = generateTypes(schema);
-  const dir = path.join(import.meta.dirname, '..', 'src', 'types');
+  const dir = process.env.PRESS_TYPES_DIR ?? path.join(import.meta.dirname, '..', 'src', 'types');
   mkdirSync(dir, { recursive: true });
   const file = path.join(dir, 'generated.ts');
   writeFileSync(file, out, 'utf8');

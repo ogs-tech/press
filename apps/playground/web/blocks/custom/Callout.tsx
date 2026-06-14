@@ -1,4 +1,4 @@
-import type { CustomCallout } from '@press/web/types';
+import type { CustomCallout } from 'playground-core/types';
 
 const VARIANT_STYLE: Record<string, string> = {
   info: '#2563eb',

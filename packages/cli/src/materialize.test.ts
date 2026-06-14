@@ -28,9 +28,9 @@ describe('materialize', () => {
     expect(existsSync(path.join(web, 'press-config.ts'))).toBe(true);
     expect(existsSync(path.join(web, 'press.blocks.ts'))).toBe(true);
 
-    // The resolution site points at the project root (two levels up).
+    // The resolution site points at the web zone (two levels up → root → web/).
     const cfg = readFileSync(path.join(web, 'press-config.ts'), 'utf8');
-    expect(cfg).toContain("from '../../press.config'");
+    expect(cfg).toContain("from '../../web/config'");
   });
 
   it('regenerates a clean tree — stale files are removed', () => {

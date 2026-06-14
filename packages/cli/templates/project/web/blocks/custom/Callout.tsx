@@ -1,4 +1,4 @@
-import type { CustomCallout } from '@press/web/types';
+import type { CustomCallout } from '__CORE_PKG__/types';
 
 const VARIANT_STYLE: Record<string, string> = {
   info: '#2563eb',

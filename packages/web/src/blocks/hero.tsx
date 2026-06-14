@@ -1,4 +1,4 @@
-import type { PressHero } from '../types/generated';
+import type { PressHero } from '../types/base';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
 

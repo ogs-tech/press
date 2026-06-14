@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, renameSync, writeFileSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { newStrapiUuid, renderCmsEnv } from './secrets';
 
@@ -38,6 +38,9 @@ function rootPackageJson(name: string): string {
         dependencies: {
           '@press/cli': VERSIONS.pressCli,
           '@press/web': VERSIONS.pressWeb,
+          // The content-type contract (core/) — a workspace member so the
+          // materialized host + adopter blocks resolve `<name>-core/types`.
+          [`${name}-core`]: 'workspace:*',
           next: VERSIONS.next,
           react: VERSIONS.react,
           'react-dom': VERSIONS.react,
@@ -108,6 +111,31 @@ function cmsPackageJson(name: string): string {
   );
 }
 
+/**
+ * The content-type contract package (core/). Holds ONLY generated types
+ * (types/generated.ts, written by `press dev`), exported as `<name>-core/types`.
+ * No runtime deps — it is pure `.d.ts`-shaped TS consumed by web + adopter blocks.
+ */
+function corePackageJson(name: string): string {
+  return (
+    JSON.stringify(
+      {
+        name: `${name}-core`,
+        version: '0.1.0',
+        private: true,
+        type: 'module',
+        description: 'press content-type contract (cms schema → web types)',
+        exports: {
+          './package.json': './package.json',
+          './types': { types: './types/index.ts', default: './types/index.ts' },
+        },
+      },
+      null,
+      2,
+    ) + '\n'
+  );
+}
+
 function npmrc(registry: string): string {
   const lines = [
     '# Strapi needs a flat, npm-like node_modules; hoisted gives that under pnpm.',
@@ -165,4 +193,15 @@ export function scaffold(opts: ScaffoldOptions): void {
   writeFileSync(path.join(target, 'cms', 'package.json'), cmsPackageJson(name));
   writeFileSync(path.join(target, 'cms', '.env'), renderCmsEnv());
   writeFileSync(path.join(target, '.npmrc'), npmrc(registry));
+
+  // 5. The content-type contract package (core/) + wire the adopter block to it.
+  // The template ships `__CORE_PKG__` as a placeholder so it stays generic; the
+  // concrete `<name>-core` is the project-scoped workspace package name.
+  writeFileSync(path.join(target, 'core', 'package.json'), corePackageJson(name));
+  const calloutPath = path.join(target, 'web', 'blocks', 'custom', 'Callout.tsx');
+  writeFileSync(
+    calloutPath,
+    readFileSync(calloutPath, 'utf8').replaceAll('__CORE_PKG__', `${name}-core`),
+    'utf8',
+  );
 }

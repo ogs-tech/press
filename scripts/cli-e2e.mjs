@@ -68,11 +68,13 @@ async function main() {
   sh(`node ${pressBin} create my-site --registry ${REGISTRY}`, { cwd: parent });
 
   const has = (rel) => existsSync(path.join(project, rel));
-  // §6 adopter files present.
+  // Three-zone adopter files present (web/cms/core).
   for (const f of [
-    'press.config.ts',
-    'blocks/custom/Callout.tsx',
-    'blocks/custom/index.ts',
+    'web/config.ts',
+    'web/blocks/custom/Callout.tsx',
+    'web/blocks/custom/index.ts',
+    'core/package.json',
+    'core/types/index.ts',
     'content/seed.mjs',
     'cms/config/plugins.ts',
     'cms/package.json',
@@ -82,9 +84,9 @@ async function main() {
   ]) {
     if (!has(f)) fail(`AC1: expected adopter file missing: ${f}`);
   }
-  // Web host ABSENT — the ultra-thin guarantee.
-  for (const f of ['app', 'next.config.ts', 'app/layout.tsx', 'web']) {
-    if (has(f)) fail(`AC1: web host leaked into create output: ${f}`);
+  // Next host ABSENT — the ultra-thin guarantee (materialized only on dev/build).
+  for (const f of ['app', 'next.config.ts', 'web/next.config.ts', 'app/layout.tsx', '.press']) {
+    if (has(f)) fail(`AC1: Next host leaked into create output: ${f}`);
   }
   // pnpm install ran during create — node_modules + @press/* resolved.
   if (!has('node_modules/@press/web/package.json')) fail('AC1: @press/web not installed');

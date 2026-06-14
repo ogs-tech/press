@@ -4,6 +4,9 @@ node_modules/
 # engine-materialized host (regenerated every dev/build — never commit)
 .press/
 
+# generated content types (written from the live CMS schema by `press dev`)
+core/types/generated.ts
+
 # next build output (also lives under .press/web/.next)
 .next/
 

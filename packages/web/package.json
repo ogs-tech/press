@@ -8,7 +8,7 @@
   "exports": {
     "./package.json": "./package.json",
     ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
-    "./types": { "types": "./src/types/index.ts", "default": "./src/types/index.ts" }
+    "./types": { "types": "./src/types/base.ts", "default": "./src/types/base.ts" }
   },
   "bin": { "press-sync-types": "./bin/sync-types.ts" },
   "scripts": {
