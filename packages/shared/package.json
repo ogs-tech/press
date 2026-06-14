@@ -1,0 +1,22 @@
+{
+  "name": "@press/shared",
+  "version": "0.1.0",
+  "description": "press — framework-agnostic contract types shared by the engine packages",
+  "license": "MIT",
+  "author": "Odenir Gomes",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" }
+  },
+  "files": ["src"],
+  "scripts": {
+    "build": "echo '@press/shared ships TS source; nothing to build'",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

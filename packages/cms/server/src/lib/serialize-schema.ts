@@ -1,4 +1,9 @@
 import type { Core } from '@strapi/strapi';
+import type { Attr, PressSchema } from '@press/shared';
+
+// Re-exported so the type stays importable from this module, while the single
+// source of truth lives in @press/shared (shared with @press/web's generator).
+export type { Attr, PressSchema };
 
 const PAGE_UID = 'plugin::press-cms.page';
 
@@ -7,27 +12,22 @@ const PAGE_UID = 'plugin::press-cms.page';
 // deliberately dropped so the generated types stay stable across Strapi patches.
 const KEEP = ['type', 'required', 'enum', 'default', 'components', 'multiple', 'allowedTypes', 'repeatable', 'component'] as const;
 
-type Attr = Record<string, unknown>;
-
 const pickAttributes = (attributes: Record<string, Attr>): Record<string, Attr> => {
   const out: Record<string, Attr> = {};
   for (const [name, attr] of Object.entries(attributes ?? {})) {
     // Skip Strapi-managed timestamp/private fields — never part of the contract.
     if (attr?.private) continue;
     if (['createdAt', 'updatedAt', 'publishedAt', 'createdBy', 'updatedBy', 'locale'].includes(name)) continue;
-    const kept: Attr = {};
+    // Loose record while copying: indexing a typed Attr by the KEEP union on the
+    // write side collapses to `never`. We cast back to Attr once fully built.
+    const kept: Record<string, unknown> = {};
     for (const key of KEEP) {
       if (attr[key] !== undefined) kept[key] = attr[key];
     }
-    out[name] = kept;
+    out[name] = kept as Attr;
   }
   return out;
 };
-
-export interface PressSchema {
-  contentTypes: Record<string, { uid: string; info: unknown; attributes: Record<string, Attr> }>;
-  components: Record<string, { uid: string; attributes: Record<string, Attr> }>;
-}
 
 /**
  * Serializes the engine's RUNTIME view (Spec §5.2 golden rule): the page

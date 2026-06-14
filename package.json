@@ -1,5 +1,5 @@
 {
-  "name": "press-monorepo",
+  "name": "press",
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.28.2",

@@ -57,13 +57,13 @@ async function main() {
   }
 
   // 0. Publish the engine + cli (real tarballs, real semver).
-  publish('@press/web', path.join(REPO, 'packages/press-web'));
-  publish('@press/cli', path.join(REPO, 'packages/press-cli'));
+  publish('@press/web', path.join(REPO, 'packages/web'));
+  publish('@press/cli', path.join(REPO, 'packages/cli'));
 
   // 1. press create into a scratch dir (AC1).
   const parent = mkdtempSync(path.join(tmpdir(), 'press-cli-e2e-'));
   const project = path.join(parent, 'my-site');
-  const pressBin = path.join(REPO, 'packages/press-cli/bin/press.js');
+  const pressBin = path.join(REPO, 'packages/cli/bin/press.js');
   console.log('> press create my-site');
   sh(`node ${pressBin} create my-site --registry ${REGISTRY}`, { cwd: parent });
 

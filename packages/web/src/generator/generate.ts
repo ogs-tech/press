@@ -6,19 +6,10 @@
  * §5.2 rejected alternative 3).
  */
 
-export interface Attr {
-  type: string;
-  required?: boolean;
-  enum?: string[];
-  multiple?: boolean;
-  components?: string[];
-  [k: string]: unknown;
-}
+import type { Attr, PressSchema } from '@press/shared';
 
-export interface PressSchema {
-  contentTypes: Record<string, { uid: string; info: unknown; attributes: Record<string, Attr> }>;
-  components: Record<string, { uid: string; attributes: Record<string, Attr> }>;
-}
+// Re-exported so existing consumers (bin/sync-types) keep their import path.
+export type { Attr, PressSchema };
 
 const pascalSegment = (s: string): string =>
   s
@@ -49,7 +40,7 @@ export const tsTypeForAttribute = (attr: Attr): string => {
   if (attr.type === 'media') {
     return attr.multiple ? 'PressMedia[]' : 'PressMedia';
   }
-  return SCALARS[attr.type] ?? 'unknown';
+  return (attr.type ? SCALARS[attr.type] : undefined) ?? 'unknown';
 };
 
 const emitInterfaceBody = (attributes: Record<string, Attr>, indent = '  '): string =>

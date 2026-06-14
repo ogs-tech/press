@@ -163,11 +163,13 @@ This monorepo develops `press` and proves the core thesis — that a Strapi 5 CM
 can ship as a versioned, updatable dependency without leaking into the adopter's
 code.
 
-- `packages/press-cli` — the `@press/cli` CLI (this package).
-- `packages/press-cms` — the **engine** Strapi plugin (`@press/cms`): ships a
+- `packages/cli` — the `@press/cli` CLI (this package).
+- `packages/cms` — the **engine** Strapi plugin (`@press/cms`): ships a
   `page` content-type and injects reference Dynamic-Zone blocks.
-- `packages/press-web` — the **engine** web layer (`@press/web`): the Next host
+- `packages/web` — the **engine** web layer (`@press/web`): the Next host
   template, block renderer, config helpers, and CMS→types sync.
+- `packages/shared` — `@press/shared`: framework-agnostic contract types
+  (the `PressSchema` wire format) and constants shared by `cms` and `web`.
 - `apps/playground/` — the in-repo dogfood: the real `press create` output,
   committed and consumed via `workspace:*` for a fast dev loop. Boot it with
   `pnpm play`.

@@ -22,7 +22,7 @@ describe('materialize', () => {
 
     const web = path.join(project, '.press', 'web');
     expect(existsSync(path.join(web, 'app', 'layout.tsx'))).toBe(true);
-    expect(existsSync(path.join(web, 'app', '[...slug]', 'page.tsx'))).toBe(true);
+    expect(existsSync(path.join(web, 'app', '[[...slug]]', 'page.tsx'))).toBe(true);
     expect(existsSync(path.join(web, 'next.config.ts'))).toBe(true);
     expect(existsSync(path.join(web, 'tsconfig.json'))).toBe(true);
     expect(existsSync(path.join(web, 'press-config.ts'))).toBe(true);

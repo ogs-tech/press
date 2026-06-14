@@ -29,7 +29,7 @@ import { startRegistry, stopRegistry, publishedVersions, REGISTRY_URL } from './
 
 const ROOT = process.cwd();
 const NPMRC = path.join(ROOT, '.npmrc');
-const PRESS_BIN = path.join(ROOT, 'packages/press-cli/bin/press.js');
+const PRESS_BIN = path.join(ROOT, 'packages/cli/bin/press.js');
 const ORIGIN = 'http://localhost:8080';
 const CMS_URL_INTERNAL = 'http://host.docker.internal:8080';
 const b64 = () => randomBytes(16).toString('base64');
@@ -80,10 +80,10 @@ async function main() {
   startRegistry(ROOT);
   try {
     // 1. publish the engine + cli to the local registry. @press/cli's build also
-    //    produces packages/press-cli/dist so the local bin below is runnable.
-    publish('@press/cms', path.join(ROOT, 'packages/press-cms'));
-    publish('@press/web', path.join(ROOT, 'packages/press-web'));
-    publish('@press/cli', path.join(ROOT, 'packages/press-cli'));
+    //    produces packages/cli/dist so the local bin below is runnable.
+    publish('@press/cms', path.join(ROOT, 'packages/cms'));
+    publish('@press/web', path.join(ROOT, 'packages/web'));
+    publish('@press/cli', path.join(ROOT, 'packages/cli'));
 
     // 2. scaffold + install the throwaway project against Verdaccio (`press
     //    create` runs `pnpm install` itself). Pass a BARE name with cwd=parent —
