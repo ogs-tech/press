@@ -6,7 +6,7 @@ thin config layer (`press.config.ts` + your custom blocks); `press` materializes
 and runs everything else.
 
 ```bash
-press create my-site --registry http://localhost:4873
+press create my-site
 cd my-site
 pnpm dev          # cms on :1337/admin, web on :3000
 ```
@@ -20,22 +20,16 @@ One project, three commands: **create → dev → build**.
 
 ## Install
 
-> **Not published to npm yet.** `@press/*` is served from a local Verdaccio
-> registry (`http://localhost:4873`). Start it, then point `press` at it with
-> `--registry`. See [repository internals](#repository-internals) to publish the
-> packages first.
-
-```bash
-scripts/registry.sh start                 # local registry on :4873
-pnpm add -g @press/cli --registry http://localhost:4873
-```
+> **Not published to a registry yet.** `@press/*` are developed in this monorepo
+> and consumed locally via `workspace:*`. Publishing to npm is planned; until
+> then, `press create` run outside the repo cannot install `@press/*` — work
+> inside the repo and use the [playground](#repository-internals) to try press.
 
 ## Quickstart
 
 ```bash
 # 1. Scaffold a new project (writes only your thin Project zone, then installs).
-#    --registry makes the project consume @press/* from the local registry.
-press create my-site --registry http://localhost:4873
+press create my-site
 cd my-site
 
 # 2. Develop — boots the full stack as one process group
@@ -55,7 +49,7 @@ pnpm build
 
 | Command | What it does |
 | --- | --- |
-| `press create <name>` | Scaffold a new project into `<name>/` and `pnpm install` it. `--registry <url>` points at the registry serving `@press/*` (default: npmjs; use `http://localhost:4873` until published). |
+| `press create <name>` | Scaffold a new project into `<name>/` and `pnpm install` it. `@press/*` resolve from the default registry (npm). |
 | `press dev` | Materialize the web host, seed sample content, boot cms (`:1337`), sync CMS schema → web types, then boot web (`:3000`). |
 | `press build` | Materialize the web host, `strapi build` the cms, and `next build` the web. No live CMS is needed to build. |
 
@@ -125,8 +119,7 @@ pnpm --filter cms build && pnpm --filter cms start
 ```
 
 Engine updates never touch your Project zone (your config, blocks, and content
-stay byte-for-byte intact). That non-breakage promise is enforced in CI by a
-standing contract guard — see [repository internals](#repository-internals).
+stay byte-for-byte intact).
 
 ---
 
@@ -145,9 +138,8 @@ code.
   (the `PressSchema` wire format) and constants shared by `cms` and `web`.
 - `apps/playground/` — the in-repo dogfood: the real `press create` output,
   committed and consumed via `workspace:*` for a fast dev loop. Boot it with
-  `pnpm play`.
-- `scripts/` — `cli-e2e.mjs` (the create→dev→build acceptance gate),
-  `registry.sh` (local Verdaccio helper).
+  `pnpm play`; regenerate it from the live scaffold with
+  `pnpm --filter playground regenerate`.
 
 ### Working in the repo
 
@@ -155,12 +147,9 @@ code.
 pnpm install              # from the repo root (Node 20.x, pnpm 10.x)
 pnpm --filter @press/cli test         # CLI unit contracts
 pnpm play                             # boot the playground (press dev: cms :1337 + web :3000)
-node scripts/cli-e2e.mjs              # full create→dev→build acceptance gate
 ```
 
-`cli-e2e.mjs` runs the full `press create → dev → build` cycle against an
-ephemeral registry and asserts the Project zone stays pure (no engine or host file
-is ever committed into the generated project — AC4).
+End-to-end tests (a Playwright suite) are planned.
 
 ### Design docs
 

@@ -16,10 +16,7 @@ export function buildProgram(): Command {
     .command('create')
     .argument('<name>', 'project directory to scaffold')
     .description('Scaffold a new press project (ultra-thin Project zone)')
-    .option('--registry <url>', 'registry serving @press/* packages', 'https://registry.npmjs.org/')
-    .action((name: string, opts: { registry: string }) =>
-      createCommand({ name, registry: opts.registry }),
-    );
+    .action((name: string) => createCommand({ name }));
 
   program
     .command('dev')

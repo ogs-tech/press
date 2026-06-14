@@ -17,7 +17,7 @@ afterEach(() => {
 describe('scaffold', () => {
   it('writes the three-zone adopter manifest (web/cms/shared) and NO Next host', () => {
     const target = path.join(scratchParent(), 'my-site');
-    scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
+    scaffold({ target, name: 'my-site' });
 
     const has = (rel: string) => existsSync(path.join(target, rel));
 
@@ -60,12 +60,16 @@ describe('scaffold', () => {
     expect(readFileSync(path.join(target, 'pnpm-workspace.yaml'), 'utf8')).toContain('"shared"');
 
     expect(readFileSync(path.join(target, 'package.json'), 'utf8')).toContain('"name": "my-site"');
-    expect(readFileSync(path.join(target, '.npmrc'), 'utf8')).toContain('@press:registry=http://localhost:4873');
+    // The generated .npmrc pins the Strapi-shaped pnpm settings and does NOT route
+    // @press to any registry — they resolve from the default (npm).
+    const npmrcContents = readFileSync(path.join(target, '.npmrc'), 'utf8');
+    expect(npmrcContents).toContain('node-linker=hoisted');
+    expect(npmrcContents).not.toContain('@press:registry');
   });
 
   it('ships no deploy kit', () => {
     const target = path.join(scratchParent(), 'my-site');
-    scaffold({ target, name: 'my-site', registry: 'http://localhost:4873' });
+    scaffold({ target, name: 'my-site' });
     for (const f of ['deploy', '.dockerignore', 'cms/.env.production.example']) {
       expect(existsSync(path.join(target, f)), `unexpected ${f}`).toBe(false);
     }
@@ -74,8 +78,8 @@ describe('scaffold', () => {
   it('generates unique Strapi secrets per project', () => {
     const a = path.join(scratchParent(), 'a');
     const b = path.join(scratchParent(), 'b');
-    scaffold({ target: a, name: 'a', registry: 'http://localhost:4873' });
-    scaffold({ target: b, name: 'b', registry: 'http://localhost:4873' });
+    scaffold({ target: a, name: 'a' });
+    scaffold({ target: b, name: 'b' });
     const envA = readFileSync(path.join(a, 'cms/.env'), 'utf8');
     const envB = readFileSync(path.join(b, 'cms/.env'), 'utf8');
     const keyA = /APP_KEYS=(.+)/.exec(envA)?.[1];

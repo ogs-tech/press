@@ -12,7 +12,6 @@ build/
 .tmp/
 *.db
 *.sqlite
-.verdaccio/
 .DS_Store
 
 # Git worktrees are local-only workspace; never track them

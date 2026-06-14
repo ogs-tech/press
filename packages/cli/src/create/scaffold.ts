@@ -7,8 +7,6 @@ export interface ScaffoldOptions {
   target: string;
   /** Project name (package name + cms name prefix). */
   name: string;
-  /** Registry serving @press/* (written into .npmrc). */
-  registry: string;
 }
 
 const templatesDir = path.join(__dirname, '..', '..', 'templates');
@@ -132,20 +130,15 @@ function sharedPackageJson(name: string): string {
   );
 }
 
-function npmrc(registry: string): string {
+function npmrc(): string {
+  // @press/* resolve from the default registry (npm). Only the Strapi-shaped
+  // pnpm settings are pinned here.
   const lines = [
     '# Strapi needs a flat, npm-like node_modules; hoisted gives that under pnpm.',
     'node-linker=hoisted',
     'auto-install-peers=true',
     'strict-peer-dependencies=false',
-    `@press:registry=${registry}`,
   ];
-  // Local Verdaccio proof convenience: localhost token (harmless, localhost-only).
-  if (registry.includes('localhost:4873')) {
-    lines.push(
-      '//localhost:4873/:_authToken=ZDMyN2Y1NzBhNGU2ZDgwOTQ2YzU2ZmE1MGU3MDhlNzM6YmQyNWNkMjc2NmI1YTg1ODdjMzE4Ng==',
-    );
-  }
   return lines.join('\n') + '\n';
 }
 
@@ -157,7 +150,7 @@ function npmrc(registry: string): string {
  * .press/web/ on dev/build).
  */
 export function scaffold(opts: ScaffoldOptions): void {
-  const { target, name, registry } = opts;
+  const { target, name } = opts;
   if (existsSync(target)) {
     throw new Error(`target already exists: ${target}`);
   }
@@ -178,7 +171,7 @@ export function scaffold(opts: ScaffoldOptions): void {
   writeFileSync(path.join(target, 'package.json'), rootPackageJson(name));
   writeFileSync(path.join(target, 'cms', 'package.json'), cmsPackageJson(name));
   writeFileSync(path.join(target, 'cms', '.env'), renderCmsEnv());
-  writeFileSync(path.join(target, '.npmrc'), npmrc(registry));
+  writeFileSync(path.join(target, '.npmrc'), npmrc());
 
   // 4. The content-type contract package (shared/) + wire the adopter block to it.
   // The template ships `__SHARED_PKG__` as a placeholder so it stays generic; the

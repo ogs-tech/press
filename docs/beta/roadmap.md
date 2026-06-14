@@ -122,6 +122,13 @@ before Spec 3 bumped `@press/web` to 0.2.0 + added `host-template/`). Landing it
 on `main` needs `packages/press-web` reconciliation; the guard intentionally
 keeps the 0.1.0 baseline.
 
+> **Removed (2026-06-14).** The Verdaccio-based contract guard
+> (`scripts/contract-guard.mjs`, `.github/workflows/contract-guard.yml`, and the
+> local Verdaccio registry) was removed along with Verdaccio itself. Local
+> verification is now the registry-free playground smoke test
+> (`scripts/cli-e2e.mjs`); a Playwright e2e suite is planned. The text above is
+> retained as a record of what Spec 4 shipped.
+
 ## Spec 5 — outcome (done)
 
 An external adopter can reach **first deploy unaided** (PRD Q1) via two documented

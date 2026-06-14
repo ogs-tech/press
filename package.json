@@ -8,10 +8,7 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "play": "pnpm --filter playground dev",
-    "play:create": "tsx scripts/playground-create.ts",
-    "play:build": "pnpm --filter playground build",
-    "publish:local": "bash scripts/publish-local.sh"
+    "play": "pnpm --filter playground dev"
   },
   "devDependencies": {
     "@press/cms": "workspace:*",
