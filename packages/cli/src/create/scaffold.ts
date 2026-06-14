@@ -1,6 +1,11 @@
 import { cpSync, mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { newStrapiUuid, renderCmsEnv } from './secrets';
+// Pinned engine + framework versions, DERIVED from the engine manifests by
+// scripts/gen-versions.ts (never hand-edited). See compute-versions.ts for the
+// derivation policy — this is what keeps the scaffold's pins from drifting away
+// from the versions the monorepo actually ships.
+import { VERSIONS } from './versions.generated';
 
 export interface ScaffoldOptions {
   /** Absolute path of the project directory to create. */
@@ -10,20 +15,6 @@ export interface ScaffoldOptions {
 }
 
 const templatesDir = path.join(__dirname, '..', '..', 'templates');
-
-/** Pinned engine + framework versions for the generated manifests. */
-const VERSIONS = {
-  pressCli: '^0.1.0',
-  pressWeb: '^0.2.0',
-  pressCms: '^0.3.2',
-  next: '^15.1.0',
-  // React 18: the whole press stack runs one React major. Strapi 5's admin is
-  // React 18, and Next 15 supports react ^18.2.0 — pinning the web to 18 too
-  // keeps a single react/react-dom instance across cms + web (no dual-major
-  // hoist hazard). The host template uses no React-19-only API.
-  react: '^18.3.1',
-  strapi: '5.48.0',
-} as const;
 
 function rootPackageJson(name: string): string {
   return (
@@ -107,8 +98,9 @@ function cmsPackageJson(name: string): string {
 
 /**
  * The content-type contract package (shared/). Holds ONLY generated types
- * (types/generated.ts, written by `press dev`), exported as `<name>-shared/types`.
- * No runtime deps — it is pure `.d.ts`-shaped TS consumed by web + adopter blocks.
+ * (types/generated.ts — a committed baseline, refreshed from the live CMS by
+ * `press dev`), exported as `<name>-shared/types`. No runtime deps — it is pure
+ * `.d.ts`-shaped TS consumed by web + adopter blocks.
  */
 function sharedPackageJson(name: string): string {
   return (
