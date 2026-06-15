@@ -9,11 +9,13 @@
   "scripts": {
     "build": "turbo run build",
     "play": "pnpm --filter playground dev",
+    "play:create": "tsx scripts/create-playground.ts",
     "pack:check": "pnpm build && pnpm -r --filter \"./packages/*\" publish --dry-run --no-git-checks"
   },
   "devDependencies": {
     "@press/cms": "workspace:*",
     "@press/web": "workspace:*",
+    "tsx": "^4.19.0",
     "turbo": "2.9.18"
   },
   "pnpm": {
