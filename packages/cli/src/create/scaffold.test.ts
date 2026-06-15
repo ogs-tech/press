@@ -16,28 +16,28 @@ afterEach(() => {
 });
 
 describe('scaffold', () => {
-  it('writes the three-zone adopter manifest (web/cms/shared) and NO Next host', () => {
+  it('writes the three-zone adopter manifest (packages/web|cms|shared) and NO Next host', () => {
     const target = path.join(scratchParent(), 'my-site');
     scaffold({ target, name: 'my-site' });
 
     const has = (rel: string) => existsSync(path.join(target, rel));
 
     // web zone (config + blocks)
-    expect(has('web/config.ts')).toBe(true);
-    expect(has('web/blocks/custom/Callout.tsx')).toBe(true);
-    expect(has('web/blocks/custom/index.ts')).toBe(true);
+    expect(has('packages/web/config.ts')).toBe(true);
+    expect(has('packages/web/blocks/custom/Callout.tsx')).toBe(true);
+    expect(has('packages/web/blocks/custom/index.ts')).toBe(true);
     // shared zone (content-type contract)
-    expect(has('shared/package.json')).toBe(true);
-    expect(has('shared/types/index.ts')).toBe(true);
+    expect(has('packages/shared/package.json')).toBe(true);
+    expect(has('packages/shared/types/index.ts')).toBe(true);
     // committed baseline so the project typechecks before the first `press dev`
-    expect(has('shared/types/generated.ts')).toBe(true);
+    expect(has('packages/shared/types/generated.ts')).toBe(true);
     // cms zone (schema stays auto-discovered by Strapi)
-    expect(has('cms/config/plugins.ts')).toBe(true);
-    expect(has('cms/src/components/custom/callout.json')).toBe(true);
-    expect(has('cms/src/index.ts')).toBe(true);
-    expect(has('cms/package.json')).toBe(true);
-    expect(has('cms/.env')).toBe(true);
-    expect(has('cms/scripts/seed.mjs')).toBe(true);
+    expect(has('packages/cms/config/plugins.ts')).toBe(true);
+    expect(has('packages/cms/src/components/custom/callout.json')).toBe(true);
+    expect(has('packages/cms/src/index.ts')).toBe(true);
+    expect(has('packages/cms/package.json')).toBe(true);
+    expect(has('packages/cms/.env')).toBe(true);
+    expect(has('packages/cms/scripts/seed.mjs')).toBe(true);
     // infra
     expect(has('package.json')).toBe(true);
     expect(has('.gitignore')).toBe(true);
@@ -51,21 +51,22 @@ describe('scaffold', () => {
     // The Next host is materialized on dev/build, never at create time.
     expect(has('app')).toBe(false);
     expect(has('next.config.ts')).toBe(false);
-    expect(has('web/next.config.ts')).toBe(false);
+    expect(has('packages/web/next.config.ts')).toBe(false);
     expect(has('app/layout.tsx')).toBe(false);
     expect(has('.press')).toBe(false);
 
     // The adopter block is wired to the project-scoped shared package, not the engine.
-    const callout = readFileSync(path.join(target, 'web/blocks/custom/Callout.tsx'), 'utf8');
+    const callout = readFileSync(path.join(target, 'packages/web/blocks/custom/Callout.tsx'), 'utf8');
     expect(callout).toContain("from 'my-site-shared/types'");
     expect(callout).not.toContain('__SHARED_PKG__');
-    expect(readFileSync(path.join(target, 'shared/package.json'), 'utf8')).toContain('"name": "my-site-shared"');
-    expect(readFileSync(path.join(target, 'pnpm-workspace.yaml'), 'utf8')).toContain('"shared"');
+    expect(readFileSync(path.join(target, 'packages/shared/package.json'), 'utf8')).toContain('"name": "my-site-shared"');
+    // workspace members are globbed (packages/*); web (no package.json) is ignored by pnpm.
+    expect(readFileSync(path.join(target, 'pnpm-workspace.yaml'), 'utf8')).toContain('packages/*');
 
     const rootPkg = JSON.parse(readFileSync(path.join(target, 'package.json'), 'utf8'));
     expect(rootPkg.name).toBe('my-site');
     // The STANDALONE root keeps pnpm.onlyBuiltDependencies (it IS the workspace root
-    // here, so the field takes effect); the dogfood's regenerate.ts strips this copy.
+    // here, so the field takes effect); play:create strips this copy for the dogfood.
     expect(rootPkg.pnpm.onlyBuiltDependencies).toContain('better-sqlite3');
     // The generated .npmrc pins the Strapi-shaped pnpm settings and does NOT route
     // @press to any registry — they resolve from the default (npm).
@@ -85,7 +86,7 @@ describe('scaffold', () => {
     // the engine that produced it.
     expect(root.dependencies['@press/web']).not.toMatch(/[\^~]/);
 
-    const cms = JSON.parse(readFileSync(path.join(target, 'cms/package.json'), 'utf8'));
+    const cms = JSON.parse(readFileSync(path.join(target, 'packages/cms/package.json'), 'utf8'));
     expect(cms.dependencies['@press/cms']).toBe(VERSIONS.pressCms);
     expect(cms.dependencies['@strapi/strapi']).toBe(VERSIONS.strapi);
   });
@@ -97,20 +98,20 @@ describe('scaffold', () => {
     // The adopter's Callout block imports CustomCallout from shared/types — that
     // chain resolves through generated.ts, which `press dev` only writes on the
     // first sync. Without a committed baseline, a fresh `tsc`/`press build` breaks.
-    const generated = readFileSync(path.join(target, 'shared/types/generated.ts'), 'utf8');
+    const generated = readFileSync(path.join(target, 'packages/shared/types/generated.ts'), 'utf8');
     expect(generated).toContain('export interface CustomCallout');
     expect(generated).toMatch(/'info' \| 'warning' \| 'success'/);
 
     // It is COMMITTED (not gitignored), so CI and teammate clones typecheck with
     // no live CMS. Guard the generated .gitignore against re-ignoring it.
     const gitignore = readFileSync(path.join(target, '.gitignore'), 'utf8');
-    expect(gitignore).not.toContain('shared/types/generated.ts');
+    expect(gitignore).not.toContain('packages/shared/types/generated.ts');
   });
 
   it('ships no deploy kit', () => {
     const target = path.join(scratchParent(), 'my-site');
     scaffold({ target, name: 'my-site' });
-    for (const f of ['deploy', '.dockerignore', 'cms/.env.production.example']) {
+    for (const f of ['deploy', '.dockerignore', 'packages/cms/.env.production.example']) {
       expect(existsSync(path.join(target, f)), `unexpected ${f}`).toBe(false);
     }
   });
@@ -120,8 +121,8 @@ describe('scaffold', () => {
     const b = path.join(scratchParent(), 'b');
     scaffold({ target: a, name: 'a' });
     scaffold({ target: b, name: 'b' });
-    const envA = readFileSync(path.join(a, 'cms/.env'), 'utf8');
-    const envB = readFileSync(path.join(b, 'cms/.env'), 'utf8');
+    const envA = readFileSync(path.join(a, 'packages/cms/.env'), 'utf8');
+    const envB = readFileSync(path.join(b, 'packages/cms/.env'), 'utf8');
     const keyA = /APP_KEYS=(.+)/.exec(envA)?.[1];
     const keyB = /APP_KEYS=(.+)/.exec(envB)?.[1];
     expect(keyA).toBeTruthy();
