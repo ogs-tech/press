@@ -63,13 +63,13 @@ The scaffold is **ultra-thin** — only the layer you own. There is no `app/` or
 
 ```
 my-site/
-├─ press.config.ts          # brand identity + SEO — the single whitelabel source of truth
-├─ blocks/custom/           # your React blocks + the block map (index.ts)
-├─ cms/                     # the one visible host — a minimal Strapi app
-│  └─ scripts/seed.mjs      # sample home page so the first `press dev` renders something
-├─ shared/                  # the content-type contract (<name>-shared/types)
-├─ package.json             # scripts: dev / build → press
-├─ pnpm-workspace.yaml      # cms + shared are workspace members
+├─ packages/
+│  ├─ web/                 # your zone: config.ts (brand + SEO) + blocks/custom/ (React blocks + index.ts)
+│  ├─ cms/                 # the one visible host — a minimal Strapi app
+│  │  └─ scripts/seed.mjs  # sample home page so the first `press dev` renders something
+│  └─ shared/              # the content-type contract (<name>-shared/types)
+├─ package.json            # scripts: dev / build → press
+├─ pnpm-workspace.yaml     # packages/* are workspace members (web has no package.json, so pnpm skips it)
 └─ .npmrc / .gitignore / .nvmrc
 ```
 
@@ -96,9 +96,9 @@ export default defineConfig({
 });
 ```
 
-**Custom blocks** — add a Strapi component under `cms/src/components/custom/`,
-a matching React component under `blocks/custom/`, and wire it in
-`blocks/custom/index.ts`:
+**Custom blocks** — add a Strapi component under `packages/cms/src/components/custom/`,
+a matching React component under `packages/web/blocks/custom/`, and wire it in
+`packages/web/blocks/custom/index.ts`:
 
 ```ts
 export const customBlocks: Record<string, ComponentType<any>> = {
@@ -138,8 +138,8 @@ code.
   (the `PressSchema` wire format) and constants shared by `cms` and `web`.
 - `apps/playground/` — the in-repo dogfood: the real `press create` output,
   committed and consumed via `workspace:*` for a fast dev loop. Boot it with
-  `pnpm play`; regenerate it from the live scaffold with
-  `pnpm --filter playground regenerate`.
+  `pnpm play`; recreate it from the live scaffold with `pnpm play:create`, or
+  refresh just the engine-owned host with `pnpm play:upgrade`.
 
 ### Working in the repo
 

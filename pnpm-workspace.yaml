@@ -1,10 +1,10 @@
 packages:
   - "packages/*"
   # The in-repo dogfood: the real `press create` output, committed and consumed
-  # via workspace:* for a fast dev loop. Its cms + shared are their own workspace
-  # members so the cms host resolves @press/cms and the web zone resolves
-  # <name>-shared by symlink (one workspace root per tree). Regenerate from the
-  # live scaffold with `pnpm --filter playground regenerate`.
+  # via workspace:* for a fast dev loop. Its packages/cms + packages/shared are
+  # their own workspace members so the cms host resolves @press/cms and the web
+  # zone resolves <name>-shared by symlink (one workspace root per tree). Recreate
+  # from the live scaffold with `pnpm play:create` (or refresh the engine-owned
+  # host with `pnpm play:upgrade`).
   - "apps/playground"
-  - "apps/playground/cms"
-  - "apps/playground/shared"
+  - "apps/playground/packages/*"
