@@ -8,22 +8,22 @@ node_modules/
 .next/
 
 # strapi host artifacts
-cms/.tmp/
-cms/.cache/
-cms/.strapi/
-cms/dist/
-cms/build/
-cms/types/
-cms/.strapi-updater.json
-cms/.strapi-cloud.json
+packages/cms/.tmp/
+packages/cms/.cache/
+packages/cms/.strapi/
+packages/cms/dist/
+packages/cms/build/
+packages/cms/types/
+packages/cms/.strapi-updater.json
+packages/cms/.strapi-cloud.json
 
 # uploaded media is runtime data, not source (keep the dir, drop the files)
-cms/public/uploads/*
-!cms/public/uploads/.gitkeep
+packages/cms/public/uploads/*
+!packages/cms/public/uploads/.gitkeep
 
 # env + secrets
 .env
-cms/.env
+packages/cms/.env
 
 # misc
 *.tsbuildinfo

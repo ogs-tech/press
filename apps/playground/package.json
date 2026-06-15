@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "press dev",
-    "build": "press build",
-    "regenerate": "tsx scripts/regenerate.ts"
+    "build": "press build"
   },
   "dependencies": {
     "@press/cli": "workspace:*",
@@ -19,7 +18,6 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "typescript": "^5",
-    "tsx": "^4.19.0"
+    "typescript": "^5"
   }
 }
