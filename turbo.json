@@ -6,6 +6,7 @@
       "outputs": ["dist/**", ".strapi/**", "build/**"]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     }
