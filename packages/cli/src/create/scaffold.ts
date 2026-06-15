@@ -140,10 +140,10 @@ function npmrc(): string {
 
 /**
  * Writes the ultra-thin Project zone (spec §6) into `target`: the adopter layer
- * (config + blocks/custom + a minimal cms Strapi host, incl. its sample-content
- * seed) plus the infra files the stack needs (.npmrc, pnpm-workspace.yaml). It writes NO Next
- * host — that absence is the ultra-thin guarantee (the host is materialized to
- * .press/web/ on dev/build).
+ * (packages/web config + blocks/custom + a minimal packages/cms Strapi host, incl.
+ * its sample-content seed) plus the infra files the stack needs (.npmrc,
+ * pnpm-workspace.yaml). It writes NO Next host — that absence is the ultra-thin
+ * guarantee (the host is materialized to .press/web/ on dev/build).
  */
 export function scaffold(opts: ScaffoldOptions): void {
   const { target, name } = opts;
@@ -152,28 +152,28 @@ export function scaffold(opts: ScaffoldOptions): void {
   }
   mkdirSync(target, { recursive: true });
 
-  // 1. Static project-zone tree (config, blocks, workspace, nvmrc).
+  // 1. Static project-zone tree (packages/web, packages/shared, workspace, nvmrc).
   cpSync(path.join(templatesDir, 'project'), target, { recursive: true });
   renameSync(path.join(target, 'gitignore'), path.join(target, '.gitignore'));
 
-  // 2. Static cms host tree (incl. scripts/seed.mjs), then its gitkeep markers.
-  cpSync(path.join(templatesDir, 'cms'), path.join(target, 'cms'), { recursive: true });
+  // 2. Static cms host tree (incl. scripts/seed.mjs) under packages/, then gitkeeps.
+  cpSync(path.join(templatesDir, 'cms'), path.join(target, 'packages', 'cms'), { recursive: true });
   for (const dir of ['src/api', 'src/extensions', 'public/uploads']) {
-    const marker = path.join(target, 'cms', dir, 'gitkeep');
-    if (existsSync(marker)) renameSync(marker, path.join(target, 'cms', dir, '.gitkeep'));
+    const marker = path.join(target, 'packages', 'cms', dir, 'gitkeep');
+    if (existsSync(marker)) renameSync(marker, path.join(target, 'packages', 'cms', dir, '.gitkeep'));
   }
 
   // 3. Generated manifests + infra.
   writeFileSync(path.join(target, 'package.json'), rootPackageJson(name));
-  writeFileSync(path.join(target, 'cms', 'package.json'), cmsPackageJson(name));
-  writeFileSync(path.join(target, 'cms', '.env'), renderCmsEnv());
+  writeFileSync(path.join(target, 'packages', 'cms', 'package.json'), cmsPackageJson(name));
+  writeFileSync(path.join(target, 'packages', 'cms', '.env'), renderCmsEnv());
   writeFileSync(path.join(target, '.npmrc'), npmrc());
 
-  // 4. The content-type contract package (shared/) + wire the adopter block to it.
+  // 4. The content-type contract package (packages/shared) + wire the adopter block to it.
   // The template ships `__SHARED_PKG__` as a placeholder so it stays generic; the
   // concrete `<name>-shared` is the project-scoped workspace package name.
-  writeFileSync(path.join(target, 'shared', 'package.json'), sharedPackageJson(name));
-  const calloutPath = path.join(target, 'web', 'blocks', 'custom', 'Callout.tsx');
+  writeFileSync(path.join(target, 'packages', 'shared', 'package.json'), sharedPackageJson(name));
+  const calloutPath = path.join(target, 'packages', 'web', 'blocks', 'custom', 'Callout.tsx');
   writeFileSync(
     calloutPath,
     readFileSync(calloutPath, 'utf8').replaceAll('__SHARED_PKG__', `${name}-shared`),
