@@ -38,7 +38,7 @@ function syncTypesScript(projectRoot: string): string {
  */
 export async function devCommand(opts: DevOptions): Promise<void> {
   const root = opts.cwd;
-  const cmsDir = path.join(root, 'cms');
+  const cmsDir = path.join(root, 'packages', 'cms');
 
   console.log('> materialize .press/web');
   materialize(root);
@@ -64,7 +64,7 @@ export async function devCommand(opts: DevOptions): Promise<void> {
   process.on('SIGTERM', onSignal);
 
   console.log('> boot cms (:1337)');
-  const cms = spawn('pnpm', ['-C', 'cms', 'develop'], {
+  const cms = spawn('pnpm', ['-C', 'packages/cms', 'develop'], {
     cwd: root,
     stdio: 'inherit',
     env: { ...process.env },
@@ -90,7 +90,7 @@ export async function devCommand(opts: DevOptions): Promise<void> {
   console.log('> sync types (cms schema -> shared/types)');
   await run('pnpm', ['exec', 'tsx', syncTypesScript(root)], {
     cwd: root,
-    env: { CMS_URL, PRESS_TYPES_DIR: path.join(root, 'shared', 'types') },
+    env: { CMS_URL, PRESS_TYPES_DIR: path.join(root, 'packages', 'shared', 'types') },
   });
 
   console.log('> boot web (:3000)');
@@ -130,7 +130,7 @@ export async function devCommand(opts: DevOptions): Promise<void> {
       console.log('\n> schema changed — re-syncing types');
       await run('pnpm', ['exec', 'tsx', syncTypesScript(root)], {
         cwd: root,
-        env: { CMS_URL, PRESS_TYPES_DIR: path.join(root, 'shared', 'types') },
+        env: { CMS_URL, PRESS_TYPES_DIR: path.join(root, 'packages', 'shared', 'types') },
       });
     },
     onError: () => {

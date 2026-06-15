@@ -23,7 +23,7 @@ export async function buildCommand(opts: BuildOptions): Promise<void> {
   materialize(root);
 
   console.log('> build cms');
-  await run('pnpm', ['-C', 'cms', 'build'], { cwd: root });
+  await run('pnpm', ['-C', 'packages/cms', 'build'], { cwd: root });
 
   console.log('> build web (.press/web)');
   await run('pnpm', ['exec', 'next', 'build', '.press/web'], {
