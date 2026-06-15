@@ -38,6 +38,11 @@ function injectTooling(pkgPath: string): void {
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
   pkg.scripts = { ...pkg.scripts, ...PLAYGROUND_SCRIPTS };
   pkg.devDependencies = { ...pkg.devDependencies, tsx: TSX_RANGE };
+  // `pnpm.onlyBuiltDependencies` is correct for a STANDALONE project (it is the
+  // workspace root there), but pnpm ignores the field on a workspace member and
+  // warns on every install/build. The monorepo root already declares it, so drop
+  // the redundant copy here — same reason we drop the standalone .npmrc/workspace.
+  delete pkg.pnpm;
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 }
 

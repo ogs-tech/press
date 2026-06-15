@@ -40,6 +40,10 @@ function rootPackageJson(name: string): string {
           '@types/react-dom': '^18',
           typescript: '^5',
         },
+        // Standalone projects are their own workspace root, so this field takes
+        // effect here (it lets Strapi's native deps build). When the scaffold is
+        // consumed as a workspace member (the in-repo dogfood), pnpm ignores it and
+        // the root owns it instead — regenerate.ts strips this copy to kill the warn.
         pnpm: {
           onlyBuiltDependencies: [
             '@swc/core',

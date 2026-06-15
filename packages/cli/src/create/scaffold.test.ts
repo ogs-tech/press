@@ -62,7 +62,11 @@ describe('scaffold', () => {
     expect(readFileSync(path.join(target, 'shared/package.json'), 'utf8')).toContain('"name": "my-site-shared"');
     expect(readFileSync(path.join(target, 'pnpm-workspace.yaml'), 'utf8')).toContain('"shared"');
 
-    expect(readFileSync(path.join(target, 'package.json'), 'utf8')).toContain('"name": "my-site"');
+    const rootPkg = JSON.parse(readFileSync(path.join(target, 'package.json'), 'utf8'));
+    expect(rootPkg.name).toBe('my-site');
+    // The STANDALONE root keeps pnpm.onlyBuiltDependencies (it IS the workspace root
+    // here, so the field takes effect); the dogfood's regenerate.ts strips this copy.
+    expect(rootPkg.pnpm.onlyBuiltDependencies).toContain('better-sqlite3');
     // The generated .npmrc pins the Strapi-shaped pnpm settings and does NOT route
     // @press to any registry — they resolve from the default (npm).
     const npmrcContents = readFileSync(path.join(target, '.npmrc'), 'utf8');

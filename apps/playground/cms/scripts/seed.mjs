@@ -1,7 +1,8 @@
 // cms/scripts/seed.mjs — One-shot sample content for the cms host. Boots it
 // programmatically (CMS server must be STOPPED), uploads a tiny PNG, and creates
 // a PUBLISHED 'home' page with a press.hero + custom.callout so the first
-// `press dev` renders something. Idempotent: deletes any existing 'home' first.
+// `press dev` renders something. Skip-if-empty: seeds only a fresh CMS — existing
+// content is never overwritten (delete cms/.tmp to reset).
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -27,10 +28,13 @@ async function main() {
   const app = await createStrapi(appContext).load();
 
   try {
-    // Idempotency: remove any existing 'home' page (draft + published).
-    const existing = await app.documents(PAGE_UID).findMany({ filters: { slug: SLUG }, status: 'draft' });
-    for (const doc of existing) {
-      await app.documents(PAGE_UID).delete({ documentId: doc.documentId });
+    // Skip-if-empty: only seed a fresh CMS. Once any published page exists (the
+    // first boot's sample, or the adopter's own content), leave it untouched so
+    // `press dev` never discards their work. Reset by deleting cms/.tmp (the DB).
+    const existing = await app.documents(PAGE_UID).findMany({ status: 'published' });
+    if (existing.length > 0) {
+      console.log(`[seed] ${existing.length} published page(s) exist — skipping seed (delete cms/.tmp to reset).`);
+      return;
     }
 
     // Upload the image through the upload plugin service.
