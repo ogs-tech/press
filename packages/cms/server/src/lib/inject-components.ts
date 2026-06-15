@@ -74,16 +74,27 @@ export const injectComponents = ({ strapi }: { strapi: Core.Strapi }): void => {
 export const admitCustomBlocks = ({ strapi }: { strapi: Core.Strapi }): void => {
   const pageContentType = strapi.get('content-types').get('plugin::press-cms.page');
 
+  // Invariant: the engine ships plugin::press-cms.page, so it MUST be registered
+  // by the time this register hook fires. If it isn't, custom.* admission cannot
+  // happen and the engine would boot half-broken (blocks silently absent from the
+  // DZ → incomplete types → pages with unknown components). Fail loud, abort boot.
   if (!pageContentType) {
-    strapi.log.warn('[press-cms] plugin::press-cms.page not found in content-types registry at register time; custom.* blocks cannot be admitted');
-    return;
+    throw new Error(
+      "[press-cms] invariant violated: 'plugin::press-cms.page' is absent from the " +
+        'content-types registry at register time — custom.* blocks cannot be admitted, ' +
+        'aborting boot. Likely an engine content-type load failure or a Strapi version mismatch.',
+    );
   }
 
   const bodyAttr = (pageContentType.attributes as Record<string, { type: string; components?: string[] }>)?.body;
 
   if (!bodyAttr || bodyAttr.type !== 'dynamiczone' || !Array.isArray(bodyAttr.components)) {
-    strapi.log.warn('[press-cms] page.body dynamic zone not found or has unexpected shape; skipping custom.* admission');
-    return;
+    throw new Error(
+      "[press-cms] invariant violated: 'plugin::press-cms.page' has no 'body' dynamic zone " +
+        '(or it has an unexpected shape) at register time. The page Dynamic Zone is the engine ' +
+        'extension point for custom.* blocks — aborting boot. Likely a changed page schema or a ' +
+        'Strapi version mismatch.',
+    );
   }
 
   const componentRegistry = strapi.get('components');

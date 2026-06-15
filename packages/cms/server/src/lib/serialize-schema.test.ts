@@ -60,4 +60,21 @@ describe('serializeSchema', () => {
       type: 'dynamiczone', components: ['press.hero', 'custom.callout'],
     });
   });
+
+  it('throws (not a cryptic null-deref) when the page content-type is not registered', () => {
+    const strapi = { contentType: () => undefined, get: () => new Map() } as any;
+    expect(() => serializeSchema(strapi)).toThrow(/plugin::press-cms\.page.*not registered/);
+  });
+
+  it('throws instead of silently dropping a DZ-admitted component missing from the registry', () => {
+    const strapi = {
+      contentType: () => ({
+        uid: 'plugin::press-cms.page',
+        info: {},
+        attributes: { body: { type: 'dynamiczone', components: ['custom.ghost'] } },
+      }),
+      get: (key: string) => (key === 'components' ? new Map() : undefined),
+    } as any;
+    expect(() => serializeSchema(strapi)).toThrow(/custom\.ghost.*absent from the components registry/);
+  });
 });

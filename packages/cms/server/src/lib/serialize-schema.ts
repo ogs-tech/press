@@ -38,13 +38,32 @@ const pickAttributes = (attributes: Record<string, Attr>): Record<string, Attr> 
  */
 export const serializeSchema = (strapi: Core.Strapi): PressSchema => {
   const page = strapi.contentType(PAGE_UID as any) as any;
+  // Loud failure beats a cryptic `Cannot read 'uid' of undefined` downstream: if
+  // the page content-type is gone, the type-sync contract cannot be produced.
+  if (!page) {
+    throw new Error(
+      `[press-cms] cannot serialize schema: content-type '${PAGE_UID}' is not registered — ` +
+        'is @press/cms loaded? The type-sync contract cannot be produced.',
+    );
+  }
+
   const registry = strapi.get('components') as Map<string, any>;
-  const dzComponents: string[] = page?.attributes?.body?.components ?? [];
+  const dzComponents: string[] = page.attributes?.body?.components ?? [];
 
   const components: PressSchema['components'] = {};
   for (const uid of dzComponents) {
     const comp = registry.get(uid);
-    if (comp) components[uid] = { uid, attributes: pickAttributes(comp.attributes) };
+    // A uid admitted into the page DZ but missing from the components registry is a
+    // contract violation (Spec §5.2: the schema must never disagree with what Strapi
+    // serves). Fail loud rather than silently emit types that omit a real block.
+    if (!comp) {
+      throw new Error(
+        `[press-cms] cannot serialize schema: component '${uid}' is admitted into the page ` +
+          'Dynamic Zone but absent from the components registry — the generated types would be ' +
+          'incomplete. Aborting the schema response.',
+      );
+    }
+    components[uid] = { uid, attributes: pickAttributes(comp.attributes) };
   }
 
   return {
