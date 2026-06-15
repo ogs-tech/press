@@ -1,6 +1,7 @@
 {
   "name": "@press/shared",
   "version": "0.1.0",
+  "private": true,
   "description": "press — framework-agnostic contract types shared by the engine packages",
   "license": "MIT",
   "author": "Odenir Gomes",

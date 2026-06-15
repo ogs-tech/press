@@ -6,6 +6,7 @@
   "license": "MIT",
   "author": "Odenir Gomes",
   "type": "commonjs",
+  "publishConfig": { "access": "public" },
   "exports": {
     "./package.json": "./package.json",
     "./strapi-server": {

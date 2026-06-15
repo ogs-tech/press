@@ -5,6 +5,7 @@
   "license": "MIT",
   "author": "Odenir Gomes",
   "type": "module",
+  "publishConfig": { "access": "public" },
   "exports": {
     "./package.json": "./package.json",
     ".": { "types": "./src/index.ts", "default": "./src/index.ts" },

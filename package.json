@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "play": "pnpm --filter playground dev"
+    "play": "pnpm --filter playground dev",
+    "pack:check": "pnpm build && pnpm -r --filter \"./packages/*\" publish --dry-run --no-git-checks"
   },
   "devDependencies": {
     "@press/cms": "workspace:*",

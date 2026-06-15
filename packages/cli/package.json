@@ -7,6 +7,7 @@
   "type": "commonjs",
   "bin": { "press": "bin/press.js" },
   "files": ["bin", "dist", "templates"],
+  "publishConfig": { "access": "public" },
   "scripts": {
     "gen:versions": "tsx scripts/gen-versions.ts",
     "build": "pnpm gen:versions && tsc -p tsconfig.json",
