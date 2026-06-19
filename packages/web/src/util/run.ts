@@ -2,6 +2,10 @@ import { spawn } from 'node:child_process';
 
 export interface RunOptions {
   cwd?: string;
+  // Record<string, string | undefined> instead of NodeJS.ProcessEnv (the type the
+  // CLI's copy of run.ts uses): Next.js augments ProcessEnv to require NODE_ENV
+  // (next/types/global.d.ts, in scope for this ESM package but not the CJS CLI),
+  // and callers pass partial override maps. This is why the two run.ts copies diverge.
   env?: Record<string, string | undefined>;
 }
 
