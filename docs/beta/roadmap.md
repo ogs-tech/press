@@ -161,6 +161,14 @@ the same-arch happy case) on deploy-kit / harness / host template changes.
 > harness, managed/self-hosted guide) was dropped as out-of-scope for the beta.
 > The text above is retained as a record of what Spec 5 shipped.
 
+> **Post-beta CLI surface revision (2026-06-18).** The CLI was split into two packages:
+> `@ogs-tech/create-press` (run-once scaffolder, invoked as `pnpm create @ogs-tech/press`)
+> and the `@ogs-tech/press-web` runtime bin (`press` — commands: `dev` / `build` / `upgrade`).
+> `deploy` was purged from the package description (removed in the Spec 5 callout above).
+> The scaffolder is NOT added as a project dependency; the generated project pins
+> `@ogs-tech/press-{web,cms}` only. See
+> [`docs/superpowers/specs/2026-06-18-press-cli-command-surface-design.md`](../superpowers/specs/2026-06-18-press-cli-command-surface-design.md).
+
 ## Cadence
 
 Short retro every **2 weeks** (PRD §7): did anyone reach a phase gate; where did

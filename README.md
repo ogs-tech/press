@@ -6,12 +6,12 @@ thin config layer (`press.config.ts` + your custom blocks); `press` materializes
 and runs everything else.
 
 ```bash
-press create my-site
+pnpm create @ogs-tech/press my-site
 cd my-site
 pnpm dev          # cms on :1337/admin, web on :3000
 ```
 
-One project, three commands: **create → dev → build**.
+One project, four commands: **create → dev → build → upgrade**.
 
 ## Requirements
 
@@ -21,8 +21,8 @@ One project, three commands: **create → dev → build**.
 ## Install
 
 > **Published on npm** under the [`@ogs-tech`](https://www.npmjs.com/org/ogs-tech) org.
-> Scaffold a project anywhere with `npx @ogs-tech/press-cli create my-site`; the
-> generated project pins `@ogs-tech/press-{cli,web,cms}` at the versions that
+> Scaffold a project anywhere with `pnpm create @ogs-tech/press my-site`; the
+> generated project pins `@ogs-tech/press-{web,cms}` at the versions that
 > produced it. Inside this monorepo the same packages are consumed via `workspace:*`
 > for a fast dev loop (see [Repository internals](#repository-internals)).
 
@@ -30,7 +30,7 @@ One project, three commands: **create → dev → build**.
 
 ```bash
 # 1. Scaffold a new project (writes only your thin Project zone, then installs).
-press create my-site
+pnpm create @ogs-tech/press my-site
 cd my-site
 
 # 2. Develop — boots the full stack as one process group
@@ -43,20 +43,21 @@ pnpm dev
 pnpm build
 ```
 
-`pnpm dev` / `build` are thin aliases the scaffold writes for
-`press dev` / `press build`.
+`pnpm dev` / `build` / `upgrade` are thin aliases the scaffold writes for
+`press dev` / `press build` / `press upgrade`.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `press create <name>` | Scaffold a new project into `<name>/` and `pnpm install` it. `@ogs-tech/press-*` resolve from the default registry (npm). |
-| `press dev` | Materialize the web host, seed sample content, boot cms (`:1337`), sync CMS schema → web types, then boot web (`:3000`). |
-| `press build` | Materialize the web host, `strapi build` the cms, and `next build` the web. No live CMS is needed to build. |
+| `pnpm create @ogs-tech/press <name>` | Scaffold a new project into `<name>/` and `pnpm install` it. Run once — `@ogs-tech/create-press` is the scaffolder and is not added as a project dependency. |
+| `pnpm dev` | Materialize the web host, seed sample content, boot cms (`:1337`), sync CMS schema → web types, then boot web (`:3000`). Maps to `press dev`. |
+| `pnpm build` | Materialize the web host, `strapi build` the cms, and `next build` the web. No live CMS is needed to build. Maps to `press build`. |
+| `pnpm upgrade [version]` | Bump `@ogs-tech/press-*` to the target in lockstep, reinstall, and re-materialize the host. Default = latest; pass an explicit version (e.g. `pnpm upgrade 0.4.0`) to pin a specific release. Maps to `press upgrade`. |
 
-Run `press --help` or `press <command> --help` for the full flag list.
+Run `press --help` or `press <command> --help` for the full flag list on the runtime bin.
 
-## What `press create` writes
+## What `pnpm create @ogs-tech/press` writes
 
 The scaffold is **ultra-thin** — only the layer you own. There is no `app/` or
 `next.config`; the Next host is engine-owned and regenerated under a gitignored
@@ -69,7 +70,7 @@ my-site/
 │  ├─ cms/                 # the one visible host — a minimal Strapi app
 │  │  └─ scripts/seed.mjs  # sample home page so the first `press dev` renders something
 │  └─ shared/              # the content-type contract (<name>-shared/types)
-├─ package.json            # scripts: dev / build → press
+├─ package.json            # scripts: dev / build / upgrade → press
 ├─ pnpm-workspace.yaml     # packages/* are workspace members (web has no package.json, so pnpm skips it)
 └─ .npmrc / .gitignore / .nvmrc
 ```
@@ -112,11 +113,14 @@ render server-side alongside the engine's built-in blocks.
 
 ## Updating the engine
 
-There is no special update command. Bump the dependencies and rebuild:
+`press upgrade` (via `pnpm upgrade`) is the coordinated lockstep update path —
+it resolves the target version, rewrites exact pins for `@ogs-tech/press-web` and
+`@ogs-tech/press-cms` in lockstep, reinstalls, and re-materializes the host.
+Because pins are EXACT, `pnpm update` is a no-op — `pnpm upgrade` is the real path.
 
 ```bash
-pnpm update @ogs-tech/press-cms @ogs-tech/press-web
-pnpm --filter cms build && pnpm --filter cms start
+pnpm upgrade            # latest engine
+pnpm upgrade 0.4.0      # a specific version
 ```
 
 Engine updates never touch your Project zone (your config, blocks, and content
@@ -130,7 +134,7 @@ This monorepo develops `press` and proves the core thesis — that a Strapi 5 CM
 can ship as a versioned, updatable dependency without leaking into the adopter's
 code.
 
-- `packages/cli` — the `@ogs-tech/press-cli` CLI (this package).
+- `packages/cli` — `@ogs-tech/create-press`: the run-once scaffolder invoked via `pnpm create @ogs-tech/press`; not added as a project dependency.
 - `packages/cms` — the **engine** Strapi plugin (`@ogs-tech/press-cms`): ships a
   `page` content-type and injects reference Dynamic-Zone blocks.
 - `packages/web` — the **engine** web layer (`@ogs-tech/press-web`): the Next host
@@ -146,7 +150,7 @@ code.
 
 ```bash
 pnpm install              # from the repo root (Node 20.x, pnpm 10.x)
-pnpm --filter @ogs-tech/press-cli test         # CLI unit contracts
+pnpm --filter @ogs-tech/create-press test      # CLI unit contracts
 pnpm play                             # boot the playground (press dev: cms :1337 + web :3000)
 ```
 
