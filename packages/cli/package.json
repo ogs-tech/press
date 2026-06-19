@@ -10,7 +10,7 @@
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ogs-tech/press-cli.git",
+    "url": "git+https://github.com/ogs-tech/press.git",
     "directory": "packages/cli"
   },
   "scripts": {
