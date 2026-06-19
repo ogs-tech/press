@@ -11,9 +11,13 @@
     "play": "turbo run dev --filter playground",
     "play:create": "tsx scripts/create-playground.ts",
     "play:upgrade": "tsx scripts/upgrade-playground.ts",
-    "pack:check": "pnpm build && pnpm -r --filter \"./packages/*\" publish --dry-run --no-git-checks"
+    "pack:check": "pnpm build && pnpm -r --filter \"./packages/*\" publish --dry-run --no-git-checks",
+    "version-packages": "changeset version && pnpm --filter @ogs-tech/press-cli gen:versions && git add -A",
+    "release": "turbo run build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
     "@ogs-tech/press-cms": "workspace:*",
     "@ogs-tech/press-web": "workspace:*",
     "tsx": "^4.19.0",
