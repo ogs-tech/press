@@ -1,6 +1,6 @@
 # An .npmignore is REQUIRED here: without it npm falls back to .gitignore, which
 # excludes src/types/generated.ts — the sync-generated types the consumer imports
-# via @press/web/types. We DO want generated.ts in the tarball (the guard runs
+# via @ogs-tech/press-web/types. We DO want generated.ts in the tarball (the guard runs
 # sync-types before publishing), so this file deliberately does NOT list it.
 node_modules/
 vitest.config.ts

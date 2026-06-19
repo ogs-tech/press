@@ -69,10 +69,10 @@ describe('scaffold', () => {
     // here, so the field takes effect); play:create strips this copy for the dogfood.
     expect(rootPkg.pnpm.onlyBuiltDependencies).toContain('better-sqlite3');
     // The generated .npmrc pins the Strapi-shaped pnpm settings and does NOT route
-    // @press to any registry — they resolve from the default (npm).
+    // @ogs-tech to any registry — they resolve from the default (npm).
     const npmrcContents = readFileSync(path.join(target, '.npmrc'), 'utf8');
     expect(npmrcContents).toContain('node-linker=hoisted');
-    expect(npmrcContents).not.toContain('@press:registry');
+    expect(npmrcContents).not.toContain('@ogs-tech:registry');
   });
 
   it('pins @ogs-tech/press-* from the generated VERSIONS (no drift from the engine manifests)', () => {
