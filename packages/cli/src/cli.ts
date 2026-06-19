@@ -1,33 +1,16 @@
 import { Command } from 'commander';
 import pkg from '../package.json';
 import { createCommand } from './commands/create';
-import { devCommand } from './commands/dev';
-import { buildCommand } from './commands/build';
 
-/** Builds the configured commander program (extracted for testability). */
+/** Builds the create-press program — scaffold is the package's default action. */
 export function buildProgram(): Command {
   const program = new Command();
   program
-    .name('press')
-    .description('press CLI — create / dev / build the press stack')
-    .version(pkg.version);
-
-  program
-    .command('create')
-    .argument('<name>', 'project directory to scaffold')
+    .name('create-press')
     .description('Scaffold a new press project (ultra-thin Project zone)')
+    .version(pkg.version)
+    .argument('<name>', 'project directory to scaffold')
     .action((name: string) => createCommand({ name }));
-
-  program
-    .command('dev')
-    .description('Boot the whole stack (cms + web) for development')
-    .action(() => devCommand({ cwd: process.cwd() }));
-
-  program
-    .command('build')
-    .description('Build deployable artifacts for cms + web')
-    .action(() => buildCommand({ cwd: process.cwd() }));
-
   return program;
 }
 

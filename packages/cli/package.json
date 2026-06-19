@@ -1,11 +1,11 @@
 {
-  "name": "@ogs-tech/press-cli",
+  "name": "@ogs-tech/create-press",
   "version": "0.1.0",
-  "description": "press CLI — create / dev / build / deploy the press stack",
+  "description": "Scaffold a new press project (ultra-thin Project zone)",
   "license": "MIT",
   "author": "Odenir Gomes",
   "type": "commonjs",
-  "bin": { "press": "bin/press.js" },
+  "bin": { "create-press": "bin/create-press.js" },
   "files": ["bin", "dist", "templates"],
   "publishConfig": { "access": "public" },
   "repository": {
@@ -20,11 +20,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "commander": "^13.0.0",
-    "tsx": "^4.19.0"
+    "commander": "^13.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "tsx": "^4.19.0",
     "typescript": "^5",
     "vitest": "^2.1.0"
   }
