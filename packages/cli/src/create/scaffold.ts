@@ -23,9 +23,8 @@ function rootPackageJson(name: string): string {
         name,
         version: '0.1.0',
         private: true,
-        scripts: { dev: 'press dev', build: 'press build' },
+        scripts: { dev: 'press dev', build: 'press build', upgrade: 'press upgrade' },
         dependencies: {
-          '@ogs-tech/press-cli': VERSIONS.pressCli,
           '@ogs-tech/press-web': VERSIONS.pressWeb,
           // The content-type contract (shared/) — a workspace member so the
           // materialized host + adopter blocks resolve `<name>-shared/types`.

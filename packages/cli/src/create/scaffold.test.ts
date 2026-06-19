@@ -65,6 +65,9 @@ describe('scaffold', () => {
 
     const rootPkg = JSON.parse(readFileSync(path.join(target, 'package.json'), 'utf8'));
     expect(rootPkg.name).toBe('my-site');
+    expect(rootPkg.scripts.dev).toBe('press dev');
+    expect(rootPkg.scripts.build).toBe('press build');
+    expect(rootPkg.scripts.upgrade).toBe('press upgrade');
     // The STANDALONE root keeps pnpm.onlyBuiltDependencies (it IS the workspace root
     // here, so the field takes effect); play:create strips this copy for the dogfood.
     expect(rootPkg.pnpm.onlyBuiltDependencies).toContain('better-sqlite3');
@@ -80,7 +83,8 @@ describe('scaffold', () => {
     scaffold({ target, name: 'my-site' });
 
     const root = JSON.parse(readFileSync(path.join(target, 'package.json'), 'utf8'));
-    expect(root.dependencies['@ogs-tech/press-cli']).toBe(VERSIONS.pressCli);
+    expect(root.dependencies['@ogs-tech/press-cli']).toBeUndefined();
+    expect(root.dependencies['@ogs-tech/create-press']).toBeUndefined();
     expect(root.dependencies['@ogs-tech/press-web']).toBe(VERSIONS.pressWeb);
     // @ogs-tech/press-* are pinned EXACT (no caret), so a generated project always resolves
     // the engine that produced it.

@@ -22,7 +22,7 @@ export interface Manifest {
  * import it via `import type`, erased at transpile time), so it stays private
  * and must NOT publish. The test asserts that privacy separately.
  */
-export const PUBLISHABLE_PACKAGES = ['@ogs-tech/press-cli', '@ogs-tech/press-web', '@ogs-tech/press-cms'] as const;
+export const PUBLISHABLE_PACKAGES = ['@ogs-tech/create-press', '@ogs-tech/press-web', '@ogs-tech/press-cms'] as const;
 
 // Dependency fields that ship in the published manifest. devDependencies do not,
 // so a workspace: spec there is harmless — but here it would point the tarball at

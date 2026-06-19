@@ -8,7 +8,7 @@ import { PUBLISHABLE_PACKAGES, checkPublishReadiness, type Manifest } from './pu
 // flow, so it owns the guard. packagesDir resolves to <repo>/packages.
 const packagesDir = path.join(__dirname, '..', '..', '..');
 const DIR_BY_NAME: Record<string, string> = {
-  '@ogs-tech/press-cli': 'cli',
+  '@ogs-tech/create-press': 'cli',
   '@ogs-tech/press-web': 'web',
   '@ogs-tech/press-cms': 'cms',
   '@ogs-tech/press-shared': 'shared',
