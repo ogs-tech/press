@@ -4,13 +4,13 @@
  * honest: apps/playground is exactly what `press create` emits, minus the files
  * that only make sense for a STANDALONE project (its own .npmrc / nested
  * pnpm-workspace.yaml / pnpm.onlyBuiltDependencies — the monorepo root owns
- * those), with @press/* pinned to workspace:*.
+ * those), with @ogs-tech/press-* pinned to workspace:*.
  *
  *   pnpm play:create
  *
  * Unlike the old in-directory `regenerate`, this tool lives OUTSIDE the directory
  * it rebuilds, so there is no self-preservation swap and the playground keeps no
- * scripts/ dir (tsx resolves transitively via @press/cli under the repo's
+ * scripts/ dir (tsx resolves transitively via @ogs-tech/press-cli under the repo's
  * node-linker=hoisted). It scaffolds into a temp dir then replaces apps/playground
  * atomically, so a mid-scaffold failure never leaves a half-wiped dogfood. The cms
  * Strapi uuid is preserved across runs (read before the swap) so the committed
@@ -57,10 +57,10 @@ const staged = path.join(tmp, name);
 console.log('> scaffold three-zone project (packages/web|cms|shared) into a temp dir');
 scaffold({ target: staged, name });
 
-// 2. Rewire @press/* → workspace:* and drop standalone-only files/fields.
-console.log('> rewire @press/* → workspace:* and strip standalone-only fields');
-rewireToWorkspace(path.join(staged, 'package.json'), ['@press/cli', '@press/web']);
-rewireToWorkspace(path.join(staged, 'packages', 'cms', 'package.json'), ['@press/cms']);
+// 2. Rewire @ogs-tech/press-* → workspace:* and drop standalone-only files/fields.
+console.log('> rewire @ogs-tech/press-* → workspace:* and strip standalone-only fields');
+rewireToWorkspace(path.join(staged, 'package.json'), ['@ogs-tech/press-cli', '@ogs-tech/press-web']);
+rewireToWorkspace(path.join(staged, 'packages', 'cms', 'package.json'), ['@ogs-tech/press-cms']);
 stripStandaloneFields(path.join(staged, 'package.json'));
 for (const f of ['.npmrc', 'pnpm-workspace.yaml']) {
   const p = path.join(staged, f);

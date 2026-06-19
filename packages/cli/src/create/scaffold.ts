@@ -25,8 +25,8 @@ function rootPackageJson(name: string): string {
         private: true,
         scripts: { dev: 'press dev', build: 'press build' },
         dependencies: {
-          '@press/cli': VERSIONS.pressCli,
-          '@press/web': VERSIONS.pressWeb,
+          '@ogs-tech/press-cli': VERSIONS.pressCli,
+          '@ogs-tech/press-web': VERSIONS.pressWeb,
           // The content-type contract (shared/) — a workspace member so the
           // materialized host + adopter blocks resolve `<name>-shared/types`.
           [`${name}-shared`]: 'workspace:*',
@@ -75,7 +75,7 @@ function cmsPackageJson(name: string): string {
           strapi: 'strapi',
         },
         dependencies: {
-          '@press/cms': VERSIONS.pressCms,
+          '@ogs-tech/press-cms': VERSIONS.pressCms,
           '@strapi/plugin-cloud': VERSIONS.strapi,
           '@strapi/plugin-users-permissions': VERSIONS.strapi,
           '@strapi/strapi': VERSIONS.strapi,
@@ -127,7 +127,7 @@ function sharedPackageJson(name: string): string {
 }
 
 function npmrc(): string {
-  // @press/* resolve from the default registry (npm). Only the Strapi-shaped
+  // @ogs-tech/press-* resolve from the default registry (npm). Only the Strapi-shaped
   // pnpm settings are pinned here.
   const lines = [
     '# Strapi needs a flat, npm-like node_modules; hoisted gives that under pnpm.',

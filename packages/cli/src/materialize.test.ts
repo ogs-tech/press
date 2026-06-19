@@ -15,9 +15,9 @@ afterEach(() => {
 }, 20_000);
 
 describe('materialize', () => {
-  it('copies the @press/web host template into .press/web/', () => {
+  it('copies the @ogs-tech/press-web host template into .press/web/', () => {
     const project = scratch();
-    // Resolve @press/web from THIS repo (workspace) for the test.
+    // Resolve @ogs-tech/press-web from THIS repo (workspace) for the test.
     materialize(project, { resolveFrom: __dirname });
 
     const web = path.join(project, '.press', 'web');

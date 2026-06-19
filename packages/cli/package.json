@@ -1,5 +1,5 @@
 {
-  "name": "@press/cli",
+  "name": "@ogs-tech/press-cli",
   "version": "0.1.0",
   "description": "press CLI — create / dev / build / deploy the press stack",
   "license": "MIT",

@@ -7,7 +7,7 @@ import { toGlobalId } from './global-id';
  *
  * Strapi only scans the host APP's `src/components` directory; there is no
  * declarative plugin-component API. To ship reference blocks from the engine
- * (`@press/cms` in `node_modules`) we inject them into the components registry
+ * (`@ogs-tech/press-cms` in `node_modules`) we inject them into the components registry
  * during the plugin `register` lifecycle.
  *
  * Boot order (see @strapi/core/dist/Strapi.js `load`):

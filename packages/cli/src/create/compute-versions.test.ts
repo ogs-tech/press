@@ -15,7 +15,7 @@ const fixture: EngineManifests = {
 };
 
 describe('computeVersions', () => {
-  it('pins @press/* to EXACT versions (no caret on 0.x)', () => {
+  it('pins @ogs-tech/press-* to EXACT versions (no caret on 0.x)', () => {
     const v = computeVersions(fixture);
     expect(v.pressCli).toBe('0.1.0');
     expect(v.pressWeb).toBe('0.3.1');
@@ -36,7 +36,7 @@ describe('computeVersions', () => {
 });
 
 describe('versions.generated.ts drift guard', () => {
-  // Reads the real sibling manifests so a `@press/*` bump that forgets to run
+  // Reads the real sibling manifests so a `@ogs-tech/press-*` bump that forgets to run
   // `gen:versions` fails CI here — the same check as `gen:versions --check`.
   const packagesDir = path.resolve(__dirname, '..', '..', '..'); // packages/
   const real = (pkg: string) =>

@@ -1,8 +1,8 @@
 import type { Core } from '@strapi/strapi';
-import type { Attr, PressSchema } from '@press/shared';
+import type { Attr, PressSchema } from '@ogs-tech/press-shared';
 
 // Re-exported so the type stays importable from this module, while the single
-// source of truth lives in @press/shared (shared with @press/web's generator).
+// source of truth lives in @ogs-tech/press-shared (shared with @ogs-tech/press-web's generator).
 export type { Attr, PressSchema };
 
 const PAGE_UID = 'plugin::press-cms.page';
@@ -43,7 +43,7 @@ export const serializeSchema = (strapi: Core.Strapi): PressSchema => {
   if (!page) {
     throw new Error(
       `[press-cms] cannot serialize schema: content-type '${PAGE_UID}' is not registered — ` +
-        'is @press/cms loaded? The type-sync contract cannot be produced.',
+        'is @ogs-tech/press-cms loaded? The type-sync contract cannot be produced.',
     );
   }
 

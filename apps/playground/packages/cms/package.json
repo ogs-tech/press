@@ -10,7 +10,7 @@
     "strapi": "strapi"
   },
   "dependencies": {
-    "@press/cms": "workspace:*",
+    "@ogs-tech/press-cms": "workspace:*",
     "@strapi/plugin-cloud": "5.48.0",
     "@strapi/plugin-users-permissions": "5.48.0",
     "@strapi/strapi": "5.48.0",

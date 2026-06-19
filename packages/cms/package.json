@@ -1,5 +1,5 @@
 {
-  "name": "@press/cms",
+  "name": "@ogs-tech/press-cms",
   "version": "0.3.2",
   "description": "press engine — content-types and reference blocks",
   "keywords": [],
@@ -30,7 +30,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@press/shared": "workspace:*",
+    "@ogs-tech/press-shared": "workspace:*",
     "@strapi/sdk-plugin": "^6.0.0",
     "@strapi/strapi": "5.48.0",
     "@strapi/typescript-utils": "^5.0.0",

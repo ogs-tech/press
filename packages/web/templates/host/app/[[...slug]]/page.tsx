@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect } from 'next/navigation';
-import { BlockRenderer, buildMetadata, getPage } from '@press/web';
+import { BlockRenderer, buildMetadata, getPage } from '@ogs-tech/press-web';
 import { customBlocks } from '../../press.blocks';
 import { config } from '../../press-config';
 

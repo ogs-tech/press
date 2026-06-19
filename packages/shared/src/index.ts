@@ -1,8 +1,8 @@
 /**
- * @press/shared — the framework-agnostic press wire contract.
+ * @ogs-tech/press-shared — the framework-agnostic press wire contract.
  *
  * `PressSchema` is the JSON shape the engine serves at `/api/press/schema`:
- * produced by @press/cms (serialize-schema) and consumed by @press/web's type
+ * produced by @ogs-tech/press-cms (serialize-schema) and consumed by @ogs-tech/press-web's type
  * generator. Single-sourcing it here removes the drift risk of two hand-kept
  * copies. It deliberately references NO Strapi or React types — it is the
  * contract itself, owned by neither side (Spec §5.2: the generator stays

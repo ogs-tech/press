@@ -8,10 +8,10 @@ import { PUBLISHABLE_PACKAGES, checkPublishReadiness, type Manifest } from './pu
 // flow, so it owns the guard. packagesDir resolves to <repo>/packages.
 const packagesDir = path.join(__dirname, '..', '..', '..');
 const DIR_BY_NAME: Record<string, string> = {
-  '@press/cli': 'cli',
-  '@press/web': 'web',
-  '@press/cms': 'cms',
-  '@press/shared': 'shared',
+  '@ogs-tech/press-cli': 'cli',
+  '@ogs-tech/press-web': 'web',
+  '@ogs-tech/press-cms': 'cms',
+  '@ogs-tech/press-shared': 'shared',
 };
 
 function dirOf(name: string): string {
@@ -36,14 +36,14 @@ describe('publish-readiness', () => {
     expect(controlled, `${name} has neither a files allowlist nor an .npmignore`).toBe(true);
   });
 
-  it('keeps @press/shared private (internal dev-only contract, never published)', () => {
+  it('keeps @ogs-tech/press-shared private (internal dev-only contract, never published)', () => {
     // web/cms consume it via `import type` only — erased at transpile time, so the
     // adopter never resolves it. Publishing it would leak an internal package.
-    expect(manifestOf('@press/shared').private).toBe(true);
+    expect(manifestOf('@ogs-tech/press-shared').private).toBe(true);
   });
 
   it('flags a manifest missing publishConfig and version', () => {
-    const violations = checkPublishReadiness({ name: '@press/x' });
+    const violations = checkPublishReadiness({ name: '@ogs-tech/press-x' });
     expect(violations).toContain('missing publishConfig.access="public" (scoped packages default to restricted)');
     expect(violations).toContain('missing a version');
   });
@@ -52,8 +52,8 @@ describe('publish-readiness', () => {
     const violations = checkPublishReadiness({
       publishConfig: { access: 'public' },
       version: '1.0.0',
-      dependencies: { '@press/shared': 'workspace:*' },
+      dependencies: { '@ogs-tech/press-shared': 'workspace:*' },
     });
-    expect(violations).toContain('dependencies.@press/shared still uses the workspace: protocol');
+    expect(violations).toContain('dependencies.@ogs-tech/press-shared still uses the workspace: protocol');
   });
 });

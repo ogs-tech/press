@@ -19,7 +19,7 @@ const SCHEMA_POLL_MS = 2000;
 
 function syncTypesScript(projectRoot: string): string {
   const require = createRequire(path.join(projectRoot, 'noop.js'));
-  const webPkg = require.resolve('@press/web/package.json');
+  const webPkg = require.resolve('@ogs-tech/press-web/package.json');
   return path.join(path.dirname(webPkg), 'bin', 'sync-types.ts');
 }
 

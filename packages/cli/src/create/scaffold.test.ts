@@ -75,19 +75,19 @@ describe('scaffold', () => {
     expect(npmrcContents).not.toContain('@press:registry');
   });
 
-  it('pins @press/* from the generated VERSIONS (no drift from the engine manifests)', () => {
+  it('pins @ogs-tech/press-* from the generated VERSIONS (no drift from the engine manifests)', () => {
     const target = path.join(scratchParent(), 'my-site');
     scaffold({ target, name: 'my-site' });
 
     const root = JSON.parse(readFileSync(path.join(target, 'package.json'), 'utf8'));
-    expect(root.dependencies['@press/cli']).toBe(VERSIONS.pressCli);
-    expect(root.dependencies['@press/web']).toBe(VERSIONS.pressWeb);
-    // @press/* are pinned EXACT (no caret), so a generated project always resolves
+    expect(root.dependencies['@ogs-tech/press-cli']).toBe(VERSIONS.pressCli);
+    expect(root.dependencies['@ogs-tech/press-web']).toBe(VERSIONS.pressWeb);
+    // @ogs-tech/press-* are pinned EXACT (no caret), so a generated project always resolves
     // the engine that produced it.
-    expect(root.dependencies['@press/web']).not.toMatch(/[\^~]/);
+    expect(root.dependencies['@ogs-tech/press-web']).not.toMatch(/[\^~]/);
 
     const cms = JSON.parse(readFileSync(path.join(target, 'packages/cms/package.json'), 'utf8'));
-    expect(cms.dependencies['@press/cms']).toBe(VERSIONS.pressCms);
+    expect(cms.dependencies['@ogs-tech/press-cms']).toBe(VERSIONS.pressCms);
     expect(cms.dependencies['@strapi/strapi']).toBe(VERSIONS.strapi);
   });
 

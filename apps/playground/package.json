@@ -7,8 +7,8 @@
     "build": "press build"
   },
   "dependencies": {
-    "@press/cli": "workspace:*",
-    "@press/web": "workspace:*",
+    "@ogs-tech/press-cli": "workspace:*",
+    "@ogs-tech/press-web": "workspace:*",
     "playground-shared": "workspace:*",
     "next": "^15.1.0",
     "react": "^18.3.1",

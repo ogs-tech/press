@@ -20,10 +20,11 @@ One project, three commands: **create → dev → build**.
 
 ## Install
 
-> **Not published to a registry yet.** `@press/*` are developed in this monorepo
-> and consumed locally via `workspace:*`. Publishing to npm is planned; until
-> then, `press create` run outside the repo cannot install `@press/*` — work
-> inside the repo and use the [playground](#repository-internals) to try press.
+> **Published on npm** under the [`@ogs-tech`](https://www.npmjs.com/org/ogs-tech) org.
+> Scaffold a project anywhere with `npx @ogs-tech/press-cli create my-site`; the
+> generated project pins `@ogs-tech/press-{cli,web,cms}` at the versions that
+> produced it. Inside this monorepo the same packages are consumed via `workspace:*`
+> for a fast dev loop (see [Repository internals](#repository-internals)).
 
 ## Quickstart
 
@@ -49,7 +50,7 @@ pnpm build
 
 | Command | What it does |
 | --- | --- |
-| `press create <name>` | Scaffold a new project into `<name>/` and `pnpm install` it. `@press/*` resolve from the default registry (npm). |
+| `press create <name>` | Scaffold a new project into `<name>/` and `pnpm install` it. `@ogs-tech/press-*` resolve from the default registry (npm). |
 | `press dev` | Materialize the web host, seed sample content, boot cms (`:1337`), sync CMS schema → web types, then boot web (`:3000`). |
 | `press build` | Materialize the web host, `strapi build` the cms, and `next build` the web. No live CMS is needed to build. |
 
@@ -77,12 +78,12 @@ my-site/
 
 ## Customizing your site
 
-**Brand & SEO** — edit `press.config.ts`. It is typed by `@press/web`, so an
+**Brand & SEO** — edit `press.config.ts`. It is typed by `@ogs-tech/press-web`, so an
 engine update that changes the config shape fails loudly at *your* file rather
 than drifting silently:
 
 ```ts
-import { defineConfig } from '@press/web';
+import { defineConfig } from '@ogs-tech/press-web';
 
 export default defineConfig({
   brand: { name: 'Acme', logo: '/logo.svg', favicon: '/favicon.ico' },
@@ -114,7 +115,7 @@ render server-side alongside the engine's built-in blocks.
 There is no special update command. Bump the dependencies and rebuild:
 
 ```bash
-pnpm update @press/cms @press/web
+pnpm update @ogs-tech/press-cms @ogs-tech/press-web
 pnpm --filter cms build && pnpm --filter cms start
 ```
 
@@ -129,12 +130,12 @@ This monorepo develops `press` and proves the core thesis — that a Strapi 5 CM
 can ship as a versioned, updatable dependency without leaking into the adopter's
 code.
 
-- `packages/cli` — the `@press/cli` CLI (this package).
-- `packages/cms` — the **engine** Strapi plugin (`@press/cms`): ships a
+- `packages/cli` — the `@ogs-tech/press-cli` CLI (this package).
+- `packages/cms` — the **engine** Strapi plugin (`@ogs-tech/press-cms`): ships a
   `page` content-type and injects reference Dynamic-Zone blocks.
-- `packages/web` — the **engine** web layer (`@press/web`): the Next host
+- `packages/web` — the **engine** web layer (`@ogs-tech/press-web`): the Next host
   template, block renderer, config helpers, and CMS→types sync.
-- `packages/shared` — `@press/shared`: framework-agnostic contract types
+- `packages/shared` — `@ogs-tech/press-shared`: framework-agnostic contract types
   (the `PressSchema` wire format) and constants shared by `cms` and `web`.
 - `apps/playground/` — the in-repo dogfood: the real `press create` output,
   committed and consumed via `workspace:*` for a fast dev loop. Boot it with
@@ -145,7 +146,7 @@ code.
 
 ```bash
 pnpm install              # from the repo root (Node 20.x, pnpm 10.x)
-pnpm --filter @press/cli test         # CLI unit contracts
+pnpm --filter @ogs-tech/press-cli test         # CLI unit contracts
 pnpm play                             # boot the playground (press dev: cms :1337 + web :3000)
 ```
 

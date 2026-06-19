@@ -1,4 +1,4 @@
-import { buildMetadata } from '@press/web';
+import { buildMetadata } from '@ogs-tech/press-web';
 import { config } from '../press-config';
 
 // Brand defaults, no page: title = seo.defaultTitle, plus the favicon icon.

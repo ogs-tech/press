@@ -17,12 +17,12 @@ export interface Manifest {
 }
 
 /**
- * The @press/* packages a generated project installs from npm. @press/shared is
+ * The @ogs-tech/press-* packages a generated project installs from npm. @ogs-tech/press-shared is
  * deliberately absent: it is an internal, dev-only contract package (web/cms
  * import it via `import type`, erased at transpile time), so it stays private
  * and must NOT publish. The test asserts that privacy separately.
  */
-export const PUBLISHABLE_PACKAGES = ['@press/cli', '@press/web', '@press/cms'] as const;
+export const PUBLISHABLE_PACKAGES = ['@ogs-tech/press-cli', '@ogs-tech/press-web', '@ogs-tech/press-cms'] as const;
 
 // Dependency fields that ship in the published manifest. devDependencies do not,
 // so a workspace: spec there is harmless — but here it would point the tarball at

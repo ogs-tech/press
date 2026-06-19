@@ -1,7 +1,7 @@
 /**
  * Adopter-facing whitelabel input (Spec §6). Only `brand.name` is required;
  * every other field has an engine default applied by `resolveConfig`. This is a
- * STATIC engine type — hand-authored and versioned with @press/web — distinct
+ * STATIC engine type — hand-authored and versioned with @ogs-tech/press-web — distinct
  * from the CMS-schema-derived generated types of Spec 1 (Spec §4.3).
  */
 export interface PressConfig {

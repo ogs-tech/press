@@ -1,8 +1,8 @@
 // press.config.ts — Project zone (repo root). The single whitelabel source of
-// truth: identity + SEO, consumed by @press/web through defineConfig /
+// truth: identity + SEO, consumed by @ogs-tech/press-web through defineConfig /
 // resolveConfig / buildMetadata. The engine READS this file (the host imports
 // it) but NEVER rewrites it — an engine update leaves it untouched (Spec §8 AC5).
-import { defineConfig } from '@press/web';
+import { defineConfig } from '@ogs-tech/press-web';
 
 export default defineConfig({
   brand: {

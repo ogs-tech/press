@@ -8,7 +8,7 @@ export interface CreateOptions {
 
 /**
  * Scaffolds the ultra-thin Project zone (spec §6) into <name>/ and installs it.
- * @press/* resolve from the default registry (npm). The CLI writes ONLY the
+ * @ogs-tech/press-* resolve from the default registry (npm). The CLI writes ONLY the
  * adopter layer; the Next host is materialized to .press/web/ on first dev/build.
  */
 export async function createCommand(opts: CreateOptions): Promise<void> {
