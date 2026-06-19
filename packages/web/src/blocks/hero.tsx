@@ -14,9 +14,11 @@ export function Hero(props: PressHero) {
   return (
     <section data-block="press.hero">
       {src ? <img src={src} alt={image?.alternativeText ?? ''} /> : null}
-      <h1>{heading}</h1>
-      {subheading ? <p>{subheading}</p> : null}
-      {ctaLabel ? <a href="#">{ctaLabel}</a> : null}
+      <div>
+        <h1>{heading}</h1>
+        {subheading ? <p>{subheading}</p> : null}
+        {ctaLabel ? <a href="#">{ctaLabel}</a> : null}
+      </div>
     </section>
   );
 }
