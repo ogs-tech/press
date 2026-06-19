@@ -1,8 +1,8 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { rewritePin } from './upgrade';
+import { rewritePin, upgradeCommand } from './upgrade';
 
 describe('rewritePin', () => {
   const dirs: string[] = [];
@@ -39,5 +39,32 @@ describe('rewritePin', () => {
     const prev = rewritePin(file, '@ogs-tech/press-web', '0.4.0');
     expect(prev).toBeNull();
     expect(readFileSync(file, 'utf8')).toBe(before);
+  });
+});
+
+describe('upgradeCommand', () => {
+  const dirs: string[] = [];
+  afterEach(() => { for (const d of dirs) rmSync(d, { recursive: true, force: true }); });
+
+  it('throws when neither manifest carries an @ogs-tech/press-* pin', async () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'press-upgrade-'));
+    dirs.push(root);
+
+    // Root manifest: no press pins
+    writeFileSync(
+      path.join(root, 'package.json'),
+      JSON.stringify({ name: 'x', dependencies: { next: '^15.1.0' } }, null, 2) + '\n',
+    );
+
+    // packages/cms/package.json must exist so rewritePin doesn't throw ENOENT
+    mkdirSync(path.join(root, 'packages', 'cms'), { recursive: true });
+    writeFileSync(
+      path.join(root, 'packages', 'cms', 'package.json'),
+      JSON.stringify({ name: 'x-cms', dependencies: {} }, null, 2) + '\n',
+    );
+
+    await expect(upgradeCommand({ cwd: root, target: '0.4.0' })).rejects.toThrow(
+      /no @ogs-tech\/press-\* pins found/,
+    );
   });
 });
