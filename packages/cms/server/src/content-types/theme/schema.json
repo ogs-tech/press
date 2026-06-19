@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "themes",
+  "info": {
+    "singularName": "theme",
+    "pluralName": "themes",
+    "displayName": "Theme",
+    "description": "Named theme selection provided by the press engine"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string", "required": true, "unique": true },
+    "active": { "type": "boolean", "default": false }
+  }
+}
