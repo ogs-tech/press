@@ -11,7 +11,7 @@
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import { materialize } from '../packages/cli/src/materialize';
+import { materialize } from '../packages/web/src/materialize';
 
 const repoRoot = path.resolve(__dirname, '..');
 const root = path.join(repoRoot, 'apps', 'playground');

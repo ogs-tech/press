@@ -10,7 +10,7 @@
  *
  * Unlike the old in-directory `regenerate`, this tool lives OUTSIDE the directory
  * it rebuilds, so there is no self-preservation swap and the playground keeps no
- * scripts/ dir (tsx resolves transitively via @ogs-tech/press-cli under the repo's
+ * scripts/ dir (tsx resolves transitively via @ogs-tech/press-web under the repo's
  * node-linker=hoisted). It scaffolds into a temp dir then replaces apps/playground
  * atomically, so a mid-scaffold failure never leaves a half-wiped dogfood. The cms
  * Strapi uuid is preserved across runs (read before the swap) so the committed
@@ -59,7 +59,7 @@ scaffold({ target: staged, name });
 
 // 2. Rewire @ogs-tech/press-* → workspace:* and drop standalone-only files/fields.
 console.log('> rewire @ogs-tech/press-* → workspace:* and strip standalone-only fields');
-rewireToWorkspace(path.join(staged, 'package.json'), ['@ogs-tech/press-cli', '@ogs-tech/press-web']);
+rewireToWorkspace(path.join(staged, 'package.json'), ['@ogs-tech/press-web']);
 rewireToWorkspace(path.join(staged, 'packages', 'cms', 'package.json'), ['@ogs-tech/press-cms']);
 stripStandaloneFields(path.join(staged, 'package.json'));
 for (const f of ['.npmrc', 'pnpm-workspace.yaml']) {

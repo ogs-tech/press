@@ -4,8 +4,8 @@
  * versions the monorepo actually ships. Runs as part of `pnpm build`; a drift
  * test (compute-versions.test.ts) and the `--check` mode below guard staleness.
  *
- *   pnpm --filter @ogs-tech/press-cli gen:versions          # rewrite the committed file
- *   pnpm --filter @ogs-tech/press-cli gen:versions --check   # exit 1 if the file is stale (CI)
+ *   pnpm --filter @ogs-tech/create-press gen:versions          # rewrite the committed file
+ *   pnpm --filter @ogs-tech/create-press gen:versions --check   # exit 1 if the file is stale (CI)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -32,7 +32,7 @@ const outPath = path.resolve(__dirname, '..', 'src', 'create', 'versions.generat
 if (process.argv.includes('--check')) {
   const current = readFileSync(outPath, 'utf8');
   if (current !== rendered) {
-    console.error('versions.generated.ts is stale — run: pnpm --filter @ogs-tech/press-cli gen:versions');
+    console.error('versions.generated.ts is stale — run: pnpm --filter @ogs-tech/create-press gen:versions');
     process.exit(1);
   }
   console.log('versions.generated.ts is up to date.');

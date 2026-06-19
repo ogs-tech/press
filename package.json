@@ -12,7 +12,7 @@
     "play:create": "tsx scripts/create-playground.ts",
     "play:upgrade": "tsx scripts/upgrade-playground.ts",
     "pack:check": "pnpm build && pnpm -r --filter \"./packages/*\" publish --dry-run --no-git-checks",
-    "version-packages": "changeset version && pnpm --filter @ogs-tech/press-cli gen:versions && git add -A",
+    "version-packages": "changeset version && pnpm --filter @ogs-tech/create-press gen:versions && git add -A",
     "release": "turbo run build && changeset publish"
   },
   "devDependencies": {
