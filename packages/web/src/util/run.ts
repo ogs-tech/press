@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 
 export interface RunOptions {
   cwd?: string;
-  env?: NodeJS.ProcessEnv;
+  env?: Record<string, string | undefined>;
 }
 
 /** Runs a command, inheriting stdio, and resolves on exit 0 (rejects otherwise). */
