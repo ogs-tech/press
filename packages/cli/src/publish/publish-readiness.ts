@@ -17,10 +17,11 @@ export interface Manifest {
 }
 
 /**
- * The @ogs-tech/press-* packages a generated project installs from npm. @ogs-tech/press-shared is
- * deliberately absent: it is an internal, dev-only contract package (web/cms
- * import it via `import type`, erased at transpile time), so it stays private
- * and must NOT publish. The test asserts that privacy separately.
+ * The packages published to npm: @ogs-tech/create-press (the run-once scaffolder,
+ * which is NOT a generated-project dependency) plus the engine @ogs-tech/press-{web,cms}
+ * that a generated project installs. @ogs-tech/press-shared is deliberately absent: it is
+ * an internal, dev-only contract package (web/cms import it via `import type`, erased at
+ * transpile time), so it stays private and must NOT publish. The test asserts that privacy separately.
  */
 export const PUBLISHABLE_PACKAGES = ['@ogs-tech/create-press', '@ogs-tech/press-web', '@ogs-tech/press-cms'] as const;
 

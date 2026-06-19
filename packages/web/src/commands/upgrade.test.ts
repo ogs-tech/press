@@ -40,6 +40,14 @@ describe('rewritePin', () => {
     expect(prev).toBeNull();
     expect(readFileSync(file, 'utf8')).toBe(before);
   });
+
+  it('throws with the manifest path when the file is not valid JSON', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'press-upgrade-'));
+    dirs.push(dir);
+    const file = path.join(dir, 'package.json');
+    writeFileSync(file, '{ not valid json');
+    expect(() => rewritePin(file, '@ogs-tech/press-web', '0.4.0')).toThrow(/cannot read\/parse.*package\.json/);
+  });
 });
 
 describe('upgradeCommand', () => {
