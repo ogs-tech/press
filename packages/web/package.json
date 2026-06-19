@@ -16,7 +16,10 @@
     ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
     "./types": { "types": "./src/types/base.ts", "default": "./src/types/base.ts" }
   },
-  "bin": { "press-sync-types": "./bin/sync-types.ts" },
+  "bin": {
+    "press": "./bin/press.ts",
+    "press-sync-types": "./bin/sync-types.ts"
+  },
   "scripts": {
     "build": "echo '@ogs-tech/press-web ships TS source; nothing to build'",
     "sync-types": "tsx bin/sync-types.ts",
@@ -29,6 +32,7 @@
     "next": ">=15"
   },
   "dependencies": {
+    "commander": "^13.0.0",
     "tsx": "^4.19.0"
   },
   "devDependencies": {
