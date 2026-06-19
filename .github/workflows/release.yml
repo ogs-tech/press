@@ -34,4 +34,8 @@ jobs:
           publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          # NPM_CONFIG_PROVENANCE intentionally unset: npm provenance requires a PUBLIC
+          # source repo, but ogs-tech/press is private (npm returns E422
+          # "Unsupported GitHub Actions source repository visibility: private").
+          # OIDC trusted publishing (auth) still works without it. Re-enable only if
+          # the repo is made public.
