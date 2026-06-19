@@ -1,5 +1,11 @@
 # @ogs-tech/press-web
 
+## 0.4.1
+
+### Patch Changes
+
+- [`1051dcd`](https://github.com/ogs-tech/press/commit/1051dcd39fd0c19a6fabf2f5d6fe50bc93286422) Thanks [@odenirdev](https://github.com/odenirdev)! - Validate the automated OIDC release pipeline (npm trusted publisher) end-to-end — no functional change.
+
 ## 0.4.0
 
 ### Minor Changes

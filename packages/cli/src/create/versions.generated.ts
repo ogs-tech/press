@@ -3,7 +3,7 @@
 // Source of truth: the engine packages' own package.json manifests.
 export const VERSIONS = {
   pressCli: '0.1.0',
-  pressWeb: '0.4.0',
+  pressWeb: '0.4.1',
   pressCms: '0.3.2',
   next: '^15.1.0',
   react: '^18.3.1',
