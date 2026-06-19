@@ -25,4 +25,9 @@ export default defineConfig({
     // at '/'; a direct hit on this slug redirects there.
     home: 'home',
   },
+  // Appearance (Spec §0). The string form selects the embedded theme with no
+  // overrides — the default look. A destructive change to ThemeName fails tsc
+  // right here (AC7). Swap to an object form to override tokens, e.g.
+  // `theme: { colors: { primary: '#7C3AED' } }`.
+  theme: 'default',
 });
