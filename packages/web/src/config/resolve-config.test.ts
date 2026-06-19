@@ -66,4 +66,40 @@ describe('resolveConfig', () => {
     });
     expect(r.seo.defaultOgImage).toBe('https://cdn.example.com/og.png');
   });
+
+  it('fills Default-theme values when theme is absent', () => {
+    const r = resolveConfig({ brand: { name: 'Acme' } });
+    expect(r.theme.name).toBe('default');
+    expect(r.theme.colors.primary).toBe('#119350');
+    expect(r.theme.colors.onPrimary).toBe('#FFFFFF');
+    expect(r.theme.radius.md).toBe('14px');
+    expect(r.theme.fonts).toEqual({}); // fonts default via next/font, not config
+  });
+
+  it('resolves the string form and the object form identically', () => {
+    const fromString = resolveConfig({ brand: { name: 'Acme' }, theme: 'default' });
+    const fromObject = resolveConfig({ brand: { name: 'Acme' }, theme: { name: 'default' } });
+    expect(fromString.theme).toEqual(fromObject.theme);
+  });
+
+  it('defaults theme.name to "default" when the object omits it', () => {
+    const r = resolveConfig({ brand: { name: 'Acme' }, theme: { colors: { primary: '#000000' } } });
+    expect(r.theme.name).toBe('default');
+  });
+
+  it('merges a partial colour override over defaults, per group', () => {
+    const r = resolveConfig({ brand: { name: 'Acme' }, theme: { colors: { primary: '#ff5500' } } });
+    expect(r.theme.colors.primary).toBe('#ff5500'); // overridden
+    expect(r.theme.colors.accent).toBe('#D9A12C'); // untouched default
+  });
+
+  it('merges a partial radius override and keeps font overrides verbatim', () => {
+    const r = resolveConfig({
+      brand: { name: 'Acme' },
+      theme: { radius: { md: '2px' }, fonts: { body: 'Inter' } },
+    });
+    expect(r.theme.radius.md).toBe('2px');
+    expect(r.theme.radius.xs).toBe('6px'); // untouched default
+    expect(r.theme.fonts).toEqual({ body: 'Inter' }); // overrides only
+  });
 });

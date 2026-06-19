@@ -1,4 +1,21 @@
+import { DEFAULT_THEME } from './default-theme';
 import type { PressConfig, ResolvedPressConfig } from './types';
+
+/**
+ * Normalizes the `theme` union (string sugar | object | absent) into the total
+ * resolved shape. `colors`/`radius` are filled over the Default-theme values
+ * (shallow per group); `fonts` is passed through as overrides ONLY — font
+ * defaults live in `next/font` (Spec §6), so an absent font key is intentional.
+ */
+function resolveTheme(theme: PressConfig['theme']): ResolvedPressConfig['theme'] {
+  const t = typeof theme === 'string' ? { name: theme } : theme ?? {};
+  return {
+    name: t.name ?? DEFAULT_THEME.name,
+    colors: { ...DEFAULT_THEME.colors, ...(t.colors ?? {}) },
+    fonts: { ...(t.fonts ?? {}) },
+    radius: { ...DEFAULT_THEME.radius, ...(t.radius ?? {}) },
+  };
+}
 
 /**
  * Fills engine defaults over the adopter's PressConfig (Spec §4.2). Pure: same
@@ -35,5 +52,6 @@ export function resolveConfig(config: PressConfig): ResolvedPressConfig {
     routes: {
       home: config.routes?.home ?? 'home',
     },
+    theme: resolveTheme(config.theme),
   };
 }
