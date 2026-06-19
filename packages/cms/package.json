@@ -7,6 +7,11 @@
   "author": "Odenir Gomes",
   "type": "commonjs",
   "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ogs-tech/press-cli.git",
+    "directory": "packages/cms"
+  },
   "exports": {
     "./package.json": "./package.json",
     "./strapi-server": {

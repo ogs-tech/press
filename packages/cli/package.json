@@ -8,6 +8,11 @@
   "bin": { "press": "bin/press.js" },
   "files": ["bin", "dist", "templates"],
   "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ogs-tech/press-cli.git",
+    "directory": "packages/cli"
+  },
   "scripts": {
     "gen:versions": "tsx scripts/gen-versions.ts",
     "build": "pnpm gen:versions && tsc -p tsconfig.json",

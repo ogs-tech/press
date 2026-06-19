@@ -6,6 +6,11 @@
   "author": "Odenir Gomes",
   "type": "module",
   "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ogs-tech/press-cli.git",
+    "directory": "packages/web"
+  },
   "exports": {
     "./package.json": "./package.json",
     ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
