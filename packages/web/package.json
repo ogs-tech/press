@@ -22,7 +22,8 @@
     "./types": {
       "types": "./src/types/base.ts",
       "default": "./src/types/base.ts"
-    }
+    },
+    "./theme.css": "./theme.css"
   },
   "bin": {
     "press": "./bin/press.ts",
