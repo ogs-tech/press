@@ -17,5 +17,6 @@ export default () => ({
     { method: 'GET', path: '/pages', handler: 'page.find', config: { auth: false, prefix: '' } },
     { method: 'GET', path: '/pages/:slug', handler: 'page.findOne', config: { auth: false, prefix: '' } },
     { method: 'GET', path: '/press/schema', handler: 'schema.get', config: { auth: false, prefix: '' } },
+    { method: 'GET', path: '/site-setting', handler: 'site-setting.find', config: { auth: false, prefix: '' } },
   ],
 });
