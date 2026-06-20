@@ -1,17 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { resolveConfig } from './resolve-config';
 import { buildMetadata } from './build-metadata';
+import type { ResolvedPressConfig } from './types';
 
-const resolved = resolveConfig({
+const resolved: ResolvedPressConfig = {
   brand: { name: 'Acme', favicon: '/favicon.ico' },
   site: { url: 'https://acme.test', locale: 'en' },
   seo: {
     titleTemplate: '%s | Acme',
     defaultTitle: 'Acme',
     defaultDescription: 'An Acme content site.',
-    defaultOgImage: '/og.png',
+    defaultOgImage: 'https://acme.test/og.png',
   },
-});
+  routes: { home: 'home' },
+  theme: {
+    name: 'default',
+    colors: {
+      primary: '#119350', accent: '#D9A12C', secondary: '#3D5CC2', ink: '#142036',
+      surface: '#FAF8F3', muted: '#7A7E89', danger: '#C0392B', onPrimary: '#FFFFFF',
+      border: 'rgba(20,32,54,0.12)',
+    },
+    fonts: {},
+    radius: { xs: '6px', sm: '10px', md: '14px', lg: '20px' },
+  },
+};
 
 describe('buildMetadata', () => {
   it('applies the title template to a page title (AC1)', () => {
@@ -48,7 +59,7 @@ describe('buildMetadata', () => {
   });
 
   it('omits description when the resolved default is empty', () => {
-    const noDesc = resolveConfig({ brand: { name: 'Acme' } });
+    const noDesc: ResolvedPressConfig = { ...resolved, seo: { ...resolved.seo, defaultDescription: '' } };
     const m = buildMetadata(noDesc, null);
     expect(m.description).toBeUndefined();
     expect(m.openGraph?.description).toBeUndefined();
