@@ -1,41 +1,44 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
-import { buildMetadata, buildThemeStyle } from '@ogs-tech/press-web';
+import { buildMetadata, buildThemeStyle, getSiteConfig } from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
-import { config } from '../press-config';
+import { buildTime } from '../press-config';
 
-// Default-theme fonts, loaded + optimized by next/font at build time (Spec §6).
-// Each exposes a CSS variable consumed by theme.css with a fallback:
+// Default-theme fonts, loaded + optimized by next/font at build time. Each exposes
+// a CSS variable consumed by theme.css with a fallback:
 //   font-family: var(--press-font-body, var(--press-font-body-default))
-// so an adopter override (emitted by buildThemeStyle) wins, else the optimized
-// default applies. Overriding theme.fonts.* sets the family string only — loading
-// that family is the adopter's responsibility.
+// so a Site Settings font override (emitted by buildThemeStyle) wins, else the
+// optimized default applies. Build-time families are still owned by press.config.
 const display = Bricolage_Grotesque({ subsets: ['latin'], display: 'swap', variable: '--press-font-display-default' });
 const body = Archivo({ subsets: ['latin'], display: 'swap', variable: '--press-font-body-default' });
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], display: 'swap', variable: '--press-font-mono-default' });
 
 const fontVars = `${display.variable} ${body.variable} ${mono.variable}`;
 
-// Brand defaults, no page: title = seo.defaultTitle, plus the favicon icon.
-export const metadata = buildMetadata(config, null);
+// Brand defaults, no page: title = seo.defaultTitle + favicon. Fetched at runtime
+// from the CMS (ISR ~60s) so editor changes appear without a redeploy.
+export async function generateMetadata() {
+  return buildMetadata(await getSiteConfig(buildTime), null);
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const site = await getSiteConfig(buildTime);
   return (
-    <html lang={config.site.locale} data-theme={config.theme.name} className={fontVars}>
+    <html lang={site.site.locale} data-theme={buildTime.theme.name} className={fontVars}>
       <head>
-        {/* The single injection point for token values (Spec §0). */}
-        <style dangerouslySetInnerHTML={{ __html: buildThemeStyle(config) }} />
+        {/* The single injection point for token values (CMS-sourced or DEFAULT_THEME). */}
+        <style dangerouslySetInnerHTML={{ __html: buildThemeStyle(site) }} />
       </head>
       <body>
         <header>
           <a href="/">
-            {config.brand.logo ? <img src={config.brand.logo} alt="" /> : null}
-            <span>{config.brand.name}</span>
+            {site.brand.logo ? <img src={site.brand.logo} alt="" /> : null}
+            <span>{site.brand.name}</span>
           </a>
         </header>
         <main>{children}</main>
         <footer>
           <small>
-            {config.brand.name} · {new Date().getFullYear()}
+            {site.brand.name} · {new Date().getFullYear()}
           </small>
         </footer>
       </body>
