@@ -1,8 +1,8 @@
 import type { Core } from '@strapi/strapi';
-import { seedDefaultTheme } from './lib/seed-default-theme';
+import { seedSiteSetting } from './lib/seed-site-setting';
 
 const bootstrap = async ({ strapi }: { strapi: Core.Strapi }) => {
-  await seedDefaultTheme(strapi);
+  await seedSiteSetting(strapi);
 };
 
 export default bootstrap;
