@@ -1,7 +1,7 @@
 import page from './page/schema.json';
-import theme from './theme/schema.json';
+import siteSetting from './site-setting/schema.json';
 
 export default {
   page: { schema: page },
-  theme: { schema: theme },
+  'site-setting': { schema: siteSetting },
 };

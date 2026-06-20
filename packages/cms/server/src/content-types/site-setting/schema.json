@@ -1,0 +1,22 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_setting",
+  "info": {
+    "singularName": "site-setting",
+    "pluralName": "site-settings",
+    "displayName": "Site Settings",
+    "description": "Whitelabel identity, SEO, and theme values served at runtime by the press engine"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string" },
+    "url": { "type": "string" },
+    "locale": { "type": "string" },
+    "logo": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "favicon": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "seo": { "type": "component", "repeatable": false, "component": "press.seo" },
+    "themeColors": { "type": "component", "repeatable": false, "component": "press.theme-colors" },
+    "themeRadius": { "type": "component", "repeatable": false, "component": "press.theme-radius" }
+  }
+}
