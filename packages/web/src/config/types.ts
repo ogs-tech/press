@@ -104,3 +104,41 @@ export interface ResolvedPressConfig {
     radius: ThemeRadius;
   };
 }
+
+/**
+ * Build-time-only slice resolved from press.config.ts. Deterministic and
+ * CMS-independent: `routes` (routing + the /home → / redirect), `theme.name`
+ * (the <html data-theme> selector + ThemeName guard), and `theme.fonts` (which
+ * next/font must know at build time). Identity, SEO, and theme colour/radius
+ * VALUES are layered on at runtime by getSiteConfig (site-settings-cms spec §6).
+ */
+export interface BuildTimeConfig {
+  routes: { home: string };
+  theme: { name: ThemeName; fonts: Partial<ThemeFonts> };
+}
+
+/** A Strapi 5 media object (flattened), only the field the engine consumes. */
+interface CmsMedia {
+  url?: string;
+}
+
+/**
+ * The Site Settings single-type payload as returned by GET /api/site-setting
+ * (Strapi 5 flattened, populate=*). EVERY field is optional: an unfilled record
+ * and an unreachable CMS both map as if absent (site-settings-cms spec §3.2, §7).
+ */
+export interface SiteSettingsData {
+  name?: string;
+  url?: string;
+  locale?: string;
+  logo?: CmsMedia | null;
+  favicon?: CmsMedia | null;
+  seo?: {
+    titleTemplate?: string;
+    defaultTitle?: string;
+    defaultDescription?: string;
+    defaultOgImage?: CmsMedia | null;
+  } | null;
+  themeColors?: Partial<ThemeColors> | null;
+  themeRadius?: Partial<ThemeRadius> | null;
+}
