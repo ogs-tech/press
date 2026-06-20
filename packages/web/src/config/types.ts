@@ -30,43 +30,24 @@ export interface ThemeRadius {
 }
 
 /**
- * Adopter-facing whitelabel input (Spec §6). Only `brand.name` is required;
- * every other field has an engine default applied by `resolveConfig`. This is a
- * STATIC engine type — hand-authored and versioned with @ogs-tech/press-web — distinct
- * from the CMS-schema-derived generated types of Spec 1 (Spec §4.3).
+ * Adopter-facing build-time anchors (site-settings-cms spec §6). Identity, SEO,
+ * and theme colour/radius VALUES no longer live here — they are edited in the CMS
+ * "Site Settings" single type and fetched at runtime by getSiteConfig. This file
+ * keeps ONLY what the build needs deterministically: the home-route slug, the
+ * theme NAME (the <html data-theme> selector + ThemeName guard), and theme FONTS
+ * (which next/font must know at build time). A destructive change to ThemeName
+ * fails tsc at the defineConfig call site.
  */
 export interface PressConfig {
-  brand: {
-    name: string;
-    logo?: string;
-    favicon?: string;
-  };
-  site?: {
-    url?: string;
-    locale?: string;
-  };
-  seo?: {
-    titleTemplate?: string;
-    defaultTitle?: string;
-    defaultDescription?: string;
-    defaultOgImage?: string;
-  };
   routes?: {
     /** Slug of the page served at the site root ('/'). Defaults to 'home'. */
     home?: string;
   };
-  /**
-   * Appearance: the third class of whitelabel data (Spec §0). The string form
-   * (`theme: 'default'`) selects the embedded theme with no overrides; the object
-   * form adds per-group overrides over the Default-theme values.
-   */
   theme?:
     | ThemeName
     | {
         name?: ThemeName;
-        colors?: Partial<ThemeColors>;
         fonts?: Partial<ThemeFonts>;
-        radius?: Partial<ThemeRadius>;
       };
 }
 
