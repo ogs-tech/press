@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_press_theme_colors",
+  "info": { "displayName": "Theme Colors", "description": "Theme colour token overrides served at runtime by the press engine" },
+  "options": {},
+  "attributes": {
+    "primary": { "type": "string" },
+    "accent": { "type": "string" },
+    "secondary": { "type": "string" },
+    "ink": { "type": "string" },
+    "surface": { "type": "string" },
+    "muted": { "type": "string" },
+    "danger": { "type": "string" },
+    "onPrimary": { "type": "string" },
+    "border": { "type": "string" }
+  }
+}

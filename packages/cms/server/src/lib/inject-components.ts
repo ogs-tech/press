@@ -1,5 +1,8 @@
 import type { Core } from '@strapi/strapi';
 import heroSchema from '../components/hero.json';
+import seoSchema from '../components/seo.json';
+import themeColorsSchema from '../components/theme-colors.json';
+import themeRadiusSchema from '../components/theme-radius.json';
 import { toGlobalId } from './global-id';
 
 /**
@@ -22,6 +25,9 @@ import { toGlobalId } from './global-id';
  */
 const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<string, unknown> }> = [
   { category: 'press', name: 'hero', schema: heroSchema as Record<string, unknown> },
+  { category: 'press', name: 'seo', schema: seoSchema as Record<string, unknown> },
+  { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },
+  { category: 'press', name: 'theme-radius', schema: themeRadiusSchema as Record<string, unknown> },
 ];
 
 /**

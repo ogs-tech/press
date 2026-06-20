@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_press_theme_radii",
+  "info": { "displayName": "Theme Radius", "description": "Theme corner-radius token overrides served at runtime by the press engine" },
+  "options": {},
+  "attributes": {
+    "xs": { "type": "string" },
+    "sm": { "type": "string" },
+    "md": { "type": "string" },
+    "lg": { "type": "string" }
+  }
+}
