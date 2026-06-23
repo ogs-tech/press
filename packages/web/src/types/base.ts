@@ -102,15 +102,6 @@ export interface PressSpacer {
   size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-/** Reference block `press.gallery` — engine-owned (mirrors cms gallery.json). */
-export interface PressGallery {
-  __component: 'press.gallery';
-  id: number;
-  heading?: string;
-  images?: PressMedia[];
-  caption?: string;
-}
-
 /**
  * Structural shape every dynamic-zone entry satisfies. The renderer only reads
  * `__component`/`id` and spreads the rest, so the generic envelope is enough for

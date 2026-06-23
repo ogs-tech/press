@@ -2,8 +2,8 @@
 // programmatically (CMS server must be STOPPED), fills the Site Settings single
 // type (identity/SEO + theme), uploads a few tiny PNGs, and creates a PUBLISHED
 // 'home' page that showcases the Gutenberg-style core palette (heading, paragraph,
-// list, quote, separator, image, button, spacer, gallery) plus the adopter's
-// custom.callout, so the first `press dev` renders a branded, themed site.
+// list, quote, separator, image, button, spacer) plus the adopter's custom.callout,
+// so the first `press dev` renders a branded, themed site.
 // Skip-if-empty: seeds only a fresh CMS — existing content is never overwritten
 // (delete cms/.tmp to reset).
 import { createRequire } from 'node:module';
@@ -21,9 +21,10 @@ const PAGE_UID = 'plugin::press-cms.page';
 const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 const SLUG = 'home';
 
-// 1×1 transparent PNG.
+// A visible 480×270 (16:9) placeholder cover — brand primary over accent — so
+// press.image renders a real image rather than a degenerate 1×1 transparent pixel.
 const PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+  'iVBORw0KGgoAAAANSUhEUgAAAeAAAAEOCAIAAADe+FMwAAAC+ElEQVR42u3UQQ0AIAwAsVnAB2LwhoLJws0s8NySJlVwj4t1DwANhQQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAYNIBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEGrAGDQABg0gEEDYNAABg2AQQNg0AAGDYBBAxg0AAYNgEEDGDQABg1g0AAYNIBBA2DQABg0gEEDYNAABg2AQQNg0AAGDYBBAxg0AAYNYNAAGDQABg1g0AAYNIBBA2DQABg0gEEDYNAABg2AQQMYtAoABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAYNIBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg1g0AAYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBAxg0AAYNwO+gX24AGjJoAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgADBrAoAEwaACDBsCgAQwaAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgAgwbAoAEwaACDBsCgAQwaAIMGwKABDBoAgwYwaAAMGsCgJQAwaAAMGsCgATBoAIMGwKABMGgAgwbAoAEMGgCDBsCgAQwaAIMGMGgADBrAoAEwaAAMGsCgATBoAIMGwKABMGgAgwbAoAEMGgCDBjBoAAwaAIMGMGgADBrAoAEwaAAMGsCgATBoAIMGwKABDFoFAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgADBrAoAEwaACDBsCgAQwaAIMGwKABJiqe+vFZK33AgwAAAABJRU5ErkJggg==',
   'base64',
 );
 
@@ -87,8 +88,8 @@ async function main() {
     const tmpDir = path.join(process.cwd(), '.tmp');
     mkdirSync(tmpDir, { recursive: true });
 
-    // Upload a few tiny images so the gallery proves MULTIPLE media cross the REST
-    // contract — Gallery is the engine's media-serialization example (Spec §5.2).
+    // Upload one cover image so press.image proves a media field crosses the REST
+    // contract — press.image is the engine's media-serialization example (Spec §5.2).
     const uploadImage = async (name) => {
       const filepath = path.join(tmpDir, name);
       writeFileSync(filepath, PNG);
@@ -98,16 +99,12 @@ async function main() {
       });
       return uploaded[0].id;
     };
-    const imageIds = [];
-    for (const name of ['press-1.png', 'press-2.png', 'press-3.png']) {
-      imageIds.push(await uploadImage(name));
-    }
-    console.log(`[seed] uploaded ${imageIds.length} image(s): ${imageIds.join(', ')}`);
+    const coverImageId = await uploadImage('press-cover.png');
+    console.log(`[seed] uploaded cover image id=${coverImageId}`);
 
     // Create the published "Hello from press" home from the Gutenberg-style core
     // palette: atomic text blocks (heading/paragraph/list/quote), structural blocks
-    // (separator/button/spacer), media (image single + gallery multiple), and the
-    // adopter's custom.callout.
+    // (separator/button/spacer), media (image single), and the adopter's custom.callout.
     const page = await app.documents(PAGE_UID).create({
       data: {
         title: 'Hello from press',
@@ -146,7 +143,7 @@ async function main() {
                     type: 'list-item',
                     children: [
                       { type: 'text', text: 'Media & structure', bold: true },
-                      { type: 'text', text: ' — image, gallery, button, separator and spacer.' },
+                      { type: 'text', text: ' — image, button, separator and spacer.' },
                     ],
                   },
                   {
@@ -184,17 +181,11 @@ async function main() {
           { __component: 'press.separator', variant: 'line' },
           {
             __component: 'press.image',
-            image: imageIds[0],
+            image: coverImageId,
             caption: 'A single image — proof one media field crosses the REST contract.',
           },
           { __component: 'press.button', label: 'Get started', href: 'https://github.com/ogs-tech/press', variant: 'primary' },
           { __component: 'press.spacer', size: 'lg' },
-          {
-            __component: 'press.gallery',
-            heading: 'Gallery',
-            images: imageIds,
-            caption: 'Seeded images — proof that multiple media cross the REST contract.',
-          },
           {
             __component: 'custom.callout',
             message: 'Adopter callout renders via the Project-zone block map',
@@ -206,11 +197,24 @@ async function main() {
     });
     console.log(`[seed] created published page documentId=${page.documentId} slug=${SLUG}`);
   } finally {
-    await app.destroy();
+    // Content is committed by here. better-sqlite3's tarn pool can throw a benign
+    // "aborted" as it drains during app.destroy() (e.g. background image processing
+    // from the uploads is still in flight) — swallow it so a teardown race never
+    // fails an otherwise-successful seed, and the `press dev` boot it gates.
+    try {
+      await app.destroy();
+    } catch (err) {
+      console.warn(`[seed] ignored teardown error: ${err?.message ?? err}`);
+    }
   }
 }
 
-main().catch((err) => {
-  console.error('[seed] FAILED:', err);
-  process.exit(1);
-});
+main()
+  // Exit explicitly on success: a late tarn pool-abort can surface as an unhandled
+  // rejection AFTER teardown and would otherwise crash the process with exit 1 even
+  // though seeding succeeded. Exiting here preempts that event-loop noise.
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('[seed] FAILED:', err);
+    process.exit(1);
+  });

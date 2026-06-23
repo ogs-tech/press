@@ -7,7 +7,6 @@ import imageSchema from '../components/image.json';
 import buttonSchema from '../components/button.json';
 import separatorSchema from '../components/separator.json';
 import spacerSchema from '../components/spacer.json';
-import gallerySchema from '../components/gallery.json';
 import seoSchema from '../components/seo.json';
 import themeColorsSchema from '../components/theme-colors.json';
 import themeRadiusSchema from '../components/theme-radius.json';
@@ -41,7 +40,6 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
   { category: 'press', name: 'button', schema: buttonSchema as Record<string, unknown> },
   { category: 'press', name: 'separator', schema: separatorSchema as Record<string, unknown> },
   { category: 'press', name: 'spacer', schema: spacerSchema as Record<string, unknown> },
-  { category: 'press', name: 'gallery', schema: gallerySchema as Record<string, unknown> },
   // Configuration components used by the Site Settings single type (not page blocks).
   { category: 'press', name: 'seo', schema: seoSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },

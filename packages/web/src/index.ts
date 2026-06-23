@@ -11,7 +11,6 @@ export { Image } from './blocks/image';
 export { Button } from './blocks/button';
 export { Separator } from './blocks/separator';
 export { Spacer } from './blocks/spacer';
-export { Gallery } from './blocks/gallery';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildMetadata } from './config/build-metadata';
@@ -32,6 +31,5 @@ export type {
   PressButton,
   PressSeparator,
   PressSpacer,
-  PressGallery,
 } from './types/base';
 export type { PressConfig, ResolvedPressConfig, BuildTimeConfig, ThemeName } from './config/types';

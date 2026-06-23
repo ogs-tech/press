@@ -73,7 +73,7 @@ describe('injectComponents', () => {
     const expected = [
       'press.paragraph', 'press.heading', 'press.list', 'press.quote',
       'press.image', 'press.button', 'press.separator', 'press.spacer',
-      'press.gallery', 'press.seo', 'press.theme-colors', 'press.theme-radius',
+      'press.seo', 'press.theme-colors', 'press.theme-radius',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');

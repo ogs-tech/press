@@ -49,7 +49,7 @@ describe('generateTypes', () => {
         attributes: {
           title: { type: 'string', required: true },
           slug: { type: 'uid' },
-          body: { type: 'dynamiczone', components: ['press.paragraph', 'press.gallery', 'custom.callout'] },
+          body: { type: 'dynamiczone', components: ['press.paragraph', 'press.image', 'custom.callout'] },
         },
       },
     },
@@ -60,11 +60,10 @@ describe('generateTypes', () => {
           content: { type: 'blocks', required: true },
         },
       },
-      'press.gallery': {
-        uid: 'press.gallery',
+      'press.image': {
+        uid: 'press.image',
         attributes: {
-          heading: { type: 'string' },
-          images: { type: 'media', multiple: true, allowedTypes: ['images'] },
+          image: { type: 'media', multiple: false, allowedTypes: ['images'], required: true },
           caption: { type: 'string' },
         },
       },
@@ -91,11 +90,10 @@ describe('generateTypes', () => {
     expect(out).toContain('content: unknown;');
   });
 
-  it('emits the gallery interface with multiple media typed PressMedia[] and optional heading/caption', () => {
-    expect(out).toContain("__component: 'press.gallery'");
-    expect(out).toContain('heading?: string;');        // optional
-    expect(out).toContain('images?: PressMedia[];');   // media multiple, optional
-    expect(out).toContain('caption?: string;');        // optional
+  it('emits the image interface with single media typed PressMedia (required) and optional caption', () => {
+    expect(out).toContain("__component: 'press.image'");
+    expect(out).toContain('image: PressMedia;');   // media single, required → not optional
+    expect(out).toContain('caption?: string;');    // optional
   });
 
   it('maps the custom block enum field', () => {
@@ -104,7 +102,7 @@ describe('generateTypes', () => {
   });
 
   it('emits a PageBody union array over the DZ components and a Page interface', () => {
-    expect(out).toContain('export type PageBody = (PressParagraph | PressGallery | CustomCallout)[];');
+    expect(out).toContain('export type PageBody = (PressParagraph | PressImage | CustomCallout)[];');
     expect(out).toContain('export interface Page');
     expect(out).toContain('body: PageBody;');
     expect(out).toContain('title: string;');

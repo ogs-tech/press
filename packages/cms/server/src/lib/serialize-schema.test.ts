@@ -11,11 +11,10 @@ const fakeStrapi = () => {
         createdAt: { type: 'datetime', private: true },
       },
     }],
-    ['press.gallery', {
-      uid: 'press.gallery',
+    ['press.image', {
+      uid: 'press.image',
       attributes: {
-        heading: { type: 'string' },
-        images: { type: 'media', multiple: true, allowedTypes: ['images'] },
+        image: { type: 'media', multiple: false, allowedTypes: ['images'], required: true },
         caption: { type: 'string' },
       },
     }],
@@ -35,7 +34,7 @@ const fakeStrapi = () => {
       attributes: {
         title: { type: 'string', required: true },
         slug: { type: 'uid', targetField: 'title' },
-        body: { type: 'dynamiczone', components: ['press.paragraph', 'press.gallery', 'custom.callout'] },
+        body: { type: 'dynamiczone', components: ['press.paragraph', 'press.image', 'custom.callout'] },
       },
     }),
     get: (key: string) => (key === 'components' ? components : undefined),
@@ -47,7 +46,7 @@ describe('serializeSchema', () => {
     const out = serializeSchema(fakeStrapi());
     expect(Object.keys(out.contentTypes)).toEqual(['plugin::press-cms.page']);
     // press.unused is registered but NOT in page.body → excluded
-    expect(Object.keys(out.components).sort()).toEqual(['custom.callout', 'press.gallery', 'press.paragraph']);
+    expect(Object.keys(out.components).sort()).toEqual(['custom.callout', 'press.image', 'press.paragraph']);
   });
 
   it('keeps only the contract attribute keys and drops private/internal noise', () => {
@@ -56,17 +55,16 @@ describe('serializeSchema', () => {
     expect(out.components['press.paragraph'].attributes).toEqual({
       content: { type: 'blocks', required: true },
     });
-    // gallery: multiple media + optional heading/caption.
-    expect(out.components['press.gallery'].attributes).toEqual({
-      heading: { type: 'string' },
-      images: { type: 'media', multiple: true, allowedTypes: ['images'] },
+    // image: single required media + optional caption.
+    expect(out.components['press.image'].attributes).toEqual({
+      image: { type: 'media', multiple: false, allowedTypes: ['images'], required: true },
       caption: { type: 'string' },
     });
     expect(out.components['custom.callout'].attributes.variant).toEqual({
       type: 'enumeration', enum: ['info', 'warning', 'success'], default: 'info',
     });
     expect(out.contentTypes['plugin::press-cms.page'].attributes.body).toEqual({
-      type: 'dynamiczone', components: ['press.paragraph', 'press.gallery', 'custom.callout'],
+      type: 'dynamiczone', components: ['press.paragraph', 'press.image', 'custom.callout'],
     });
   });
 

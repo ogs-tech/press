@@ -10,7 +10,7 @@ import type { BlocksContent, BlocksNode, BlocksText } from '../types/base';
  * Used by the decomposed text reference blocks (press.paragraph / press.list /
  * press.quote) whose `content` is a Strapi blocks field. Tolerance mirrors
  * BlockRenderer: an unknown node type (or an embedded `image` node — images belong
- * in press.image / press.gallery) renders nothing rather than throwing.
+ * in press.image) renders nothing rather than throwing.
  */
 
 type Inline = BlocksNode | BlocksText;

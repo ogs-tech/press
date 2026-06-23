@@ -4,7 +4,7 @@
  * Strapi 5 populates dynamic zones via a per-component `on` map (see Document
  * Service `populate` docs). `populate: '*'` on each component pulls that
  * component's first-level relations and MEDIA — which is what makes the
- * `press.gallery` images cross the REST contract (Spec §5.2 "Media").
+ * `press.image` media cross the REST contract (Spec §5.2 "Media").
  *
  * The component list is passed in (read by the caller from the page content-type
  * at request time) so the engine stays generic: it never hardcodes `custom.*`

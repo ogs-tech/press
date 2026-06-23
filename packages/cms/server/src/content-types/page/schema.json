@@ -24,8 +24,7 @@
         "press.image",
         "press.button",
         "press.separator",
-        "press.spacer",
-        "press.gallery"
+        "press.spacer"
       ]
     }
   }

@@ -63,14 +63,6 @@ export interface PressSpacer {
   size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export interface PressGallery {
-  __component: 'press.gallery';
-  id: number;
-  heading?: string;
-  images?: PressMedia[];
-  caption?: string;
-}
-
 export interface CustomCallout {
   __component: 'custom.callout';
   id: number;
@@ -78,7 +70,7 @@ export interface CustomCallout {
   variant?: 'info' | 'warning' | 'success';
 }
 
-export type PageBody = (PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | PressGallery | CustomCallout)[];
+export type PageBody = (PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | CustomCallout)[];
 
 export interface Page {
   id: number;

@@ -3,10 +3,10 @@ import { buildBodyPopulate } from './dz-populate';
 
 describe('buildBodyPopulate', () => {
   it('builds a per-component `on` map populating one level (media included) for each DZ component', () => {
-    expect(buildBodyPopulate(['press.gallery', 'custom.callout'])).toEqual({
+    expect(buildBodyPopulate(['press.image', 'custom.callout'])).toEqual({
       body: {
         on: {
-          'press.gallery': { populate: '*' },
+          'press.image': { populate: '*' },
           'custom.callout': { populate: '*' },
         },
       },
