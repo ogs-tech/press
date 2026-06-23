@@ -13,19 +13,7 @@ const VARIANT_STYLE: Record<string, string> = {
 export function Callout(props: CustomCallout) {
   const { message, variant } = props;
   return (
-    <aside
-      data-block="custom.callout"
-      style={{
-        // Override a token in this block's own scope — wins locally via the
-        // cascade, no engine change, no specificity fight (Spec §5, AC4).
-        ['--press-radius-md' as string]: '2px',
-        borderLeft: `4px solid ${VARIANT_STYLE[variant ?? 'info']}`,
-        // Consume an engine token — the block inherits the theme for free.
-        background: 'color-mix(in srgb, var(--press-color-accent) 12%, transparent)',
-        borderRadius: 'var(--press-radius-md)',
-        padding: 'var(--press-space-3) var(--press-space-4)',
-      }}
-    >
+    <aside data-block="custom.callout" style={{ borderLeft: `4px solid ${VARIANT_STYLE[variant ?? 'info']}` }}>
       {message}
     </aside>
   );
