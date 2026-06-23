@@ -117,6 +117,39 @@ Any `custom.*` component is auto-admitted into the page's Dynamic Zone, and the
 materialized host passes this map to its block renderer — so your blocks render
 server-side alongside the engine's built-in blocks.
 
+**Overriding a reference block** — the `press.*` palette ships as defaults, not a
+sealed set. The block renderer merges your map *over* the engine's
+(`{ ...referenceBlocks, ...customBlocks }`), so mapping the **same key** shadows a
+built-in with your own React component — markup and behavior become yours. This is
+**web-only**: the CMS still serves `press.button` and the editing experience is
+unchanged, so existing content keeps rendering.
+
+```tsx
+// packages/web/blocks/custom/Button.tsx — take the same props the engine block gets.
+import type { PressButton } from '@ogs-tech/press-web';
+
+export function Button({ label, href, variant }: PressButton) {
+  // Keep `data-block` to inherit the default theme.css styling and only tweak markup;
+  // drop it to fully own the look (the engine's `[data-block="press.button"]` rule
+  // then matches nothing and goes inert).
+  return <a className="cta" href={href} data-variant={variant ?? 'primary'}>{label}</a>;
+}
+```
+
+```ts
+// packages/web/blocks/custom/index.ts — map the SAME key to shadow the default.
+export const customBlocks: Record<string, ComponentType<any>> = {
+  'custom.callout': Callout,
+  'press.button': Button, // overrides the engine's press.button
+};
+```
+
+Your override is yours to maintain: `press upgrade` keeps updating the engine's
+*default* (which your map overrides) but never touches your component. If a future
+engine version changes a block's prop **shape**, the generated `Press*` type changes
+and `tsc` flags your override at its call site — so drift fails loud rather than
+silently rendering wrong.
+
 ## Updating the engine
 
 `press upgrade` (via `pnpm upgrade`) is the coordinated lockstep update path —
