@@ -116,9 +116,9 @@ export interface SiteSettingsData {
   favicon?: CmsMedia | null;
   seo?: {
     titleTemplate?: string;
-    defaultTitle?: string;
-    defaultDescription?: string;
-    defaultOgImage?: CmsMedia | null;
+    title?: string;
+    description?: string;
+    image?: CmsMedia | null;
   } | null;
   themeColors?: Partial<ThemeColors> | null;
   themeRadius?: Partial<ThemeRadius> | null;

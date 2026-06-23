@@ -37,11 +37,13 @@ export function mapSiteSettings(
       url: c.url ?? '',
       locale: c.locale ?? '',
     },
+    // CMS field names (title/description/image) translate to the engine's
+    // internal "default*" SEO names — the values a page inherits when it sets none.
     seo: {
       titleTemplate: seo.titleTemplate ?? '',
-      defaultTitle: seo.defaultTitle ?? '',
-      defaultDescription: seo.defaultDescription ?? '',
-      defaultOgImage: mediaUrl(seo.defaultOgImage),
+      defaultTitle: seo.title ?? '',
+      defaultDescription: seo.description ?? '',
+      defaultOgImage: mediaUrl(seo.image),
     },
     routes: buildTime.routes,
     theme: {

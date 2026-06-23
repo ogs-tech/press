@@ -35,8 +35,8 @@ const SITE_SETTINGS = {
   locale: 'en',
   seo: {
     titleTemplate: '%s · Press',
-    defaultTitle: 'Press',
-    defaultDescription: 'A press-powered site, server-rendered end-to-end.',
+    title: 'Press',
+    description: 'A press-powered site, server-rendered end-to-end.',
   },
   themeColors: {
     primary: '#119350',

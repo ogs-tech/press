@@ -12,5 +12,18 @@
     "danger": { "type": "string" },
     "onPrimary": { "type": "string" },
     "border": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "primary": { "edit": { "label": "Primary" } },
+      "accent": { "edit": { "label": "Accent" } },
+      "secondary": { "edit": { "label": "Secondary" } },
+      "ink": { "edit": { "label": "Ink (Text)" } },
+      "surface": { "edit": { "label": "Surface" } },
+      "muted": { "edit": { "label": "Muted" } },
+      "danger": { "edit": { "label": "Danger" } },
+      "onPrimary": { "edit": { "label": "On Primary" } },
+      "border": { "edit": { "label": "Border" } }
+    }
   }
 }

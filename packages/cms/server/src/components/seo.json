@@ -4,8 +4,20 @@
   "options": {},
   "attributes": {
     "titleTemplate": { "type": "string" },
-    "defaultTitle": { "type": "string" },
-    "defaultDescription": { "type": "string" },
-    "defaultOgImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] }
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] }
+  },
+  "config": {
+    "metadatas": {
+      "titleTemplate": {
+        "edit": { "label": "Title Template", "description": "Use %s as a placeholder for the page title (e.g. \"%s · Acme\")." }
+      },
+      "title": { "edit": { "label": "Title" } },
+      "description": { "edit": { "label": "Description" } },
+      "image": {
+        "edit": { "label": "Social Image", "description": "Image shown when a page is shared on social networks." }
+      }
+    }
   }
 }

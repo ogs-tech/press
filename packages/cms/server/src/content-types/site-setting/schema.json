@@ -18,5 +18,17 @@
     "seo": { "type": "component", "repeatable": false, "component": "press.seo" },
     "themeColors": { "type": "component", "repeatable": false, "component": "press.theme-colors" },
     "themeRadius": { "type": "component", "repeatable": false, "component": "press.theme-radius" }
+  },
+  "config": {
+    "metadatas": {
+      "name": { "edit": { "label": "Site Name" } },
+      "url": { "edit": { "label": "Site URL" } },
+      "locale": { "edit": { "label": "Locale" } },
+      "logo": { "edit": { "label": "Logo" } },
+      "favicon": { "edit": { "label": "Favicon" } },
+      "seo": { "edit": { "label": "SEO" } },
+      "themeColors": { "edit": { "label": "Theme Colors" } },
+      "themeRadius": { "edit": { "label": "Theme Radius" } }
+    }
   }
 }

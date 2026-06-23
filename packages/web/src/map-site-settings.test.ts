@@ -38,7 +38,7 @@ describe('mapSiteSettings', () => {
       name: 'Acme',
       url: 'https://acme.test',
       locale: 'en',
-      seo: { titleTemplate: '%s | Acme', defaultTitle: 'Acme', defaultDescription: 'An Acme site.' },
+      seo: { titleTemplate: '%s | Acme', title: 'Acme', description: 'An Acme site.' },
       themeColors: { primary: '#ff5500' },
       themeRadius: { md: '2px' },
     });
@@ -46,6 +46,7 @@ describe('mapSiteSettings', () => {
     expect(r.site.url).toBe('https://acme.test');
     expect(r.site.locale).toBe('en');
     expect(r.seo.titleTemplate).toBe('%s | Acme');
+    expect(r.seo.defaultTitle).toBe('Acme'); // CMS `title` → internal `defaultTitle`
     expect(r.seo.defaultDescription).toBe('An Acme site.');
     expect(r.theme.colors.primary).toBe('#ff5500'); // override wins
     expect(r.theme.colors.accent).toBe('#D9A12C'); // sibling keeps DEFAULT_THEME
@@ -64,7 +65,7 @@ describe('mapSiteSettings', () => {
     const r = mapSiteSettings(buildTime, {
       logo: { url: '/uploads/logo.png' },
       favicon: { url: 'https://cdn.test/fav.ico' },
-      seo: { defaultOgImage: { url: '/uploads/og.png' } },
+      seo: { image: { url: '/uploads/og.png' } },
     });
     expect(r.brand.logo).toBe('http://localhost:1337/uploads/logo.png');
     expect(r.brand.favicon).toBe('https://cdn.test/fav.ico'); // already absolute → kept
