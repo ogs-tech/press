@@ -13,7 +13,10 @@ const VARIANT_STYLE: Record<string, string> = {
 export function Callout(props: CustomCallout) {
   const { message, variant } = props;
   return (
-    <aside data-block="custom.callout" style={{ borderLeft: `4px solid ${VARIANT_STYLE[variant ?? 'info']}` }}>
+    <aside
+      data-block="custom.callout"
+      style={{ borderLeft: `4px solid ${VARIANT_STYLE[variant ?? 'info']}`, padding: '0.5rem 0 0.5rem 1rem' }}
+    >
       {message}
     </aside>
   );
