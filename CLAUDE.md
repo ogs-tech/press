@@ -1,0 +1,130 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+`press` is a CLI/engine for content-driven sites on **Strapi 5 + Next.js**, where the
+whole stack ships as a versioned, updatable npm dependency. The core thesis: the
+adopter owns a thin **Project zone** (`press.config.ts` + custom blocks); the engine
+*materializes and runs* everything else. This monorepo develops the engine and
+dogfoods it through `apps/playground`.
+
+## Layout — four engine packages + the dogfood
+
+- `packages/shared` — `@ogs-tech/press-shared`: the `PressSchema` wire contract. Ships
+  TS source (no build); imported **type-only** by cms + web so it never enters a
+  runtime artifact.
+- `packages/cms` — `@ogs-tech/press-cms`: a Strapi 5 **plugin**. Owns the `page` and
+  `site-setting` content-types, injects the `press.*` reference blocks, and serves
+  `GET /api/press/schema`. Compiled with `strapi-plugin build`.
+- `packages/web` — `@ogs-tech/press-web`: the Next.js host template, block renderer,
+  runtime CLI (`press dev/build/upgrade`), config helpers, and CMS→TS type-sync. Ships
+  TS source (no build).
+- `packages/cli` — `@ogs-tech/create-press`: the run-once scaffolder behind
+  `pnpm create @ogs-tech/press`. Pins engine versions via a generated versions file.
+- `apps/playground` — committed real scaffold output, consumed via `workspace:*` for a
+  fast dev loop. It is its own nested workspace (its `packages/cms` + `packages/shared`
+  are members).
+
+## Commands
+
+Root requires **Node 20.x** and **pnpm 10.x**.
+
+| Command | What it does |
+| --- | --- |
+| `pnpm install` | Install from the repo root. |
+| `pnpm build` | `turbo run build` — only `cms` actually compiles (`strapi-plugin build`); `web`/`shared` ship source. |
+| `pnpm -r test` | Run the vitest suites across `cli`, `web`, `cms`. |
+| `pnpm -r --if-present typecheck` | `tsc --noEmit` per package. **There is no eslint** — typecheck + tests are the quality gate. |
+| `pnpm play` | Boot the dogfood playground (`press dev`: cms `:1337/admin` + web `:3000`). |
+| `pnpm play:create` / `pnpm play:upgrade` | Recreate the playground from the live scaffold / refresh just the engine-owned host. |
+| `pnpm pack:check` | `pnpm build` + dry-run publish of the engine packages. |
+
+Focused / single test:
+
+- `pnpm --filter @ogs-tech/press-web test src/generator/generate.test.ts` — one vitest file
+- `pnpm --filter @ogs-tech/press-web test -t "renders heading"` — by test name
+- `pnpm --filter @ogs-tech/create-press test` — CLI unit contracts
+- `pnpm --filter @ogs-tech/press-cms test:ts:back` — Strapi backend `tsc` typecheck (cms has no vitest config; its `test` runs vitest with defaults)
+
+Release (changesets): add a changeset under `.changeset/` for any engine change, then
+`pnpm version-packages` (bumps + regenerates the CLI's pinned versions) and
+`pnpm release` (build + `changeset publish`).
+
+## Architecture — the moving parts
+
+### Materialization (`.press/web`)
+
+The Next host is **not** scaffolded. `packages/web/templates/host/` is copied to
+`<project>/.press/web/` on every `press dev`/`build` (`web/src/materialize.ts`). It
+lives *inside* the project tree so Node resolution reaches the root `node_modules`
+(`press-web`, `next`, `react`) and the adopter's `blocks/custom/`. `.press/` is
+engine-owned, gitignored, regenerated every run — **never hand-edit it** (same for the
+materialized `press-config.ts` / `press.blocks.ts` inside it).
+
+### The contract + type-sync loop
+
+1. cms serializes its **runtime view** — the `page` content-type plus exactly the
+   components admitted into its `body` Dynamic Zone — to `GET /api/press/schema`
+   (`cms/.../lib/serialize-schema.ts`). Reading the live registry means the schema can
+   never disagree with what Strapi actually serves.
+2. web's generator (`web/src/generator/generate.ts`) turns that JSON into
+   framework-agnostic TS, written to the adopter's `shared/types/generated.ts`.
+3. The shape — `PressSchema` — is single-sourced in `@ogs-tech/press-shared` and imported
+   **type-only** by both sides. The generator references **no Strapi types** on
+   purpose. `press dev` re-syncs whenever the schema changes (`util/watch-schema.ts`).
+
+### Reference blocks + the custom-block extension point
+
+- The engine ships a Gutenberg-style `press.*` core palette (paragraph, heading, list,
+  quote, image, button, separator, spacer). Strapi only scans the *host app's*
+  `src/components`, so the plugin **injects** these into the components registry during
+  `register()` (`cms/.../lib/inject-components.ts`).
+- **Extension point:** any component the adopter drops under the cms host's
+  `src/components/custom/` is auto-admitted into the page `body` Dynamic Zone
+  (`admitCustomBlocks`). The engine never names individual adopter blocks — only the
+  `custom` category is the stable contract.
+- On the web side, `BlockRenderer` merges `referenceBlocks` (`press.*`) with the
+  adopter's **explicit** `customBlocks` map (no global registry). It picks by
+  `__component`; an unknown component is skipped with a dev-only warning, never a crash.
+
+### Build-time anchors vs. runtime Site Settings
+
+This split is recent and easy to get wrong:
+
+- `press.config.ts` (Project zone, repo root) carries **build-time anchors only**:
+  `routes.home`, `theme.name` (the `<html data-theme>` selector + `ThemeName` guard),
+  and `theme.fonts` (which `next/font` must know at build time). The engine **reads**
+  this file but **never rewrites** it. A destructive `ThemeName` change fails `tsc`
+  right at the `defineConfig` call site.
+- **Identity, SEO, and theme color/radius VALUES** live in the CMS **"Site Settings"**
+  single type — edited in the admin, fetched at runtime by `getSiteConfig` (ISR ~60s),
+  no redeploy. Any failure (CMS down, malformed body) maps as if the record were
+  *empty* → the site renders unbranded/default-themed rather than crashing. There is
+  **no `press.config` fallback for identity** by design.
+- Routing reads only the build-time anchor, so the `/home → /` redirect stays
+  deterministic and CMS-independent.
+
+### Versioning + upgrade
+
+- Engine packages are versioned **independently** via changesets — `press-web` and
+  `press-cms` can sit at different patch levels.
+- A generated project pins `@ogs-tech/press-{web,cms}` at **exact** versions, so
+  `pnpm update` is a no-op. `press upgrade` (`web/src/commands/upgrade.ts`) is the only
+  coordinated path: rewrite both pins (latest per package, or an explicit target),
+  reinstall, re-materialize to fail early. It never touches the adopter zone.
+- The CLI bakes current engine versions into the scaffold via `gen:versions`
+  (`versions.generated.ts`); CI runs `gen:versions --check` to keep it fresh.
+
+## Conventions & gotchas
+
+- Code comments cite **"Spec §…"** sections; design specs live under
+  `docs/superpowers/specs` and `docs/beta`. Honor those references when changing behavior.
+- Engine packages ship **TS source** (`web`/`shared` have echo-only `build`); only
+  `cms` compiles. Don't introduce bundling without a reason.
+- The package behind `pnpm create @ogs-tech/press` is `@ogs-tech/create-press` (the
+  scaffolder) — it is run once and never added as a project dependency.
+- Process orchestration is **crash-aware**: `press dev`/`build` use
+  `waitForReadyOrExit` and propagate truthful exit codes — they never report a false
+  success.

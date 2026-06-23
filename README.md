@@ -66,7 +66,7 @@ The scaffold is **ultra-thin** — only the layer you own. There is no `app/` or
 ```
 my-site/
 ├─ packages/
-│  ├─ web/                 # your zone: config.ts (brand + SEO) + blocks/custom/ (React blocks + index.ts)
+│  ├─ web/                 # your zone: config.ts (build-time anchors: routes + theme) + blocks/custom/ (React blocks + index.ts)
 │  ├─ cms/                 # the one visible host — a minimal Strapi app
 │  │  └─ scripts/seed.mjs  # sample home page so the first `press dev` renders something
 │  └─ shared/              # the content-type contract (<name>-shared/types)
@@ -79,28 +79,33 @@ my-site/
 
 ## Customizing your site
 
-**Brand & SEO** — edit `press.config.ts`. It is typed by `@ogs-tech/press-web`, so an
-engine update that changes the config shape fails loudly at *your* file rather
-than drifting silently:
+Two surfaces, split by *when* the value is needed.
+
+**Build-time anchors** — `press.config.ts` (repo root). Only what the build must know
+deterministically: the home-route slug, the theme **name**, and theme **fonts** (which
+`next/font` resolves at build time). It is typed by `@ogs-tech/press-web`, so an engine
+update that changes the config shape fails loudly at *your* file rather than drifting
+silently. The engine reads this file but **never rewrites** it.
 
 ```ts
 import { defineConfig } from '@ogs-tech/press-web';
 
 export default defineConfig({
-  brand: { name: 'Acme', logo: '/logo.svg', favicon: '/favicon.ico' },
-  site: { url: 'https://acme.test', locale: 'en' },
-  seo: {
-    titleTemplate: '%s | Acme',
-    defaultTitle: 'Acme',
-    defaultDescription: 'An Acme content site.',
-    defaultOgImage: '/og.png',
-  },
+  routes: { home: 'home' }, // slug served at '/'; a direct hit on it redirects to '/'
+  theme: 'default',         // or { name: 'default', fonts: { body: 'Inter' } }
 });
 ```
 
-**Custom blocks** — add a Strapi component under `packages/cms/src/components/custom/`,
-a matching React component under `packages/web/blocks/custom/`, and wire it in
-`packages/web/blocks/custom/index.ts`:
+**Identity, SEO & theme values** — edited in the CMS **"Site Settings"** single type
+(brand name, URL, logo/favicon, SEO template, theme colors & radius). The web host
+fetches them at **runtime** (ISR ~60s), so changes appear **without a redeploy**. If the
+CMS is unreachable the site renders unbranded/default-themed rather than crashing — there
+is no `press.config` fallback for identity by design.
+
+**Custom blocks** — the engine ships a `press.*` core palette (paragraph, heading, list,
+quote, image, button, separator, spacer). To add your own, drop a Strapi component under
+`packages/cms/src/components/custom/`, a matching React component under
+`packages/web/blocks/custom/`, and wire it in `packages/web/blocks/custom/index.ts`:
 
 ```ts
 export const customBlocks: Record<string, ComponentType<any>> = {
@@ -108,8 +113,9 @@ export const customBlocks: Record<string, ComponentType<any>> = {
 };
 ```
 
-The materialized host passes this map to its block renderer, so your blocks
-render server-side alongside the engine's built-in blocks.
+Any `custom.*` component is auto-admitted into the page's Dynamic Zone, and the
+materialized host passes this map to its block renderer — so your blocks render
+server-side alongside the engine's built-in blocks.
 
 ## Updating the engine
 
@@ -135,8 +141,9 @@ can ship as a versioned, updatable dependency without leaking into the adopter's
 code.
 
 - `packages/cli` — `@ogs-tech/create-press`: the run-once scaffolder invoked via `pnpm create @ogs-tech/press`; not added as a project dependency.
-- `packages/cms` — the **engine** Strapi plugin (`@ogs-tech/press-cms`): ships a
-  `page` content-type and injects reference Dynamic-Zone blocks.
+- `packages/cms` — the **engine** Strapi plugin (`@ogs-tech/press-cms`): ships the
+  `page` + `site-setting` content-types, injects the `press.*` reference palette into
+  the page Dynamic Zone, and serves the type-sync contract at `/api/press/schema`.
 - `packages/web` — the **engine** web layer (`@ogs-tech/press-web`): the Next host
   template, block renderer, config helpers, and CMS→types sync.
 - `packages/shared` — `@ogs-tech/press-shared`: framework-agnostic contract types
