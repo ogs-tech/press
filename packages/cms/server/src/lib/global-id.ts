@@ -2,7 +2,7 @@
  * Mirrors lodash `_.upperFirst(_.camelCase(input))` for the `component_<uid>`
  * globalId derivation used by Strapi's component loader.
  *
- * Inputs are assumed lowercase/kebab (e.g. "component_press.hero");
+ * Inputs are assumed lowercase/kebab (e.g. "component_press.paragraph");
  * mixed-case inputs will produce correct camelCase but the round-trip is not
  * guaranteed to be stable if the caller passes already-cased strings.
  */

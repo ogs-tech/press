@@ -1,9 +1,11 @@
 // cms/scripts/seed.mjs — One-shot sample content for the cms host. Boots it
 // programmatically (CMS server must be STOPPED), fills the Site Settings single
-// type (identity/SEO + theme), uploads a tiny PNG, and creates a PUBLISHED 'home'
-// page with a press.hero + custom.callout so the first `press dev` renders a
-// branded, themed site. Skip-if-empty: seeds only a fresh CMS — existing content
-// is never overwritten (delete cms/.tmp to reset).
+// type (identity/SEO + theme), uploads a few tiny PNGs, and creates a PUBLISHED
+// 'home' page that showcases the Gutenberg-style core palette (heading, paragraph,
+// list, quote, separator, image, button, spacer, gallery) plus the adopter's
+// custom.callout, so the first `press dev` renders a branded, themed site.
+// Skip-if-empty: seeds only a fresh CMS — existing content is never overwritten
+// (delete cms/.tmp to reset).
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -82,36 +84,116 @@ async function main() {
       return;
     }
 
-    // Upload the image through the upload plugin service.
     const tmpDir = path.join(process.cwd(), '.tmp');
     mkdirSync(tmpDir, { recursive: true });
-    const filepath = path.join(tmpDir, 'hero.png');
-    writeFileSync(filepath, PNG);
 
-    const uploaded = await app.plugin('upload').service('upload').upload({
-      data: {},
-      files: {
-        filepath,
-        originalFilename: 'hero.png',
-        mimetype: 'image/png',
-        size: PNG.length,
-      },
-    });
-    const fileId = uploaded[0].id;
-    console.log(`[seed] uploaded image id=${fileId}`);
+    // Upload a few tiny images so the gallery proves MULTIPLE media cross the REST
+    // contract — Gallery is the engine's media-serialization example (Spec §5.2).
+    const uploadImage = async (name) => {
+      const filepath = path.join(tmpDir, name);
+      writeFileSync(filepath, PNG);
+      const uploaded = await app.plugin('upload').service('upload').upload({
+        data: {},
+        files: { filepath, originalFilename: name, mimetype: 'image/png', size: PNG.length },
+      });
+      return uploaded[0].id;
+    };
+    const imageIds = [];
+    for (const name of ['press-1.png', 'press-2.png', 'press-3.png']) {
+      imageIds.push(await uploadImage(name));
+    }
+    console.log(`[seed] uploaded ${imageIds.length} image(s): ${imageIds.join(', ')}`);
 
-    // Create the published page with both blocks.
+    // Create the published "Hello from press" home from the Gutenberg-style core
+    // palette: atomic text blocks (heading/paragraph/list/quote), structural blocks
+    // (separator/button/spacer), media (image single + gallery multiple), and the
+    // adopter's custom.callout.
     const page = await app.documents(PAGE_UID).create({
       data: {
-        title: 'E2E Home',
+        title: 'Hello from press',
         slug: SLUG,
         body: [
+          { __component: 'press.heading', text: 'Hello from press', level: '1' },
           {
-            __component: 'press.hero',
-            heading: 'Hello from press',
-            subheading: 'server-rendered end-to-end',
-            ctaLabel: 'Get started',
-            image: fileId,
+            __component: 'press.paragraph',
+            content: [
+              {
+                type: 'paragraph',
+                children: [
+                  { type: 'text', text: 'A press-powered site, ' },
+                  { type: 'text', text: 'server-rendered end-to-end', bold: true },
+                  { type: 'text', text: '. This prose lives in the CMS and renders as static HTML — no client hydration.' },
+                ],
+              },
+            ],
+          },
+          { __component: 'press.heading', text: 'What ships in the box', level: '2' },
+          {
+            __component: 'press.list',
+            content: [
+              {
+                type: 'list',
+                format: 'unordered',
+                children: [
+                  {
+                    type: 'list-item',
+                    children: [
+                      { type: 'text', text: 'Atomic text blocks', bold: true },
+                      { type: 'text', text: ' — paragraph, heading, list and quote.' },
+                    ],
+                  },
+                  {
+                    type: 'list-item',
+                    children: [
+                      { type: 'text', text: 'Media & structure', bold: true },
+                      { type: 'text', text: ' — image, gallery, button, separator and spacer.' },
+                    ],
+                  },
+                  {
+                    type: 'list-item',
+                    children: [
+                      { type: 'text', text: 'Your own ' },
+                      { type: 'text', text: 'custom.*', code: true },
+                      { type: 'text', text: ' blocks, admitted automatically into the page.' },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            __component: 'press.quote',
+            content: [
+              { type: 'paragraph', children: [{ type: 'text', text: 'The contract is HTML on the server.' }] },
+            ],
+            citation: 'The press engine',
+          },
+          {
+            __component: 'press.paragraph',
+            content: [
+              {
+                type: 'paragraph',
+                children: [
+                  { type: 'text', text: 'Read the ' },
+                  { type: 'link', url: 'https://github.com/ogs-tech/press', children: [{ type: 'text', text: 'docs' }] },
+                  { type: 'text', text: ' to learn more.' },
+                ],
+              },
+            ],
+          },
+          { __component: 'press.separator', variant: 'line' },
+          {
+            __component: 'press.image',
+            image: imageIds[0],
+            caption: 'A single image — proof one media field crosses the REST contract.',
+          },
+          { __component: 'press.button', label: 'Get started', href: 'https://github.com/ogs-tech/press', variant: 'primary' },
+          { __component: 'press.spacer', size: 'lg' },
+          {
+            __component: 'press.gallery',
+            heading: 'Gallery',
+            images: imageIds,
+            caption: 'Seeded images — proof that multiple media cross the REST contract.',
           },
           {
             __component: 'custom.callout',

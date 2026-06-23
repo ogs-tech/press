@@ -10,13 +10,65 @@ export interface PressMedia {
   mime?: string;
 }
 
-export interface PressHero {
-  __component: 'press.hero';
+export interface PressParagraph {
+  __component: 'press.paragraph';
   id: number;
-  heading: string;
-  subheading?: string;
-  ctaLabel?: string;
-  image?: PressMedia;
+  content: unknown;
+}
+
+export interface PressHeading {
+  __component: 'press.heading';
+  id: number;
+  text: string;
+  level: '1' | '2' | '3' | '4' | '5' | '6';
+}
+
+export interface PressList {
+  __component: 'press.list';
+  id: number;
+  content: unknown;
+}
+
+export interface PressQuote {
+  __component: 'press.quote';
+  id: number;
+  content: unknown;
+  citation?: string;
+}
+
+export interface PressImage {
+  __component: 'press.image';
+  id: number;
+  image: PressMedia;
+  caption?: string;
+}
+
+export interface PressButton {
+  __component: 'press.button';
+  id: number;
+  label: string;
+  href: string;
+  variant: 'primary' | 'secondary';
+}
+
+export interface PressSeparator {
+  __component: 'press.separator';
+  id: number;
+  variant: 'line' | 'dots';
+}
+
+export interface PressSpacer {
+  __component: 'press.spacer';
+  id: number;
+  size: 'sm' | 'md' | 'lg' | 'xl';
+}
+
+export interface PressGallery {
+  __component: 'press.gallery';
+  id: number;
+  heading?: string;
+  images?: PressMedia[];
+  caption?: string;
 }
 
 export interface CustomCallout {
@@ -26,7 +78,7 @@ export interface CustomCallout {
   variant?: 'info' | 'warning' | 'success';
 }
 
-export type PageBody = (PressHero | CustomCallout)[];
+export type PageBody = (PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | PressGallery | CustomCallout)[];
 
 export interface Page {
   id: number;
@@ -35,3 +87,4 @@ export interface Page {
   slug?: string;
   body: PageBody;
 }
+

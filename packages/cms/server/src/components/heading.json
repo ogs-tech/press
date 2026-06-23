@@ -1,0 +1,9 @@
+{
+  "collectionName": "components_press_headings",
+  "info": { "displayName": "Heading", "description": "A standalone section heading shipped by the press engine" },
+  "options": {},
+  "attributes": {
+    "text": { "type": "string", "required": true },
+    "level": { "type": "enumeration", "enum": ["1", "2", "3", "4", "5", "6"], "default": "2", "required": true }
+  }
+}

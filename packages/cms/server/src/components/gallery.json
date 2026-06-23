@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_press_galleries",
+  "info": { "displayName": "Gallery", "description": "Image grid block shipped by the press engine" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string" },
+    "images": { "type": "media", "multiple": true, "allowedTypes": ["images"] },
+    "caption": { "type": "string" }
+  }
+}

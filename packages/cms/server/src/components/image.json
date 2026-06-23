@@ -1,0 +1,9 @@
+{
+  "collectionName": "components_press_images",
+  "info": { "displayName": "Image", "description": "A single image shipped by the press engine" },
+  "options": {},
+  "attributes": {
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"], "required": true },
+    "caption": { "type": "string" }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_press_buttons",
+  "info": { "displayName": "Button", "description": "A call-to-action button shipped by the press engine" },
+  "options": {},
+  "attributes": {
+    "label": { "type": "string", "required": true },
+    "href": { "type": "string", "required": true },
+    "variant": { "type": "enumeration", "enum": ["primary", "secondary"], "default": "primary", "required": true }
+  }
+}

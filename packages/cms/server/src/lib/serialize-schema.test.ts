@@ -3,15 +3,20 @@ import { serializeSchema } from './serialize-schema';
 
 const fakeStrapi = () => {
   const components = new Map<string, any>([
-    ['press.hero', {
-      uid: 'press.hero',
+    ['press.paragraph', {
+      uid: 'press.paragraph',
       attributes: {
-        heading: { type: 'string', required: true },
-        subheading: { type: 'string' },
-        ctaLabel: { type: 'string' },
-        image: { type: 'media', multiple: false, allowedTypes: ['images'] },
+        content: { type: 'blocks', required: true },
         // noise that must be stripped:
         createdAt: { type: 'datetime', private: true },
+      },
+    }],
+    ['press.gallery', {
+      uid: 'press.gallery',
+      attributes: {
+        heading: { type: 'string' },
+        images: { type: 'media', multiple: true, allowedTypes: ['images'] },
+        caption: { type: 'string' },
       },
     }],
     ['custom.callout', {
@@ -30,7 +35,7 @@ const fakeStrapi = () => {
       attributes: {
         title: { type: 'string', required: true },
         slug: { type: 'uid', targetField: 'title' },
-        body: { type: 'dynamiczone', components: ['press.hero', 'custom.callout'] },
+        body: { type: 'dynamiczone', components: ['press.paragraph', 'press.gallery', 'custom.callout'] },
       },
     }),
     get: (key: string) => (key === 'components' ? components : undefined),
@@ -42,22 +47,26 @@ describe('serializeSchema', () => {
     const out = serializeSchema(fakeStrapi());
     expect(Object.keys(out.contentTypes)).toEqual(['plugin::press-cms.page']);
     // press.unused is registered but NOT in page.body → excluded
-    expect(Object.keys(out.components).sort()).toEqual(['custom.callout', 'press.hero']);
+    expect(Object.keys(out.components).sort()).toEqual(['custom.callout', 'press.gallery', 'press.paragraph']);
   });
 
   it('keeps only the contract attribute keys and drops private/internal noise', () => {
     const out = serializeSchema(fakeStrapi());
-    expect(out.components['press.hero'].attributes).toEqual({
-      heading: { type: 'string', required: true },
-      subheading: { type: 'string' },
-      ctaLabel: { type: 'string' },
-      image: { type: 'media', multiple: false, allowedTypes: ['images'] },
+    // paragraph: the `blocks` type and `required` flag survive; createdAt noise is dropped.
+    expect(out.components['press.paragraph'].attributes).toEqual({
+      content: { type: 'blocks', required: true },
+    });
+    // gallery: multiple media + optional heading/caption.
+    expect(out.components['press.gallery'].attributes).toEqual({
+      heading: { type: 'string' },
+      images: { type: 'media', multiple: true, allowedTypes: ['images'] },
+      caption: { type: 'string' },
     });
     expect(out.components['custom.callout'].attributes.variant).toEqual({
       type: 'enumeration', enum: ['info', 'warning', 'success'], default: 'info',
     });
     expect(out.contentTypes['plugin::press-cms.page'].attributes.body).toEqual({
-      type: 'dynamiczone', components: ['press.hero', 'custom.callout'],
+      type: 'dynamiczone', components: ['press.paragraph', 'press.gallery', 'custom.callout'],
     });
   });
 

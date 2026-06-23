@@ -25,22 +25,22 @@ const pageWithBody = (components: string[]) => ({
 
 describe('admitCustomBlocks', () => {
   it('admits every custom.* component into the page Dynamic Zone', () => {
-    const page = pageWithBody(['press.hero']);
-    const strapi = makeStrapi({ page, componentUids: ['press.hero', 'custom.callout', 'custom.banner'] });
+    const page = pageWithBody(['press.paragraph']);
+    const strapi = makeStrapi({ page, componentUids: ['press.paragraph', 'custom.callout', 'custom.banner'] });
 
     admitCustomBlocks({ strapi });
 
     // press.* is untouched; both custom.* blocks are appended, no duplicates.
-    expect(page.attributes.body.components).toEqual(['press.hero', 'custom.callout', 'custom.banner']);
+    expect(page.attributes.body.components).toEqual(['press.paragraph', 'custom.callout', 'custom.banner']);
   });
 
   it('is idempotent: an already-admitted custom.* block is not duplicated', () => {
-    const page = pageWithBody(['press.hero', 'custom.callout']);
-    const strapi = makeStrapi({ page, componentUids: ['press.hero', 'custom.callout'] });
+    const page = pageWithBody(['press.paragraph', 'custom.callout']);
+    const strapi = makeStrapi({ page, componentUids: ['press.paragraph', 'custom.callout'] });
 
     admitCustomBlocks({ strapi });
 
-    expect(page.attributes.body.components).toEqual(['press.hero', 'custom.callout']);
+    expect(page.attributes.body.components).toEqual(['press.paragraph', 'custom.callout']);
   });
 
   it('throws (aborts boot) when the page content-type is absent from the registry', () => {
@@ -70,17 +70,29 @@ describe('injectComponents', () => {
   it('registers every engine press.* component as a component model', () => {
     const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
-    for (const uid of ['press.hero', 'press.seo', 'press.theme-colors', 'press.theme-radius']) {
+    const expected = [
+      'press.paragraph', 'press.heading', 'press.list', 'press.quote',
+      'press.image', 'press.button', 'press.separator', 'press.spacer',
+      'press.gallery', 'press.seo', 'press.theme-colors', 'press.theme-radius',
+    ];
+    for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
       expect(components.get(uid)?.uid).toBe(uid);
     }
   });
 
+  it('no longer injects the removed press.hero / press.rich-text blocks', () => {
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+    expect(components.get('press.hero')).toBeUndefined();
+    expect(components.get('press.rich-text')).toBeUndefined();
+  });
+
   it('skips a component already present in the registry (idempotent injection)', () => {
     const { strapi, components } = makeStrapi();
-    components.set('press.hero', { uid: 'press.hero', preexisting: true });
+    components.set('press.paragraph', { uid: 'press.paragraph', preexisting: true });
     injectComponents({ strapi });
-    expect(components.get('press.hero')).toEqual({ uid: 'press.hero', preexisting: true });
+    expect(components.get('press.paragraph')).toEqual({ uid: 'press.paragraph', preexisting: true });
     expect(components.get('press.seo')?.modelType).toBe('component'); // others still injected
   });
 });

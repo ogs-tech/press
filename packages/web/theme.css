@@ -76,34 +76,151 @@ footer {
   font-size: var(--press-text-sm);
 }
 
-/* Reference block: press.hero — left-aligned editorial (Spec §5.2). */
-[data-block="press.hero"] {
-  display: flex;
-  flex-direction: column;
-  gap: var(--press-space-4);
-  margin: var(--press-space-7) 0;
+/* Reference blocks: decomposed text palette (press.paragraph / heading / list /
+   quote) — editorial prose emitted by the engine's in-house blocks renderer
+   (Spec §5.1/§7), styled per block with vertical rhythm from the space scale. */
+[data-block="press.paragraph"] {
+  margin: var(--press-space-5) 0;
 }
-[data-block="press.hero"] img {
-  max-width: 100%;
+[data-block="press.paragraph"] p {
+  margin: 0;
+  font-size: var(--press-text-body);
+  line-height: 1.7;
+}
+[data-block="press.paragraph"] p + p {
+  margin-top: var(--press-space-4);
+}
+[data-block="press.paragraph"] a {
+  color: var(--press-color-primary);
+  text-underline-offset: 2px;
+}
+[data-block="press.paragraph"] code {
+  font-size: 0.9em;
+}
+
+[data-block="press.heading"] {
+  margin: var(--press-space-6) 0 var(--press-space-4);
+  line-height: 1.2;
+}
+h4[data-block="press.heading"] { font-size: var(--press-text-lg); }
+h5[data-block="press.heading"],
+h6[data-block="press.heading"] { font-size: var(--press-text-body); }
+
+[data-block="press.list"] {
+  margin: var(--press-space-5) 0;
+}
+[data-block="press.list"] ul,
+[data-block="press.list"] ol {
+  margin: 0;
+  padding-left: var(--press-space-5);
+}
+[data-block="press.list"] li + li {
+  margin-top: var(--press-space-2);
+}
+[data-block="press.list"] a {
+  color: var(--press-color-primary);
+}
+
+[data-block="press.quote"] {
+  margin: var(--press-space-6) 0;
+}
+[data-block="press.quote"] blockquote {
+  margin: 0;
+  padding: var(--press-space-2) 0 var(--press-space-2) var(--press-space-4);
+  border-left: 3px solid var(--press-color-border);
+  color: var(--press-color-muted);
+  font-style: italic;
+}
+[data-block="press.quote"] cite {
+  display: block;
+  margin-top: var(--press-space-2);
+  font-size: var(--press-text-sm);
+  color: var(--press-color-muted);
+  font-style: normal;
+}
+
+/* Reference block: press.image — a single server-rendered image (Spec §5.2/§7). */
+[data-block="press.image"] {
+  margin: var(--press-space-6) 0;
+}
+[data-block="press.image"] img {
+  display: block;
+  width: 100%;
   height: auto;
   border-radius: var(--press-radius-md);
 }
-[data-block="press.hero"] h1 {
-  margin: 0;
-}
-[data-block="press.hero"] p {
+[data-block="press.image"] figcaption {
+  margin: var(--press-space-3) 0 0;
   color: var(--press-color-muted);
-  font-size: var(--press-text-lg);
-  margin: 0;
+  font-size: var(--press-text-sm);
 }
-[data-block="press.hero"] a {
-  align-self: flex-start;
-  display: inline-block;
+
+/* Reference block: press.button — a call-to-action link; `data-variant` selects
+   the fill (primary) or outline (secondary) treatment. */
+[data-block="press.button"] {
+  margin: var(--press-space-5) 0;
+}
+[data-block="press.button"] a {
+  display: inline-flex;
+  align-items: center;
   padding: var(--press-space-3) var(--press-space-5);
-  border-radius: var(--press-radius-pill);
+  border-radius: var(--press-radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1;
+}
+[data-block="press.button"] a[data-variant="primary"] {
   background: var(--press-color-primary);
   color: var(--press-color-on-primary);
-  text-decoration: none;
-  font-family: var(--press-font-body, var(--press-font-body-default)), system-ui, sans-serif;
-  font-weight: 600;
+}
+[data-block="press.button"] a[data-variant="secondary"] {
+  background: transparent;
+  color: var(--press-color-primary);
+  border: 1px solid var(--press-color-border);
+}
+
+/* Reference block: press.separator — a horizontal divider; `data-variant` swaps a
+   solid rule for a dotted one. */
+[data-block="press.separator"] {
+  margin: var(--press-space-6) 0;
+  border: 0;
+  border-top: 1px solid var(--press-color-border);
+}
+[data-block="press.separator"][data-variant="dots"] {
+  border-top-style: dotted;
+  border-top-width: 3px;
+}
+
+/* Reference block: press.spacer — vertical whitespace sized via the space scale. */
+[data-block="press.spacer"] {
+  display: block;
+}
+[data-block="press.spacer"][data-size="sm"] { height: var(--press-space-3); }
+[data-block="press.spacer"][data-size="md"] { height: var(--press-space-5); }
+[data-block="press.spacer"][data-size="lg"] { height: var(--press-space-7); }
+[data-block="press.spacer"][data-size="xl"] { height: var(--press-space-9); }
+
+/* Reference block: press.gallery — responsive image grid; the new
+   media-serialization contract example (Spec §5.2/§7). */
+[data-block="press.gallery"] {
+  margin: var(--press-space-6) 0;
+}
+[data-block="press.gallery"] h2 {
+  margin: 0 0 var(--press-space-4);
+}
+[data-block="press.gallery"] > div {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--press-space-3);
+}
+[data-block="press.gallery"] img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--press-radius-md);
+}
+[data-block="press.gallery"] p {
+  margin: var(--press-space-3) 0 0;
+  color: var(--press-color-muted);
+  font-size: var(--press-text-sm);
 }

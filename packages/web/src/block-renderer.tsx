@@ -3,7 +3,7 @@ import { referenceBlocks } from './reference-blocks';
 import { blockKey } from './block-key';
 
 // Minimal structural shape the renderer needs from a dynamic-zone entry. No index
-// signature: the sync-generated component interfaces (PressHero, CustomCallout, …)
+// signature: the sync-generated component interfaces (PressParagraph, PressGallery, CustomCallout, …)
 // have none, and a type with an index signature can't accept one without it — so
 // `PageBody` (the call-site type) would fail to satisfy `Block[]`. The renderer only
 // reads `__component` and `id` and spreads the rest, so the extra fields aren't typed here.

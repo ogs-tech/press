@@ -1,5 +1,13 @@
 import type { Core } from '@strapi/strapi';
-import heroSchema from '../components/hero.json';
+import paragraphSchema from '../components/paragraph.json';
+import headingSchema from '../components/heading.json';
+import listSchema from '../components/list.json';
+import quoteSchema from '../components/quote.json';
+import imageSchema from '../components/image.json';
+import buttonSchema from '../components/button.json';
+import separatorSchema from '../components/separator.json';
+import spacerSchema from '../components/spacer.json';
+import gallerySchema from '../components/gallery.json';
 import seoSchema from '../components/seo.json';
 import themeColorsSchema from '../components/theme-colors.json';
 import themeRadiusSchema from '../components/theme-radius.json';
@@ -16,7 +24,7 @@ import { toGlobalId } from './global-id';
  * Boot order (see @strapi/core/dist/Strapi.js `load`):
  *   1. providers.register  -> loadApplicationContext (app components AND plugin
  *      content-types loaded in parallel; module.load() registers CTs before register)
- *   2. plugins REGISTER     -> THIS hook (we inject press.hero, then admit custom.*)
+ *   2. plugins REGISTER     -> THIS hook (we inject the press.* core palette, then admit custom.*)
  *   3. bootstrap            -> transformContentTypesToModels([...contentTypes, ...components])
  *
  * The injected object mirrors the exact shape produced by Strapi's own loader
@@ -24,7 +32,17 @@ import { toGlobalId } from './global-id';
  * { __schema__, uid, category, modelType, modelName, globalId }.
  */
 const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<string, unknown> }> = [
-  { category: 'press', name: 'hero', schema: heroSchema as Record<string, unknown> },
+  // Gutenberg-style core palette: atomic text, media, and structural blocks.
+  { category: 'press', name: 'paragraph', schema: paragraphSchema as Record<string, unknown> },
+  { category: 'press', name: 'heading', schema: headingSchema as Record<string, unknown> },
+  { category: 'press', name: 'list', schema: listSchema as Record<string, unknown> },
+  { category: 'press', name: 'quote', schema: quoteSchema as Record<string, unknown> },
+  { category: 'press', name: 'image', schema: imageSchema as Record<string, unknown> },
+  { category: 'press', name: 'button', schema: buttonSchema as Record<string, unknown> },
+  { category: 'press', name: 'separator', schema: separatorSchema as Record<string, unknown> },
+  { category: 'press', name: 'spacer', schema: spacerSchema as Record<string, unknown> },
+  { category: 'press', name: 'gallery', schema: gallerySchema as Record<string, unknown> },
+  // Configuration components used by the Site Settings single type (not page blocks).
   { category: 'press', name: 'seo', schema: seoSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-radius', schema: themeRadiusSchema as Record<string, unknown> },
@@ -32,8 +50,9 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
 
 /**
  * Injects engine-owned components (press.*) into Strapi's component registry.
- * This is an INTERNAL implementation detail — the public contract (press.hero uid
- * and its attributes) is defined by hero.json and must never change here.
+ * This is an INTERNAL implementation detail — the public contract (the press.*
+ * component uids and their attributes) is defined by the component JSON schemas
+ * and must never change here.
  */
 export const injectComponents = ({ strapi }: { strapi: Core.Strapi }): void => {
   const componentRegistry = strapi.get('components');

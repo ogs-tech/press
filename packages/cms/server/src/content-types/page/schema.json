@@ -14,6 +14,19 @@
   "attributes": {
     "title": { "type": "string", "required": true },
     "slug": { "type": "uid", "targetField": "title" },
-    "body": { "type": "dynamiczone", "components": ["press.hero"] }
+    "body": {
+      "type": "dynamiczone",
+      "components": [
+        "press.paragraph",
+        "press.heading",
+        "press.list",
+        "press.quote",
+        "press.image",
+        "press.button",
+        "press.separator",
+        "press.spacer",
+        "press.gallery"
+      ]
+    }
   }
 }

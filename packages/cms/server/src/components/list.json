@@ -1,0 +1,8 @@
+{
+  "collectionName": "components_press_lists",
+  "info": { "displayName": "List", "description": "An ordered or unordered list shipped by the press engine" },
+  "options": {},
+  "attributes": {
+    "content": { "type": "blocks", "required": true }
+  }
+}
