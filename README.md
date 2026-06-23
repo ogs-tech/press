@@ -198,7 +198,6 @@ End-to-end tests (a Playwright suite) are planned.
 
 ### Design docs
 
-- Specs & results: [`docs/superpowers/specs/`](docs/superpowers/specs/)
-- Roadmap & PRD: [`docs/beta/`](docs/beta/)
-- The original Strapi-as-dependency spike (PASS on Path A):
-  [`docs/superpowers/specs/2026-06-10-strapi-as-dependency-spike-design.md`](docs/superpowers/specs/2026-06-10-strapi-as-dependency-spike-design.md) (§13 Results)
+Architecture and design rationale live in [`CLAUDE.md`](CLAUDE.md) — the contract /
+type-sync loop, host materialization, the build-time-anchors vs. runtime Site Settings
+split, the custom-block extension point, and the versioning/upgrade model.

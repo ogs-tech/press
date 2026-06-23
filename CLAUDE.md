@@ -119,8 +119,10 @@ This split is recent and easy to get wrong:
 
 ## Conventions & gotchas
 
-- Code comments cite **"Spec §…"** sections; design specs live under
-  `docs/superpowers/specs` and `docs/beta`. Honor those references when changing behavior.
+- Code comments cite **"Spec §…"** sections — historical design-spec references.
+  The specs themselves were removed from the repo on purpose; **this file is now the
+  living architectural reference**. Treat a `Spec §…` citation as a marker that the
+  behavior was a deliberate design decision, and preserve that intent when changing it.
 - Engine packages ship **TS source** (`web`/`shared` have echo-only `build`); only
   `cms` compiles. Don't introduce bundling without a reason.
 - The package behind `pnpm create @ogs-tech/press` is `@ogs-tech/create-press` (the
