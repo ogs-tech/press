@@ -73,7 +73,7 @@ describe('injectComponents', () => {
     const expected = [
       'press.paragraph', 'press.heading', 'press.list', 'press.quote',
       'press.image', 'press.button', 'press.separator', 'press.spacer',
-      'press.seo', 'press.theme-colors', 'press.theme-radius',
+      'press.seo', 'press.theme-colors', 'press.theme-radius', 'press.nav-item',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -94,5 +94,27 @@ describe('injectComponents', () => {
     injectComponents({ strapi });
     expect(components.get('press.paragraph')).toEqual({ uid: 'press.paragraph', preexisting: true });
     expect(components.get('press.seo')?.modelType).toBe('component'); // others still injected
+  });
+
+  it('injects press.nav-item but never admits it into the page Dynamic Zone', () => {
+    // nav-item is a Site-Settings config component (like press.seo). Injecting it
+    // registers the component, but it must NOT leak into the page block palette —
+    // only custom.* is admitted into the page body Dynamic Zone.
+    const components = new Map<string, any>();
+    const page = pageWithBody(['press.paragraph']);
+    const contentTypes = new Map<string, any>([[PAGE_UID, page]]);
+    const strapi = {
+      get: (key: string) =>
+        key === 'components' ? components : key === 'content-types' ? contentTypes : undefined,
+      log: { warn() {}, info() {}, debug() {}, error() {} },
+    } as any;
+
+    injectComponents({ strapi });
+    components.set('custom.callout', { uid: 'custom.callout' }); // a real custom block
+    admitCustomBlocks({ strapi });
+
+    expect(components.get('press.nav-item')?.modelType).toBe('component'); // injected
+    expect(page.attributes.body.components).toContain('custom.callout');   // custom admitted
+    expect(page.attributes.body.components).not.toContain('press.nav-item'); // never admitted
   });
 });

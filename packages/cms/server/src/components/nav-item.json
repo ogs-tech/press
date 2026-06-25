@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_press_nav_items",
+  "info": {
+    "displayName": "Nav Item",
+    "description": "A single navigation entry: an internal page link or an external URL"
+  },
+  "options": {},
+  "attributes": {
+    "label": { "type": "string", "required": true },
+    "page": { "type": "relation", "relation": "oneWay", "target": "plugin::press-cms.page" },
+    "url": { "type": "string" },
+    "newTab": { "type": "boolean", "default": false }
+  },
+  "config": {
+    "metadatas": {
+      "label": { "edit": { "label": "Label" } },
+      "page": { "edit": { "label": "Page", "description": "Internal page link (resolves to its slug; survives renames). Takes precedence over URL." } },
+      "url": { "edit": { "label": "URL", "description": "External URL, anchor, or mailto: (used only when no Page is set)." } },
+      "newTab": { "edit": { "label": "Open in new tab" } }
+    }
+  }
+}
