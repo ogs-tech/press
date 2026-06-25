@@ -17,7 +17,8 @@
     "favicon": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
     "seo": { "type": "component", "repeatable": false, "component": "press.seo" },
     "themeColors": { "type": "component", "repeatable": false, "component": "press.theme-colors" },
-    "themeRadius": { "type": "component", "repeatable": false, "component": "press.theme-radius" }
+    "themeRadius": { "type": "component", "repeatable": false, "component": "press.theme-radius" },
+    "headerNav": { "type": "component", "repeatable": true, "component": "press.nav-item" }
   },
   "config": {
     "metadatas": {
@@ -28,7 +29,8 @@
       "favicon": { "edit": { "label": "Favicon" } },
       "seo": { "edit": { "label": "SEO" } },
       "themeColors": { "edit": { "label": "Theme Colors" } },
-      "themeRadius": { "edit": { "label": "Theme Radius" } }
+      "themeRadius": { "edit": { "label": "Theme Radius" } },
+      "headerNav": { "edit": { "label": "Header Navigation" } }
     }
   }
 }
