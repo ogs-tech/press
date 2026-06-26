@@ -27,6 +27,8 @@ describe('mapSiteSettings', () => {
     expect(r.routes.home).toBe('home');
     expect(r.theme.name).toBe('default');
     expect(r.theme.fonts).toEqual({ body: 'Inter' });
+    // navigation: empty when the CMS is empty (AC5)
+    expect(r.nav.header).toEqual([]);
   });
 
   it('maps an empty {} CMS identically to null', () => {
@@ -80,5 +82,64 @@ describe('mapSiteSettings', () => {
     expect(r.theme.name).toBe(buildTime.theme.name);
     expect(r.theme.fonts).toEqual(buildTime.theme.fonts);
     expect(r.routes).toEqual(buildTime.routes);
+  });
+});
+
+describe('mapSiteSettings — headerNav resolution', () => {
+  it('resolves an internal page to /slug, external false', () => {
+    const r = mapSiteSettings(buildTime, {
+      headerNav: [{ label: 'About', page: { slug: 'about' }, newTab: false }],
+    });
+    expect(r.nav.header).toEqual([
+      { label: 'About', href: '/about', external: false, newTab: false },
+    ]);
+  });
+
+  it('collapses the home slug to /', () => {
+    const r = mapSiteSettings(buildTime, {
+      headerNav: [{ label: 'Home', page: { slug: 'home' } }], // buildTime.routes.home === 'home'
+    });
+    expect(r.nav.header[0].href).toBe('/');
+    expect(r.nav.header[0].external).toBe(false);
+  });
+
+  it('resolves an external url with external:true and honors newTab', () => {
+    const r = mapSiteSettings(buildTime, {
+      headerNav: [{ label: 'Docs', url: 'https://docs.test', newTab: true }],
+    });
+    expect(r.nav.header).toEqual([
+      { label: 'Docs', href: 'https://docs.test', external: true, newTab: true },
+    ]);
+  });
+
+  it('treats a non-http url as internal-style (external:false)', () => {
+    const r = mapSiteSettings(buildTime, {
+      headerNav: [{ label: 'Contact', url: '/contact' }],
+    });
+    expect(r.nav.header[0]).toEqual({ label: 'Contact', href: '/contact', external: false, newTab: false });
+  });
+
+  it('lets page win over url when both are set (precedence)', () => {
+    const r = mapSiteSettings(buildTime, {
+      headerNav: [{ label: 'Both', page: { slug: 'about' }, url: 'https://ignored.test' }],
+    });
+    expect(r.nav.header[0]).toEqual({ label: 'Both', href: '/about', external: false, newTab: false });
+  });
+
+  it('drops an item with neither page nor url', () => {
+    const r = mapSiteSettings(buildTime, {
+      headerNav: [
+        { label: 'Keep', url: '/keep' },
+        { label: 'Drop' }, // neither page nor url
+        { label: 'DropToo', page: null, url: '' },
+      ],
+    });
+    expect(r.nav.header.map((l) => l.label)).toEqual(['Keep']);
+  });
+
+  it('maps absent / empty headerNav to []', () => {
+    expect(mapSiteSettings(buildTime, { headerNav: [] }).nav.header).toEqual([]);
+    expect(mapSiteSettings(buildTime, {}).nav.header).toEqual([]);
+    expect(mapSiteSettings(buildTime, null).nav.header).toEqual([]);
   });
 });

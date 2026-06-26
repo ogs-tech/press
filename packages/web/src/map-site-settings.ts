@@ -11,6 +11,29 @@ function mediaUrl(media: { url?: string } | null | undefined): string | undefine
   return url.startsWith('http') ? url : `${CMS_URL}${url}`;
 }
 
+type RawNavItem = NonNullable<SiteSettingsData['headerNav']>[number];
+type ResolvedNavLink = ResolvedPressConfig['nav']['header'][number];
+
+/**
+ * Resolves a CMS nav item into a final link (site-settings spec §5.2).
+ * Precedence: `page` wins over `url`. An internal page collapses to '/' when its
+ * slug is the home slug (reusing the same routes.home anchor as the /home → /
+ * redirect — CMS-independent). An item with neither page nor url is dropped
+ * (returns null). The external flag is true only for http(s) URLs.
+ */
+function resolveNavItem(item: RawNavItem, homeSlug: string): ResolvedNavLink | null {
+  const label = item.label ?? '';
+  const newTab = item.newTab ?? false;
+  const slug = item.page?.slug;
+  if (slug) {
+    return { label, href: slug === homeSlug ? '/' : `/${slug}`, external: false, newTab };
+  }
+  if (item.url) {
+    return { label, href: item.url, external: item.url.startsWith('http'), newTab };
+  }
+  return null;
+}
+
 /**
  * Pure CMS-shape → ResolvedPressConfig (site-settings-cms spec §3.2). Same input
  * → same output, no I/O, no mutation — unit-testable without a server, safe in an
@@ -51,6 +74,11 @@ export function mapSiteSettings(
       colors: { ...DEFAULT_THEME.colors, ...(c.themeColors ?? {}) },
       fonts: buildTime.theme.fonts,
       radius: { ...DEFAULT_THEME.radius, ...(c.themeRadius ?? {}) },
+    },
+    nav: {
+      header: (c.headerNav ?? [])
+        .map((item) => resolveNavItem(item, buildTime.routes.home))
+        .filter((link): link is ResolvedNavLink => link !== null),
     },
   };
 }

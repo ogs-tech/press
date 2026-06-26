@@ -14,6 +14,7 @@ const baseResolved: ResolvedPressConfig = {
     fonts: {},
     radius: { ...DEFAULT_THEME.radius },
   },
+  nav: { header: [] },
 };
 
 /** Build a ResolvedPressConfig with theme overrides merged over DEFAULT_THEME. */
