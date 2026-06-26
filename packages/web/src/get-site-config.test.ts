@@ -24,7 +24,7 @@ describe('getSiteConfig', () => {
     const mock = stubFetch(async () => ({ ok: true, json: async () => ({ data: null }) }));
     await getSiteConfig(buildTime);
     expect(mock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/site-setting?populate=*'),
+      expect.stringContaining('/api/site-setting?'),
       { next: { revalidate: 60 } },
     );
   });
@@ -54,5 +54,32 @@ describe('getSiteConfig', () => {
     }));
     const r = await getSiteConfig(buildTime);
     expect(r.brand.name).toBe('');
+  });
+
+  it('deep-populates headerNav.page (slug) in the query', async () => {
+    const mock = stubFetch(async () => ({ ok: true, json: async () => ({ data: null }) }));
+    await getSiteConfig(buildTime);
+    const url = mock.mock.calls[0][0] as string;
+    expect(url).toContain('populate[headerNav][populate][page][fields][0]=slug');
+  });
+
+  it('maps a body with nav data end-to-end', async () => {
+    stubFetch(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          name: 'Acme',
+          headerNav: [
+            { label: 'About', page: { slug: 'about' }, newTab: false },
+            { label: 'Docs', url: 'https://docs.test', newTab: true },
+          ],
+        },
+      }),
+    }));
+    const r = await getSiteConfig(buildTime);
+    expect(r.nav.header).toEqual([
+      { label: 'About', href: '/about', external: false, newTab: false },
+      { label: 'Docs', href: 'https://docs.test', external: true, newTab: true },
+    ]);
   });
 });

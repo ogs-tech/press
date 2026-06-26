@@ -3,6 +3,19 @@ import { mapSiteSettings } from './map-site-settings';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
 
+// Explicit Strapi 5 REST populate. `populate=*` reaches only one level — it would
+// bring headerNav's scalars (label/url/newTab) but NOT the nested `page` relation.
+// Hand-encode the exact tree (no query-string dep, spec §5.1): media + config
+// components + headerNav → page (slug only).
+const SITE_SETTING_POPULATE = [
+  'populate[logo]=true',
+  'populate[favicon]=true',
+  'populate[seo][populate][image]=true',
+  'populate[themeColors]=true',
+  'populate[themeRadius]=true',
+  'populate[headerNav][populate][page][fields][0]=slug',
+].join('&');
+
 // Next.js augments RequestInit with `next.revalidate` at the host; the engine
 // package typechecks with only @types/node, so name the option locally.
 type RevalidateInit = RequestInit & { next?: { revalidate?: number } };
@@ -22,7 +35,7 @@ type RevalidateInit = RequestInit & { next?: { revalidate?: number } };
 export async function getSiteConfig(buildTime: BuildTimeConfig): Promise<ResolvedPressConfig> {
   try {
     const init: RevalidateInit = { next: { revalidate: 60 } };
-    const res = await fetch(`${CMS_URL}/api/site-setting?populate=*`, init);
+    const res = await fetch(`${CMS_URL}/api/site-setting?${SITE_SETTING_POPULATE}`, init);
     const data = res.ok ? ((await res.json()) as { data: SiteSettingsData | null }).data : null;
     return mapSiteSettings(buildTime, data);
   } catch {
