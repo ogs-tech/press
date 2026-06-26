@@ -11,6 +11,7 @@ export { Image } from './blocks/image';
 export { Button } from './blocks/button';
 export { Separator } from './blocks/separator';
 export { Spacer } from './blocks/spacer';
+export { SiteNav } from './nav';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildMetadata } from './config/build-metadata';
