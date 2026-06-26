@@ -7,7 +7,7 @@
   "options": {},
   "attributes": {
     "label": { "type": "string", "required": true },
-    "page": { "type": "relation", "relation": "oneWay", "target": "plugin::press-cms.page" },
+    "page": { "type": "relation", "relation": "oneToOne", "target": "plugin::press-cms.page" },
     "url": { "type": "string" },
     "newTab": { "type": "boolean", "default": false }
   },
