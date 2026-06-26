@@ -84,6 +84,15 @@ export interface ResolvedPressConfig {
     fonts: Partial<ThemeFonts>;
     radius: ThemeRadius;
   };
+  /**
+   * Site chrome navigation (site-settings, Plane B). Resolved from the CMS
+   * `headerNav` component list: each item is a final link — internal page slugs
+   * already collapsed to an href ('/' for the home slug), external flag set from
+   * the URL scheme. Empty when the CMS is empty/unreachable/malformed.
+   */
+  nav: {
+    header: Array<{ label: string; href: string; external: boolean; newTab: boolean }>;
+  };
 }
 
 /**
@@ -122,4 +131,10 @@ export interface SiteSettingsData {
   } | null;
   themeColors?: Partial<ThemeColors> | null;
   themeRadius?: Partial<ThemeRadius> | null;
+  headerNav?: Array<{
+    label?: string;
+    page?: { slug?: string } | null;
+    url?: string;
+    newTab?: boolean;
+  }> | null;
 }
