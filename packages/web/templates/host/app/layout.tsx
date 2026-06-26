@@ -1,5 +1,5 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
-import { buildMetadata, buildThemeStyle, getSiteConfig } from '@ogs-tech/press-web';
+import { buildMetadata, buildThemeStyle, getSiteConfig, SiteNav } from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
 import { buildTime } from '../press-config';
 
@@ -34,6 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {site.brand.logo ? <img src={site.brand.logo} alt="" /> : null}
             <span>{site.brand.name}</span>
           </a>
+          <SiteNav links={site.nav.header} />
         </header>
         <main>{children}</main>
         <footer>

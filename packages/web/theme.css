@@ -60,6 +60,47 @@ header img {
   width: auto;
 }
 
+/* Header navigation (site chrome): editable menu rendered by SiteNav next to the
+   brand link. Pushed to the right of the logo; wraps gracefully on narrow
+   viewports (a JS hamburger is out of scope). Active link uses aria-current. */
+nav[data-press-nav="header"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--press-space-4);
+  margin-left: auto;
+}
+nav[data-press-nav="header"] a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--press-space-1);
+  color: var(--press-color-ink);
+  text-decoration: none;
+  font-weight: 500;
+}
+nav[data-press-nav="header"] a:hover {
+  color: var(--press-color-primary);
+}
+nav[data-press-nav="header"] a[aria-current="page"] {
+  color: var(--press-color-primary);
+  font-weight: 600;
+}
+nav[data-press-nav="header"] [data-press-nav-ext] {
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+@media (max-width: 640px) {
+  header {
+    flex-wrap: wrap;
+  }
+  nav[data-press-nav="header"] {
+    margin-left: 0;
+    width: 100%;
+    gap: var(--press-space-3);
+  }
+}
+
 main {
   display: block;
   max-width: 72ch;
