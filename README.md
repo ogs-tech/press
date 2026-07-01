@@ -150,6 +150,52 @@ engine version changes a block's prop **shape**, the generated `Press*` type cha
 and `tsc` flags your override at its call site — so drift fails loud rather than
 silently rendering wrong.
 
+**Reusing a reference block inside a custom block** — the inverse of overriding: instead
+of *replacing* a `press.*` block you *embed* one. Each reference block is exported
+individually from `@ogs-tech/press-web` (`Heading`, `Paragraph`, `List`, `Quote`,
+`Image`, `Button`, `Separator`, `Spacer`), so a custom block can reuse the engine's
+server-rendered, theme-aware markup instead of reimplementing it. You feed each one from
+your **own** schema fields — the presentation is reused, the data stays yours.
+
+```tsx
+// packages/web/blocks/custom/Callout.tsx
+import { Heading, Paragraph, Button } from '@ogs-tech/press-web';
+import type { CustomCallout } from '<name>-shared/types';
+
+export function Callout({ title, body, ctaLabel, ctaHref }: CustomCallout) {
+  return (
+    <aside data-block="custom.callout">
+      <Heading text={title} level="3" />  {/* press.heading → { text, level } */}
+      <Paragraph content={body} />         {/* press.paragraph → { content } */}
+      <Button label={ctaLabel} href={ctaHref} variant="primary" />
+    </aside>
+  );
+}
+```
+
+The one gotcha is **prop shape** — the generated `Press*` types are the source of truth.
+`Heading` wants `{ text, level }` and `Button` wants `{ label, href, variant }` (plain
+scalars), but `Paragraph`/`List`/`Quote` want `{ content }` — a Strapi **blocks** value,
+*not* a string. So to feed a `Paragraph`, the custom block's own schema needs a `blocks`
+attribute:
+
+```jsonc
+// packages/cms/src/components/custom/callout.json
+"attributes": {
+  "title":    { "type": "string", "required": true },
+  "body":     { "type": "blocks" },        // ← feeds <Paragraph content={body} />
+  "ctaLabel": { "type": "string" },
+  "ctaHref":  { "type": "string" }
+}
+```
+
+The embedded child carries its own `data-block` (e.g. `press.heading`), so it inherits
+the default theme.css styling for free; the wrapper's `data-block="custom.callout"` is
+your block's own hook. Reuse is **web-only and decided by you** — the editor fills your
+custom block's flat fields, not a nested press block; you choose the layout. (Letting the
+*editor* compose `press.*` blocks inside a custom component is a different, schema-level
+feature and not currently supported.)
+
 ## Updating the engine
 
 `press upgrade` (via `pnpm upgrade`) is the coordinated lockstep update path —

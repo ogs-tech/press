@@ -79,4 +79,3 @@ export interface Page {
   slug?: string;
   body: PageBody;
 }
-

@@ -114,8 +114,9 @@ interface CmsMedia {
 
 /**
  * The Site Settings single-type payload as returned by GET /api/site-setting
- * (Strapi 5 flattened, explicit populate (see get-site-config)). EVERY field is optional: an unfilled record
- * and an unreachable CMS both map as if absent (site-settings-cms spec §3.2, §7).
+ * (Strapi 5 flattened, explicit populate owned by the site-setting controller).
+ * EVERY field is optional: an unfilled record and an unreachable CMS both map as
+ * if absent (site-settings-cms spec §3.2, §7).
  */
 export interface SiteSettingsData {
   name?: string;
