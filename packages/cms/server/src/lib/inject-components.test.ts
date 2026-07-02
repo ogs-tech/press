@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { admitCustomBlocks, injectComponents } from './inject-components';
+import pageSchema from '../content-types/page/schema.json';
 
 const PAGE_UID = 'plugin::press-cms.page';
 
@@ -134,5 +135,18 @@ describe('injectComponents', () => {
 
     // Sections are NOT press.hero — the removed atom stays removed (Spec §3).
     expect(components.get('press.hero')).toBeUndefined();
+  });
+});
+
+describe('page body dynamic zone (static section admission)', () => {
+  it('lists section.hero and section.cta alongside the press.* atoms', () => {
+    // Sections are engine-owned and deterministic, so they are admitted STATICALLY
+    // in the page schema (not via the dynamic custom.* push) — Spec §5.1.
+    const components = pageSchema.attributes.body.components as string[];
+    expect(components).toContain('section.hero');
+    expect(components).toContain('section.cta');
+    // Additive: the press.* atoms remain admitted, unchanged (Spec §2).
+    expect(components).toContain('press.paragraph');
+    expect(components).toContain('press.image');
   });
 });
