@@ -117,4 +117,22 @@ describe('injectComponents', () => {
     expect(page.attributes.body.components).toContain('custom.callout');   // custom admitted
     expect(page.attributes.body.components).not.toContain('press.nav-item'); // never admitted
   });
+
+  it('injects section.hero and section.cta under category "section" with a derived globalId', () => {
+    // Sections mirror the press.* injection mechanism but under a SEPARATE category
+    // so the atomic press.* boundary stays intact (Spec §5.1).
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+
+    expect(components.get('section.hero')?.modelType).toBe('component');
+    expect(components.get('section.hero')?.category).toBe('section');
+    expect(components.get('section.hero')?.globalId).toBe('ComponentSectionHero');
+
+    expect(components.get('section.cta')?.modelType).toBe('component');
+    expect(components.get('section.cta')?.category).toBe('section');
+    expect(components.get('section.cta')?.globalId).toBe('ComponentSectionCta');
+
+    // Sections are NOT press.hero — the removed atom stays removed (Spec §3).
+    expect(components.get('press.hero')).toBeUndefined();
+  });
 });
