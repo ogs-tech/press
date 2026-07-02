@@ -11,6 +11,9 @@ export { Image } from './blocks/image';
 export { Button } from './blocks/button';
 export { Separator } from './blocks/separator';
 export { Spacer } from './blocks/spacer';
+export { Hero } from './sections/hero';
+export { Cta } from './sections/cta';
+export { sectionBlocks } from './section-blocks';
 export { SiteNav } from './nav';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
@@ -32,5 +35,7 @@ export type {
   PressButton,
   PressSeparator,
   PressSpacer,
+  SectionHero,
+  SectionCta,
 } from './types/base';
 export type { PressConfig, ResolvedPressConfig, BuildTimeConfig, ThemeName } from './config/types';

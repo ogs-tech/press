@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import { referenceBlocks } from './reference-blocks';
+import { sectionBlocks } from './section-blocks';
 import { blockKey } from './block-key';
 
 // Minimal structural shape the renderer needs from a dynamic-zone entry. No index
@@ -26,7 +27,9 @@ interface BlockRendererProps {
  * warning), never a crash — mirroring the engine's tolerant admission (Spec §5.3).
  */
 export function BlockRenderer({ blocks, components = {} }: BlockRendererProps) {
-  const registry = { ...referenceBlocks, ...components };
+  // Three-palette merge (Spec §5.2/§9): press.* atoms, then section.* sections,
+  // then the adopter's explicit components — adopter wins last for per-key override.
+  const registry = { ...referenceBlocks, ...sectionBlocks, ...components };
   return (
     <>
       {blocks.map((block, i) => {
