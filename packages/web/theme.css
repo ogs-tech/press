@@ -287,7 +287,7 @@ h6[data-block="press.heading"] { font-size: var(--press-text-body); }
 }
 
 /* Engine section: section.cta — a call-to-action banner; 1px stroke over shadow,
-   token-driven fill on the button. */
+   token-driven fill on the button. Pure token consumer (Spec §5.2). */
 [data-block="section.cta"] {
   margin: var(--press-space-7) 0;
   padding: var(--press-space-6) var(--press-space-5);
