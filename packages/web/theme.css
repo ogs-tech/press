@@ -240,3 +240,78 @@ h6[data-block="press.heading"] { font-size: var(--press-text-body); }
 [data-block="press.spacer"][data-size="md"] { height: var(--press-space-5); }
 [data-block="press.spacer"][data-size="lg"] { height: var(--press-space-7); }
 [data-block="press.spacer"][data-size="xl"] { height: var(--press-space-9); }
+
+/* Engine section: section.hero — a branded hero band. Pure token consumer
+   (Spec §5.2): every value derives from var(--press-*), so the section is born
+   branded with the adopter's Site Settings theme, no override required. */
+[data-block="section.hero"] {
+  display: grid;
+  gap: var(--press-space-5);
+  align-items: center;
+  margin: var(--press-space-7) 0;
+}
+[data-block="section.hero"][data-align="center"] {
+  text-align: center;
+  justify-items: center;
+}
+[data-block="section.hero"] h1 {
+  margin: 0 0 var(--press-space-3);
+}
+[data-block="section.hero"] [data-hero="eyebrow"] {
+  margin: 0 0 var(--press-space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--press-text-sm);
+  color: var(--press-color-muted);
+}
+[data-block="section.hero"] [data-hero="subtitle"] {
+  margin: 0 0 var(--press-space-4);
+  font-size: var(--press-text-lg);
+  color: var(--press-color-muted);
+}
+[data-block="section.hero"] [data-hero="cta"] {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--press-space-3) var(--press-space-5);
+  border-radius: var(--press-radius-sm);
+  background: var(--press-color-primary);
+  color: var(--press-color-on-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+[data-block="section.hero"] img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--press-radius-md);
+}
+
+/* Engine section: section.cta — a call-to-action banner; 1px stroke over shadow,
+   token-driven fill on the button. */
+[data-block="section.cta"] {
+  margin: var(--press-space-7) 0;
+  padding: var(--press-space-6) var(--press-space-5);
+  border: 1px solid var(--press-color-border);
+  border-radius: var(--press-radius-md);
+  background: var(--press-color-surface);
+}
+[data-block="section.cta"][data-align="center"] {
+  text-align: center;
+}
+[data-block="section.cta"] h2 {
+  margin: 0 0 var(--press-space-3);
+}
+[data-block="section.cta"] [data-cta="subtitle"] {
+  margin: 0 0 var(--press-space-4);
+  color: var(--press-color-muted);
+}
+[data-block="section.cta"] [data-cta="button"] {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--press-space-3) var(--press-space-5);
+  border-radius: var(--press-radius-sm);
+  background: var(--press-color-primary);
+  color: var(--press-color-on-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
