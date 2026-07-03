@@ -6,7 +6,7 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 /**
  * The engine owns the wire shape: the controller computes the populate
  * server-side and `ctx.query` is never honored. `populate: '*'` is SHALLOW — it
- * would leave `headerNav.page` (and `seo.image`) unpopulated, so every internal
+ * would leave `chrome.navbar's items.page` (and `seo.image`) unpopulated, so every internal
  * nav link silently falls back to its raw `url` and an internal page link 404s.
  * These tests pin the deep-populate contract the web resolver (mapSiteSettings)
  * depends on.
@@ -15,7 +15,14 @@ describe('site-setting controller', () => {
   function run(record: unknown = { name: 'Acme' }) {
     const findFirst = vi.fn().mockResolvedValue(record);
     const documents = vi.fn(() => ({ findFirst }));
-    const strapi = { documents } as any;
+    const contentType = vi.fn(() => ({
+      uid: SITE_SETTING_UID,
+      attributes: {
+        header: { type: 'dynamiczone', components: ['chrome.navbar', 'press.paragraph', 'custom.callout'] },
+        footer: { type: 'dynamiczone', components: ['chrome.footer', 'custom.callout'] },
+      },
+    }));
+    const strapi = { documents, contentType } as any;
     const ctx: any = {};
     return { strapi, ctx, documents, findFirst };
   }
@@ -27,11 +34,30 @@ describe('site-setting controller', () => {
     expect(ctx.body).toEqual({ data: { name: 'Acme' } });
   });
 
-  it('deep-populates headerNav.page (slug only) so internal nav links resolve to their slug', async () => {
+  it('populates both chrome DZs with a per-component `on` map read from the live content-type', async () => {
     const { strapi, ctx, findFirst } = run();
     await siteSetting({ strapi }).find(ctx);
     const { populate } = findFirst.mock.calls[0][0];
-    expect(populate.headerNav).toEqual({ populate: { page: { fields: ['slug'] } } });
+    // custom.* flows through with the same shallow '*' as body blocks.
+    expect(populate.header.on['press.paragraph']).toEqual({ populate: '*' });
+    expect(populate.header.on['custom.callout']).toEqual({ populate: '*' });
+    expect(populate.footer.on['chrome.footer']).toEqual({ populate: '*' });
+  });
+
+  it('deep-populates chrome.navbar (items.page slug + cta) so internal nav links resolve to their slug', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.header.on['chrome.navbar']).toEqual({
+      populate: { items: { populate: { page: { fields: ['slug'] } } }, cta: true },
+    });
+  });
+
+  it('no longer populates the removed headerNav (BREAKING, Spec §Migration)', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.headerNav).toBeUndefined();
   });
 
   it('deep-populates seo.image — media nested in a component is not reached by populate:*', async () => {
