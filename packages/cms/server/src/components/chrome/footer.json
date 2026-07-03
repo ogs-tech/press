@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_chrome_footers",
+  "info": {
+    "displayName": "Footer",
+    "description": "The site footer line shipped by the press engine. Empty text falls back to \"site name · current year\"."
+  },
+  "options": {},
+  "attributes": {
+    "text": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "text": { "edit": { "label": "Copyright line", "description": "Leave empty to show \"site name · current year\"." } }
+    }
+  }
+}

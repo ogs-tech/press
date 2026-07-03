@@ -13,6 +13,8 @@ import themeRadiusSchema from '../components/theme-radius.json';
 import navItemSchema from '../components/nav-item.json';
 import heroSectionSchema from '../components/section/hero.json';
 import ctaSectionSchema from '../components/section/cta.json';
+import chromeNavbarSchema from '../components/chrome/navbar.json';
+import chromeFooterSchema from '../components/chrome/footer.json';
 import { toGlobalId } from './global-id';
 
 /**
@@ -47,6 +49,11 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
   // Separate category from press.* keeps the atomic palette intact (Spec §5.1).
   { category: 'section', name: 'hero', schema: heroSectionSchema as Record<string, unknown> },
   { category: 'section', name: 'cta', schema: ctaSectionSchema as Record<string, unknown> },
+  // Composite chrome blocks: header/footer bars admitted ONLY into the
+  // site-setting chrome DZs, never the page body (Spec §1). The bar's internal
+  // layout is renderer-owned so editors cannot break the chrome (Spec §Decisions 6).
+  { category: 'chrome', name: 'navbar', schema: chromeNavbarSchema as Record<string, unknown> },
+  { category: 'chrome', name: 'footer', schema: chromeFooterSchema as Record<string, unknown> },
   // Configuration components used by the Site Settings single type (not page blocks).
   { category: 'press', name: 'seo', schema: seoSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },

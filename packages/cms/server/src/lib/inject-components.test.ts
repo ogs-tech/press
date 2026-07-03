@@ -136,6 +136,28 @@ describe('injectComponents', () => {
     // Sections are NOT press.hero — the removed atom stays removed (Spec §3).
     expect(components.get('press.hero')).toBeUndefined();
   });
+
+  it('injects chrome.navbar and chrome.footer under category "chrome" with a derived globalId', () => {
+    // Chrome blocks mirror the section.* injection mechanism under their own
+    // category: composite bars admitted only into the site-setting chrome DZs,
+    // never the page body (Spec §1).
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+
+    expect(components.get('chrome.navbar')?.modelType).toBe('component');
+    expect(components.get('chrome.navbar')?.category).toBe('chrome');
+    expect(components.get('chrome.navbar')?.globalId).toBe('ComponentChromeNavbar');
+    // Composite shape (Spec §1): nested nav items + optional CTA, no brand fields.
+    expect(components.get('chrome.navbar')?.attributes).toMatchObject({
+      items: { type: 'component', repeatable: true, component: 'press.nav-item' },
+      cta: { type: 'component', repeatable: false, component: 'press.button' },
+    });
+
+    expect(components.get('chrome.footer')?.modelType).toBe('component');
+    expect(components.get('chrome.footer')?.category).toBe('chrome');
+    expect(components.get('chrome.footer')?.globalId).toBe('ComponentChromeFooter');
+    expect(components.get('chrome.footer')?.attributes).toMatchObject({ text: { type: 'string' } });
+  });
 });
 
 describe('page body dynamic zone (static section admission)', () => {
