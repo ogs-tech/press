@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import type { ResolvedPressConfig } from './config/types';
+import type { ResolvedNavLink } from './config/types';
 
 /**
  * SiteNav — the editable header navigation (site chrome, Plane B). A client
@@ -14,7 +14,7 @@ import type { ResolvedPressConfig } from './config/types';
  * - newTab (editor opt-in): target="_blank" + rel="noopener noreferrer".
  * - external (http(s) URL): trailing ↗ affordance, independent of newTab.
  */
-export function SiteNav({ links }: { links: ResolvedPressConfig['nav']['header'] }) {
+export function SiteNav({ links }: { links: ResolvedNavLink[] }) {
   const pathname = usePathname();
   if (links.length === 0) return null;
   return (

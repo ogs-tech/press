@@ -22,7 +22,7 @@ const resolved: ResolvedPressConfig = {
     fonts: {},
     radius: { xs: '6px', sm: '10px', md: '14px', lg: '20px' },
   },
-  nav: { header: [] },
+  chrome: { header: [], footer: [] },
 };
 
 describe('buildMetadata', () => {
