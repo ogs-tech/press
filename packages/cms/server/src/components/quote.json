@@ -1,6 +1,6 @@
 {
   "collectionName": "components_press_quotes",
-  "info": { "displayName": "Quote", "description": "A block quotation with an optional citation shipped by the press engine" },
+  "info": { "displayName": "Quote", "icon": "quote", "description": "A block quotation with an optional citation shipped by the press engine" },
   "options": {},
   "attributes": {
     "content": { "type": "blocks", "required": true },

@@ -2,6 +2,7 @@
   "collectionName": "components_chrome_footers",
   "info": {
     "displayName": "Footer",
+    "icon": "stack",
     "description": "The site footer line shipped by the press engine. Empty text falls back to \"site name · current year\"."
   },
   "options": {},

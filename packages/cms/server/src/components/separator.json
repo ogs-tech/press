@@ -1,6 +1,6 @@
 {
   "collectionName": "components_press_separators",
-  "info": { "displayName": "Separator", "description": "A horizontal divider shipped by the press engine" },
+  "info": { "displayName": "Separator", "icon": "oneWay", "description": "A horizontal divider shipped by the press engine" },
   "options": {},
   "attributes": {
     "variant": { "type": "enumeration", "enum": ["line", "dots"], "default": "line", "required": true }

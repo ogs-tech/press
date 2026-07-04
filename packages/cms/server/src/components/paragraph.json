@@ -1,6 +1,6 @@
 {
   "collectionName": "components_press_paragraphs",
-  "info": { "displayName": "Paragraph", "description": "A prose paragraph shipped by the press engine" },
+  "info": { "displayName": "Paragraph", "icon": "write", "description": "A prose paragraph shipped by the press engine" },
   "options": {},
   "attributes": {
     "content": { "type": "blocks", "required": true }

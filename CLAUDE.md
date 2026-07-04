@@ -83,11 +83,14 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
   quote, image, button, separator, spacer). Strapi only scans the *host app's*
   `src/components`, so the plugin **injects** these into the components registry during
   `register()` (`cms/.../lib/inject-components.ts`).
-- **Extension point:** any component the adopter drops under the cms host's
-  `src/components/custom/` is auto-admitted into every engine Dynamic Zone — the page
-  `body` and the site-setting `header`/`footer` (`admitCustomBlocks`). The engine
-  never names individual adopter blocks — only the `custom` category is the stable
-  contract.
+- **Extension point (custom kinds):** the adopter's component *category folder*
+  declares placement (`admitCustomBlocks`): `src/components/custom/` is auto-admitted
+  into every engine Dynamic Zone (page `body` + site-setting `header`/`footer`),
+  `custom-section/` into the page `body` only, and `custom-chrome/` into
+  `header`/`footer` only — the `${category}.` uid-prefix match keeps the kinds
+  disjoint. The engine never names individual adopter blocks — only these `custom*`
+  categories are the stable contract. `custom-chrome.*` gets no brand/links
+  hydration (that is `chrome.navbar`-specific in `mapSiteSettings`).
 - **Engine sections (`section.*`):** a second engine-owned palette of *composite*
   sections (`section.hero`, `section.cta`) — flat (scalar/media/enum) blocks
   injected under the `section` category and admitted into the page `body` Dynamic
@@ -105,6 +108,18 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
   `HeaderBlocks`/`FooterBlocks` unions. `bootstrap()` seeds `header: [navbar]`,
   `footer: [footer]` exactly once (plugin-store flag) — an editor-emptied zone is
   respected.
+- **Picker presentation (admin bundle):** every engine component JSON sets
+  `info.icon` (Strapi's fixed icon enum), and the plugin's `./strapi-admin` bundle
+  (`cms/admin/src/index.ts`) exists solely to `registerTrads` the category labels —
+  the picker resolves accordion titles via react-intl with the RAW category string
+  as message id (`press` → "Blocks", `chrome` → "Site chrome", en + pt). Labels are
+  presentation-only; uids never change for display. Adopter `src/admin/app.tsx`
+  translations override the engine's.
+- **Page templates:** `bootstrap()` also seeds a "Privacy Policy" page (slug
+  `privacy-policy`) exactly once (`privacyPageSeeded` flag,
+  `lib/seed-page-privacy-policy.ts`) — a DRAFT composed of `press.*` atoms with
+  placeholder guidance, never auto-published; an adopter page already on the slug
+  or an editor-deleted page is respected forever.
 - On the web side, `BlockRenderer` merges four maps by `__component`:
   `{ ...referenceBlocks, ...sectionBlocks, ...chromeBlocks, ...components }` —
   engine `press.*` atoms, engine `section.*` sections (`src/section-blocks.ts`),

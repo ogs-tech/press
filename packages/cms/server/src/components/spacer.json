@@ -1,6 +1,6 @@
 {
   "collectionName": "components_press_spacers",
-  "info": { "displayName": "Spacer", "description": "Vertical spacing shipped by the press engine" },
+  "info": { "displayName": "Spacer", "icon": "expand", "description": "Vertical spacing shipped by the press engine" },
   "options": {},
   "attributes": {
     "size": { "type": "enumeration", "enum": ["sm", "md", "lg", "xl"], "default": "md", "required": true }

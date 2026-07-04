@@ -2,6 +2,7 @@
   "collectionName": "components_chrome_navbars",
   "info": {
     "displayName": "Navbar",
+    "icon": "layout",
     "description": "The site header bar shipped by the press engine: nav links plus an optional call-to-action. Brand (logo + name) comes from Site Settings identity, never from this block."
   },
   "options": {},

@@ -2,6 +2,7 @@
   "collectionName": "components_press_nav_items",
   "info": {
     "displayName": "Nav Item",
+    "icon": "link",
     "description": "A single navigation entry: an internal page link or an external URL"
   },
   "options": {},

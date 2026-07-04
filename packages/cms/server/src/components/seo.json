@@ -1,6 +1,6 @@
 {
   "collectionName": "components_press_seos",
-  "info": { "displayName": "SEO", "description": "SEO defaults served at runtime by the press engine" },
+  "info": { "displayName": "SEO", "icon": "search", "description": "SEO defaults served at runtime by the press engine" },
   "options": {},
   "attributes": {
     "titleTemplate": { "type": "string" },

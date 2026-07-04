@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import { pluginStore } from './plugin-store';
 
 /** UID of the engine's Site Settings single type (plugin name `press-cms`). */
 export const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
@@ -10,16 +11,6 @@ export const DEFAULT_CHROME = {
 };
 
 const CHROME_SEED_KEY = 'chromeSeeded';
-
-type PluginStore = {
-  get: (params: { key: string }) => Promise<unknown>;
-  set: (params: { key: string; value: unknown }) => Promise<void>;
-};
-
-// `strapi.store` exists at runtime but is not on the Core.Strapi typing surface
-// this plugin compiles against — hence the narrow local cast.
-const pluginStore = (strapi: Core.Strapi): PluginStore =>
-  (strapi as any).store({ type: 'plugin', name: 'press-cms' });
 
 /**
  * Seeds the Site Settings single type (Spec §4/§5 of the site-settings spec):

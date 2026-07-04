@@ -1,6 +1,6 @@
 {
   "collectionName": "components_section_heroes",
-  "info": { "displayName": "Hero", "description": "A hero section shipped by the press engine" },
+  "info": { "displayName": "Hero", "icon": "landscape", "description": "A hero section shipped by the press engine" },
   "options": {},
   "attributes": {
     "eyebrow": { "type": "string" },
