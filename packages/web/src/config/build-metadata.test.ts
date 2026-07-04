@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildMetadata } from './build-metadata';
+import { mapCookieConsent } from '../plugins/cookie-consent/map-cookie-consent';
 import type { ResolvedPressConfig } from './types';
 
 const resolved: ResolvedPressConfig = {
@@ -24,6 +25,7 @@ const resolved: ResolvedPressConfig = {
     radius: { xs: '6px', sm: '10px', md: '14px', lg: '20px' },
   },
   chrome: { header: [], footer: [] },
+  plugins: { cookieConsent: mapCookieConsent(null, 'home') },
 };
 
 describe('buildMetadata', () => {

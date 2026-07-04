@@ -83,11 +83,14 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
   quote, image, button, separator, spacer). Strapi only scans the *host app's*
   `src/components`, so the plugin **injects** these into the components registry during
   `register()` (`cms/.../lib/inject-components.ts`).
-- **Extension point:** any component the adopter drops under the cms host's
-  `src/components/custom/` is auto-admitted into every engine Dynamic Zone — the page
-  `body` and the site-setting `header`/`footer` (`admitCustomBlocks`). The engine
-  never names individual adopter blocks — only the `custom` category is the stable
-  contract.
+- **Extension point (custom kinds):** the adopter's component *category folder*
+  declares placement (`admitCustomBlocks`): `src/components/custom/` is auto-admitted
+  into every engine Dynamic Zone (page `body` + site-setting `header`/`footer`),
+  `custom-section/` into the page `body` only, and `custom-chrome/` into
+  `header`/`footer` only — the `${category}.` uid-prefix match keeps the kinds
+  disjoint. The engine never names individual adopter blocks — only these `custom*`
+  categories are the stable contract. `custom-chrome.*` gets no brand/links
+  hydration (that is `chrome.navbar`-specific in `mapSiteSettings`).
 - **Engine sections (`section.*`):** a second engine-owned palette of *composite*
   sections (`section.hero`, `section.cta`) — flat (scalar/media/enum) blocks
   injected under the `section` category and admitted into the page `body` Dynamic
@@ -105,6 +108,18 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
   `HeaderBlocks`/`FooterBlocks` unions. `bootstrap()` seeds `header: [navbar]`,
   `footer: [footer]` exactly once (plugin-store flag) — an editor-emptied zone is
   respected.
+- **Picker presentation (admin bundle):** every engine component JSON sets
+  `info.icon` (Strapi's fixed icon enum), and the plugin's `./strapi-admin` bundle
+  (`cms/admin/src/index.ts`) exists solely to `registerTrads` the category labels —
+  the picker resolves accordion titles via react-intl with the RAW category string
+  as message id (`press` → "Blocks", `chrome` → "Site chrome", en + pt). Labels are
+  presentation-only; uids never change for display. Adopter `src/admin/app.tsx`
+  translations override the engine's.
+- **Page templates:** `bootstrap()` also seeds a "Privacy Policy" page (slug
+  `privacy-policy`) exactly once (`privacyPageSeeded` flag,
+  `lib/seed-page-privacy-policy.ts`) — a DRAFT composed of `press.*` atoms with
+  placeholder guidance, never auto-published; an adopter page already on the slug
+  or an editor-deleted page is respected forever.
 - On the web side, `BlockRenderer` merges four maps by `__component`:
   `{ ...referenceBlocks, ...sectionBlocks, ...chromeBlocks, ...components }` —
   engine `press.*` atoms, engine `section.*` sections (`src/section-blocks.ts`),
@@ -132,10 +147,54 @@ This split is recent and easy to get wrong:
 - Routing reads only the build-time anchor, so the `/home → /` redirect stays
   deterministic and CMS-independent.
 
+### Engine plugins + cookie consent
+
+- **The plugin family:** `PressPlugin<Id>` (`packages/web/src/plugin.ts`) is the
+  contract for optional engine capabilities — `extends Canonical<'plugin'>` with a
+  SYNTHETIC `urn:plugin:{id}` (id is a compile-time constant per plugin, never
+  CMS-sourced) plus the `enabled` flag. There is **no runtime registry**: each
+  plugin is wired explicitly — config component on Site Settings → pure mapper →
+  `ResolvedPressConfig.plugins.<key>` (a NAMED map, one required key per plugin;
+  each new plugin is a deliberate press-web major) → explicit mount in the host
+  `layout.tsx`. A second plugin (e.g. consent-gated third-party scripts) costs
+  exactly what the first did: 1 CMS component + 1 mapper + 1 key + 1 mount line.
+- **Cookie consent is plugin #1.** Config lives in the `press.cookie-consent` /
+  `press.cookie-category` components on Site Settings (injected, never
+  DZ-admitted, so — like `seo`/`themeColors` — they are OUTSIDE the type-sync
+  pipeline and mirrored manually in `SiteSettingsData`/`ResolvedPressConfig`).
+  Categories are a CLOSED code union (`necessary | analytics | marketing`) so
+  `hasConsent('analytics')` can never drift; editors toggle/re-word categories,
+  never rename keys. `necessary` is forced enabled/granted everywhere.
+- **`mapCookieConsent` FAILS OPEN** — the deliberate exception to the
+  identity/SEO fail-to-empty rule: CMS unreachable → banner still enabled with
+  total default copy (`DEFAULT_COOKIE_CONSENT`, the DEFAULT_THEME precedent;
+  copy merges with `||` so an editor-cleared `''` falls back too). A consent
+  gate must not vanish on a CMS hiccup. `hasConsent` is independently
+  FAIL-CLOSED: no stored decision ⇒ false for every optional category.
+- **The visitor's decision is client-only state**: a versioned first-party
+  cookie (`press_consent`, 180d) — cookie over localStorage so a future
+  server-adjacent consumer can read it, but NEVER via `next/headers cookies()`
+  in the RSC tree (that would force the whole route dynamic and poison the ISR
+  cache). Anti-flash is `buildConsentBootstrapScript()` (inline `<head>` script
+  stamps `<html data-press-consent="decided">` pre-paint; theme.css hides the
+  banner) + a null `useSyncExternalStore` server snapshot (no hydration
+  mismatch). `resetConsent()` is the minimal "change your mind" seam; a
+  persistent reopen affordance is a known follow-up.
+- **Seeding:** `seedCookieConsent` (flag `cookieConsentSeeded`) writes only the
+  `enabled` booleans — an unsaved Strapi boolean renders as an unchecked toggle,
+  contradicting the live default — while text stays empty ("no defaults
+  duplicated in the CMS"). It does NOT set its flag when the Site Settings
+  record is missing, so a broken bootstrap order self-heals next boot.
+- **Testing note:** the banner's interactive tests (`// @vitest-environment
+  jsdom`) use a hand-rolled `act()`+`createRoot` harness, deliberately NOT
+  `@testing-library/react` — the workspace's `node-linker=hoisted` layout
+  (required by Strapi 5) materializes only Strapi-admin's react-19 RTL variant
+  at the root, which cannot render this package's react-18 elements.
+
 ### Canonical identity (URNs)
 
 - Web-only identity primitives in `packages/web/src/urn.ts`: the closed union
-  `Entity` (`'page' | 'site-setting'`), the template-literal `Urn<E>` =
+  `Entity` (`'page' | 'site-setting' | 'plugin'`), the template-literal `Urn<E>` =
   `urn:{entity}:{id}`, the `Canonical<E extends Entity>` interface
   (`{ urn: Urn<E> }`), and the pure `buildUrn(entity, id)` factory — interface +
   factory, no classes, so a urn stays a plain string across the RSC boundary.

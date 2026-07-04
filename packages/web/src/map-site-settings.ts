@@ -6,6 +6,7 @@ import type {
   SiteSettingsData,
 } from './config/types';
 import { DEFAULT_THEME } from './config/default-theme';
+import { mapCookieConsent } from './plugins/cookie-consent/map-cookie-consent';
 import { buildUrn } from './urn';
 
 // Same module-level pattern as get-page.ts: read once, default to local Strapi.
@@ -124,6 +125,11 @@ export function mapSiteSettings(
     chrome: {
       header: hydrateChromeBlocks(c.header, brand, buildTime.routes.home),
       footer: hydrateChromeBlocks(c.footer, brand, buildTime.routes.home),
+    },
+    plugins: {
+      // Fails OPEN (cookie-consent Spec §3) — unlike identity/SEO, an
+      // unreachable CMS still yields an enabled banner with total default copy.
+      cookieConsent: mapCookieConsent(c.cookieConsent, buildTime.routes.home),
     },
   };
 }

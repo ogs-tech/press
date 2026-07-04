@@ -14,6 +14,13 @@
   },
   "exports": {
     "./package.json": "./package.json",
+    "./strapi-admin": {
+      "types": "./dist/admin/src/index.d.ts",
+      "source": "./admin/src/index.ts",
+      "import": "./dist/admin/index.mjs",
+      "require": "./dist/admin/index.js",
+      "default": "./dist/admin/index.js"
+    },
     "./strapi-server": {
       "types": "./dist/server/src/index.d.ts",
       "source": "./server/src/index.ts",
@@ -31,6 +38,7 @@
     "watch:link": "strapi-plugin watch:link",
     "verify": "strapi-plugin verify",
     "test:ts:back": "tsc -p server/tsconfig.json --noEmit",
+    "test:ts:front": "tsc -p admin/tsconfig.json --noEmit",
     "test": "vitest run"
   },
   "dependencies": {},

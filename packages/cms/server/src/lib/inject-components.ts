@@ -11,6 +11,8 @@ import seoSchema from '../components/seo.json';
 import themeColorsSchema from '../components/theme-colors.json';
 import themeRadiusSchema from '../components/theme-radius.json';
 import navItemSchema from '../components/nav-item.json';
+import cookieCategorySchema from '../components/cookie-category.json';
+import cookieConsentSchema from '../components/cookie-consent.json';
 import heroSectionSchema from '../components/section/hero.json';
 import ctaSectionSchema from '../components/section/cta.json';
 import chromeNavbarSchema from '../components/chrome/navbar.json';
@@ -59,6 +61,10 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
   { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-radius', schema: themeRadiusSchema as Record<string, unknown> },
   { category: 'press', name: 'nav-item', schema: navItemSchema as Record<string, unknown> },
+  // Cookie-consent plugin config (cookie-consent Spec §1): the banner's editable
+  // surface. Config components like seo — injected, never admitted into a DZ.
+  { category: 'press', name: 'cookie-category', schema: cookieCategorySchema as Record<string, unknown> },
+  { category: 'press', name: 'cookie-consent', schema: cookieConsentSchema as Record<string, unknown> },
 ];
 
 /**
@@ -97,24 +103,28 @@ export const injectComponents = ({ strapi }: { strapi: Core.Strapi }): void => {
 };
 
 /**
- * Engine Dynamic Zones that accept adopter custom.* blocks. The page body plus
- * the two site-setting chrome zones (Spec §1) — the adopter contract is
- * unchanged: only the "custom" CATEGORY is the stable extension point, never
- * individually named blocks.
+ * Engine Dynamic Zones and the adopter categories each one admits (Spec §1).
+ * The extension point stays category-level — the engine never names individual
+ * adopter blocks — but the category now carries placement semantics per kind:
+ *
+ *   custom/         → every engine DZ (page body + both chrome zones) — unchanged
+ *   custom-section/ → the page body only
+ *   custom-chrome/  → the site-setting header/footer only, never the page body
  */
-const CUSTOM_DZ_TARGETS: Array<{ uid: string; attribute: string }> = [
-  { uid: 'plugin::press-cms.page', attribute: 'body' },
-  { uid: 'plugin::press-cms.site-setting', attribute: 'header' },
-  { uid: 'plugin::press-cms.site-setting', attribute: 'footer' },
+const CUSTOM_DZ_TARGETS: Array<{ uid: string; attribute: string; categories: string[] }> = [
+  { uid: 'plugin::press-cms.page', attribute: 'body', categories: ['custom', 'custom-section'] },
+  { uid: 'plugin::press-cms.site-setting', attribute: 'header', categories: ['custom', 'custom-chrome'] },
+  { uid: 'plugin::press-cms.site-setting', attribute: 'footer', categories: ['custom', 'custom-chrome'] },
 ];
 
 /**
- * Admits all adopter custom.* components into the engine's Dynamic Zones.
+ * Admits adopter components into the engine's Dynamic Zones by CATEGORY.
  *
- * Contract: any component the adopter places under <host>/src/components/custom/
- * is automatically admitted into every engine DZ (page body + site-setting
- * header/footer). The engine NEVER names specific adopter blocks; only the
- * "custom" category is the stable extension-point contract.
+ * Contract: the folder an adopter drops a component under
+ * (<host>/src/components/<category>/) declares WHERE the block may be placed —
+ * see CUSTOM_DZ_TARGETS for the category → zone mapping. The engine NEVER names
+ * specific adopter blocks; only the custom* categories are the stable
+ * extension-point contract.
  *
  * Timing: loadApplicationContext runs loadPlugins + loadComponents in parallel
  * (Promise.all). module.load() registers plugin content-types synchronously when
@@ -123,9 +133,9 @@ const CUSTOM_DZ_TARGETS: Array<{ uid: string; attribute: string }> = [
  */
 export const admitCustomBlocks = ({ strapi }: { strapi: Core.Strapi }): void => {
   const componentRegistry = strapi.get('components');
-  const customUids = [...componentRegistry.keys()].filter((uid) => uid.startsWith('custom.'));
+  const registeredUids = [...componentRegistry.keys()];
 
-  for (const { uid, attribute } of CUSTOM_DZ_TARGETS) {
+  for (const { uid, attribute, categories } of CUSTOM_DZ_TARGETS) {
     const contentType = strapi.get('content-types').get(uid);
 
     // Invariant: the engine ships both content-types, so they MUST be registered
@@ -151,8 +161,14 @@ export const admitCustomBlocks = ({ strapi }: { strapi: Core.Strapi }): void => 
       );
     }
 
+    // `${category}.` keeps the prefixes disjoint: 'custom.' never matches
+    // 'custom-section.pricing', so each kind lands only in its own zones.
+    const zoneUids = categories.flatMap((category) =>
+      registeredUids.filter((componentUid) => componentUid.startsWith(`${category}.`)),
+    );
+
     const admitted: string[] = [];
-    for (const customUid of customUids) {
+    for (const customUid of zoneUids) {
       if (!dzAttr.components.includes(customUid)) {
         dzAttr.components.push(customUid);
         admitted.push(customUid);

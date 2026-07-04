@@ -1,6 +1,6 @@
 {
   "collectionName": "components_section_ctas",
-  "info": { "displayName": "Call to Action", "description": "A call-to-action banner shipped by the press engine" },
+  "info": { "displayName": "Call to Action", "icon": "rocket", "description": "A call-to-action banner shipped by the press engine" },
   "options": {},
   "attributes": {
     "title": { "type": "string", "required": true },

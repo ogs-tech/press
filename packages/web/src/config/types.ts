@@ -1,4 +1,5 @@
 import type { Canonical } from '../urn';
+import type { RawCookieConsent, ResolvedCookieConsentPlugin } from '../plugins/cookie-consent/types';
 
 /** The only embedded theme this phase. The union exists so a second theme is additive, not breaking (Spec §2). */
 export type ThemeName = 'default';
@@ -138,6 +139,17 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
     header: ChromeBlock[];
     footer: ChromeBlock[];
   };
+  /**
+   * Engine plugins (cookie-consent Spec §1): a NAMED map — one required key
+   * per plugin, resolved TOTAL (defaults applied) even when the CMS is empty
+   * or unreachable. Not an array: plugins are fixed engine features, not
+   * editor-composed content (that is what the Dynamic Zones are for). Each
+   * new plugin adds a required key — a deliberate press-web major, the same
+   * discipline as `urn`/`chrome`.
+   */
+  plugins: {
+    cookieConsent: ResolvedCookieConsentPlugin;
+  };
 }
 
 /**
@@ -177,6 +189,7 @@ export interface SiteSettingsData {
   } | null;
   themeColors?: Partial<ThemeColors> | null;
   themeRadius?: Partial<ThemeRadius> | null;
+  cookieConsent?: RawCookieConsent | null;
   header?: ChromeBlock[] | null;
   footer?: ChromeBlock[] | null;
 }

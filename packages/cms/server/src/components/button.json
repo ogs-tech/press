@@ -1,6 +1,6 @@
 {
   "collectionName": "components_press_buttons",
-  "info": { "displayName": "Button", "description": "A call-to-action button shipped by the press engine" },
+  "info": { "displayName": "Button", "icon": "cursor", "description": "A call-to-action button shipped by the press engine" },
   "options": {},
   "attributes": {
     "label": { "type": "string", "required": true },

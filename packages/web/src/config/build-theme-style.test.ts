@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildThemeStyle } from './build-theme-style';
 import { DEFAULT_THEME } from './default-theme';
+import { mapCookieConsent } from '../plugins/cookie-consent/map-cookie-consent';
 import type { ResolvedPressConfig } from './types';
 
 const baseResolved: ResolvedPressConfig = {
@@ -16,6 +17,7 @@ const baseResolved: ResolvedPressConfig = {
     radius: { ...DEFAULT_THEME.radius },
   },
   chrome: { header: [], footer: [] },
+  plugins: { cookieConsent: mapCookieConsent(null, 'home') },
 };
 
 /** Build a ResolvedPressConfig with theme overrides merged over DEFAULT_THEME. */

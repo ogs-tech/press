@@ -187,3 +187,26 @@ describe('mapSiteSettings — chrome hydration (Spec §3)', () => {
     expect(mapSiteSettings(buildTime, null).chrome).toEqual({ header: [], footer: [] });
   });
 });
+
+describe('mapSiteSettings — cookie-consent plugin (cookie-consent Spec §1/§3)', () => {
+  it('always resolves plugins.cookieConsent, TOTAL and enabled, even for a null CMS (fails open)', () => {
+    const r = mapSiteSettings(buildTime, null);
+    expect(r.plugins.cookieConsent.urn).toBe('urn:plugin:cookie-consent');
+    expect(r.plugins.cookieConsent.enabled).toBe(true);
+    expect(r.plugins.cookieConsent.texts.title).not.toBe(''); // total default copy, never empty
+    expect(r.plugins.cookieConsent.categories.necessary.enabled).toBe(true);
+  });
+
+  it('threads the CMS payload and the build-time home anchor into the plugin mapper', () => {
+    const r = mapSiteSettings(buildTime, {
+      cookieConsent: {
+        enabled: false,
+        title: 'Cookies',
+        privacyPage: { slug: 'home' }, // buildTime.routes.home — collapses to '/'
+      },
+    });
+    expect(r.plugins.cookieConsent.enabled).toBe(false);
+    expect(r.plugins.cookieConsent.texts.title).toBe('Cookies');
+    expect(r.plugins.cookieConsent.privacyPolicyHref).toBe('/');
+  });
+});

@@ -81,6 +81,62 @@ describe('admitCustomBlocks', () => {
     expect(page.attributes.body.components).toEqual(['press.paragraph']);
   });
 
+  it('admits custom-section.* into the page body only (placement kind: section)', () => {
+    const page = pageWithBody(['press.paragraph']);
+    const siteSetting = siteSettingWithChrome();
+    const strapi = makeStrapi({
+      page,
+      siteSetting,
+      componentUids: ['custom-section.pricing'],
+    });
+
+    admitCustomBlocks({ strapi });
+
+    expect(page.attributes.body.components).toContain('custom-section.pricing');
+    expect(siteSetting.attributes.header.components).not.toContain('custom-section.pricing');
+    expect(siteSetting.attributes.footer.components).not.toContain('custom-section.pricing');
+  });
+
+  it('admits custom-chrome.* into header/footer only, never the page body (placement kind: chrome)', () => {
+    const page = pageWithBody(['press.paragraph']);
+    const siteSetting = siteSettingWithChrome();
+    const strapi = makeStrapi({
+      page,
+      siteSetting,
+      componentUids: ['custom-chrome.mega-menu'],
+    });
+
+    admitCustomBlocks({ strapi });
+
+    expect(page.attributes.body.components).not.toContain('custom-chrome.mega-menu');
+    expect(siteSetting.attributes.header.components).toContain('custom-chrome.mega-menu');
+    expect(siteSetting.attributes.footer.components).toContain('custom-chrome.mega-menu');
+  });
+
+  it('routes every custom kind to its own zones when all three are present', () => {
+    const page = pageWithBody(['press.paragraph']);
+    const siteSetting = siteSettingWithChrome();
+    const strapi = makeStrapi({
+      page,
+      siteSetting,
+      componentUids: ['custom.callout', 'custom-section.pricing', 'custom-chrome.mega-menu'],
+    });
+
+    admitCustomBlocks({ strapi });
+
+    // The `${category}.` prefix keeps kinds disjoint: bare custom goes everywhere,
+    // each hyphenated kind lands only in its declared zones.
+    expect(page.attributes.body.components).toEqual([
+      'press.paragraph', 'custom.callout', 'custom-section.pricing',
+    ]);
+    expect(siteSetting.attributes.header.components).toEqual([
+      'chrome.navbar', 'custom.callout', 'custom-chrome.mega-menu',
+    ]);
+    expect(siteSetting.attributes.footer.components).toEqual([
+      'chrome.footer', 'custom.callout', 'custom-chrome.mega-menu',
+    ]);
+  });
+
   it('throws (aborts boot) when the page content-type is absent from the registry', () => {
     const strapi = makeStrapi({ siteSetting: siteSettingWithChrome(), componentUids: ['custom.callout'] });
     expect(() => admitCustomBlocks({ strapi })).toThrow(/plugin::press-cms\.page.*absent/);
@@ -127,6 +183,7 @@ describe('injectComponents', () => {
       'press.paragraph', 'press.heading', 'press.list', 'press.quote',
       'press.image', 'press.button', 'press.separator', 'press.spacer',
       'press.seo', 'press.theme-colors', 'press.theme-radius', 'press.nav-item',
+      'press.cookie-category', 'press.cookie-consent',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -225,6 +282,49 @@ describe('page body dynamic zone (static section admission)', () => {
     // Additive: the press.* atoms remain admitted, unchanged (Spec §2).
     expect(components).toContain('press.paragraph');
     expect(components).toContain('press.image');
+  });
+});
+
+describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () => {
+  it('attaches press.cookie-consent as a config component, never a DZ member', () => {
+    expect((siteSettingSchema.attributes as any).cookieConsent).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'press.cookie-consent',
+    });
+    // Config components stay out of every Dynamic Zone (the press.seo rule).
+    for (const zone of ['header', 'footer'] as const) {
+      const components = (siteSettingSchema.attributes as any)[zone].components as string[];
+      expect(components).not.toContain('press.cookie-consent');
+      expect(components).not.toContain('press.cookie-category');
+    }
+    expect(pageSchema.attributes.body.components).not.toContain('press.cookie-consent');
+  });
+
+  it('nests the three engine-fixed category components (closed key set, Spec §2)', () => {
+    const { strapi, components } = (() => {
+      const map = new Map<string, any>();
+      return {
+        strapi: {
+          get: (key: string) => (key === 'components' ? map : undefined),
+          log: { warn() {}, info() {}, debug() {}, error() {} },
+        } as any,
+        components: map,
+      };
+    })();
+    injectComponents({ strapi });
+    expect(components.get('press.cookie-consent')?.attributes).toMatchObject({
+      enabled: { type: 'boolean', default: true },
+      necessary: { type: 'component', repeatable: false, component: 'press.cookie-category' },
+      analytics: { type: 'component', repeatable: false, component: 'press.cookie-category' },
+      marketing: { type: 'component', repeatable: false, component: 'press.cookie-category' },
+      privacyPage: { type: 'relation', relation: 'oneToOne', target: 'plugin::press-cms.page' },
+    });
+    expect(components.get('press.cookie-category')?.attributes).toMatchObject({
+      enabled: { type: 'boolean', default: true },
+      label: { type: 'string' },
+      description: { type: 'text' },
+    });
   });
 });
 
