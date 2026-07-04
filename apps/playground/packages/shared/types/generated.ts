@@ -63,6 +63,28 @@ export interface PressSpacer {
   size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
+export interface SectionHero {
+  __component: 'section.hero';
+  id: number;
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  image?: PressMedia;
+  ctaLabel?: string;
+  ctaHref?: string;
+  align?: 'left' | 'center';
+}
+
+export interface SectionCta {
+  __component: 'section.cta';
+  id: number;
+  title: string;
+  subtitle?: string;
+  buttonLabel: string;
+  buttonHref: string;
+  align?: 'left' | 'center';
+}
+
 export interface CustomCallout {
   __component: 'custom.callout';
   id: number;
@@ -70,7 +92,31 @@ export interface CustomCallout {
   variant?: 'info' | 'warning' | 'success';
 }
 
-export type PageBody = (PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | CustomCallout)[];
+export interface ChromeNavbar {
+  __component: 'chrome.navbar';
+  id: number;
+  items?: PressNavItem[];
+  cta?: PressButton;
+}
+
+export interface ChromeFooter {
+  __component: 'chrome.footer';
+  id: number;
+  text?: string;
+}
+
+export interface PressNavItem {
+  id: number;
+  label: string;
+  url?: string;
+  newTab?: boolean;
+}
+
+export type PageBody = (PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | SectionHero | SectionCta | CustomCallout)[];
+
+export type HeaderBlocks = (ChromeNavbar | ChromeFooter | PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | SectionHero | SectionCta | CustomCallout)[];
+
+export type FooterBlocks = (ChromeNavbar | ChromeFooter | PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | SectionHero | SectionCta | CustomCallout)[];
 
 export interface Page {
   id: number;
