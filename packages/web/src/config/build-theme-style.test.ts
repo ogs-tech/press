@@ -4,6 +4,7 @@ import { DEFAULT_THEME } from './default-theme';
 import type { ResolvedPressConfig } from './types';
 
 const baseResolved: ResolvedPressConfig = {
+  urn: 'urn:site-setting:default',
   brand: { name: 'Acme', favicon: '/favicon.ico' },
   site: { url: '', locale: 'en' },
   seo: { titleTemplate: '%s', defaultTitle: 'Acme', defaultDescription: '', defaultOgImage: undefined },
@@ -14,7 +15,7 @@ const baseResolved: ResolvedPressConfig = {
     fonts: {},
     radius: { ...DEFAULT_THEME.radius },
   },
-  nav: { header: [] },
+  chrome: { header: [], footer: [] },
 };
 
 /** Build a ResolvedPressConfig with theme overrides merged over DEFAULT_THEME. */

@@ -5,7 +5,7 @@
     "singularName": "site-setting",
     "pluralName": "site-settings",
     "displayName": "Site Settings",
-    "description": "Whitelabel identity, SEO, and theme values served at runtime by the press engine"
+    "description": "Whitelabel identity, SEO, theme values, and block-composed site chrome served at runtime by the press engine"
   },
   "options": { "draftAndPublish": false },
   "pluginOptions": {},
@@ -18,7 +18,40 @@
     "seo": { "type": "component", "repeatable": false, "component": "press.seo" },
     "themeColors": { "type": "component", "repeatable": false, "component": "press.theme-colors" },
     "themeRadius": { "type": "component", "repeatable": false, "component": "press.theme-radius" },
-    "headerNav": { "type": "component", "repeatable": true, "component": "press.nav-item" }
+    "header": {
+      "type": "dynamiczone",
+      "components": [
+        "chrome.navbar",
+        "chrome.footer",
+        "press.paragraph",
+        "press.heading",
+        "press.list",
+        "press.quote",
+        "press.image",
+        "press.button",
+        "press.separator",
+        "press.spacer",
+        "section.hero",
+        "section.cta"
+      ]
+    },
+    "footer": {
+      "type": "dynamiczone",
+      "components": [
+        "chrome.navbar",
+        "chrome.footer",
+        "press.paragraph",
+        "press.heading",
+        "press.list",
+        "press.quote",
+        "press.image",
+        "press.button",
+        "press.separator",
+        "press.spacer",
+        "section.hero",
+        "section.cta"
+      ]
+    }
   },
   "config": {
     "metadatas": {
@@ -30,7 +63,8 @@
       "seo": { "edit": { "label": "SEO" } },
       "themeColors": { "edit": { "label": "Theme Colors" } },
       "themeRadius": { "edit": { "label": "Theme Radius" } },
-      "headerNav": { "edit": { "label": "Header Navigation" } }
+      "header": { "edit": { "label": "Header", "description": "Block-composed site header. The Navbar block renders brand + links + CTA." } },
+      "footer": { "edit": { "label": "Footer", "description": "Block-composed site footer." } }
     }
   }
 }

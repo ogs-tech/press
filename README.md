@@ -229,15 +229,15 @@ code.
   (the `PressSchema` wire format) and constants shared by `cms` and `web`.
 - `apps/playground/` — the in-repo dogfood: the real `press create` output,
   committed and consumed via `workspace:*` for a fast dev loop. Boot it with
-  `pnpm play`; recreate it from the live scaffold with `pnpm play:create`, or
-  refresh just the engine-owned host with `pnpm play:upgrade`.
+  `pnpm dev` (it recreates the tree from the live scaffold when absent); to
+  force-recreate, run `pnpm exec tsx scripts/create-playground.ts`.
 
 ### Working in the repo
 
 ```bash
 pnpm install              # from the repo root (Node 20.x, pnpm 10.x)
 pnpm --filter @ogs-tech/create-press test      # CLI unit contracts
-pnpm play                             # boot the playground (press dev: cms :1337 + web :3000)
+pnpm dev                              # boot the playground (press dev: cms :1337 + web :3000)
 ```
 
 End-to-end tests (a Playwright suite) are planned.

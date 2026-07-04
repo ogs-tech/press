@@ -14,11 +14,15 @@ export { Spacer } from './blocks/spacer';
 export { Hero } from './sections/hero';
 export { Cta } from './sections/cta';
 export { sectionBlocks } from './section-blocks';
-export { SiteNav } from './nav';
+export { Navbar } from './chrome/navbar';
+export { Footer } from './chrome/footer';
+export { chromeBlocks } from './chrome-blocks';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildMetadata } from './config/build-metadata';
 export { buildThemeStyle } from './config/build-theme-style';
+export { buildUrn } from './urn';
+export type { Urn, Entity, Canonical } from './urn';
 export type {
   Page,
   PageBody,
@@ -38,4 +42,13 @@ export type {
   SectionHero,
   SectionCta,
 } from './types/base';
-export type { PressConfig, ResolvedPressConfig, BuildTimeConfig, ThemeName } from './config/types';
+export type {
+  PressConfig,
+  ResolvedPressConfig,
+  BuildTimeConfig,
+  ThemeName,
+  ChromeBlock,
+  ResolvedNavLink,
+  ResolvedChromeNavbar,
+  ResolvedChromeFooter,
+} from './config/types';

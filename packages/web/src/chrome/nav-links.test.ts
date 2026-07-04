@@ -1,21 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { ResolvedPressConfig } from './config/types';
+import type { ResolvedNavLink } from '../config/types';
 
 // usePathname is controlled per test via a hoisted holder (vitest hoists vi.mock
 // above imports; vi.hoisted makes the holder safe to reference inside the factory).
 const nav = vi.hoisted(() => ({ pathname: '/' }));
 vi.mock('next/navigation', () => ({ usePathname: () => nav.pathname }));
 
-import { SiteNav } from './nav';
+import { NavLinks } from './nav-links';
 
-type NavLinks = ResolvedPressConfig['nav']['header'];
+type Links = ResolvedNavLink[];
 
-const render = (links: NavLinks): string =>
-  renderToStaticMarkup(createElement(SiteNav, { links }));
+const render = (links: Links): string =>
+  renderToStaticMarkup(createElement(NavLinks, { links }));
 
-describe('SiteNav', () => {
+describe('NavLinks', () => {
   it('renders an anchor per link with label and href', () => {
     const html = render([
       { label: 'About', href: '/about', external: false, newTab: false },

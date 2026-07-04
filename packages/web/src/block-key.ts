@@ -1,3 +1,5 @@
+import { buildUrn } from './urn';
+
 /**
  * Stable React key for a single dynamic-zone entry.
  *
@@ -7,7 +9,12 @@
  * `press.image` and a `custom.callout` both id 5). React then sees duplicate keys
  * and warns / drops children. Qualifying the id with `__component` makes the key
  * unique across the whole zone. Falls back to the array index when `id` is absent.
+ *
+ * The key is formatted through the canonical urn primitive with `__component`
+ * as the entity segment (canonical-urn Spec §4) — a COMPUTED identity, never
+ * stored on the block: a DZ entry's id is ephemeral, so the engine promises
+ * nothing beyond the current render.
  */
 export function blockKey(block: { __component: string; id?: number | null }, index: number): string {
-  return `${block.__component}:${block.id ?? index}`;
+  return buildUrn(block.__component, block.id ?? index);
 }

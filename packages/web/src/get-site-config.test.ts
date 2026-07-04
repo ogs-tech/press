@@ -56,23 +56,30 @@ describe('getSiteConfig', () => {
     expect(r.brand.name).toBe('');
   });
 
-  it('maps a body with nav data end-to-end', async () => {
+  it('maps a body with chrome data end-to-end', async () => {
     stubFetch(async () => ({
       ok: true,
       json: async () => ({
         data: {
           name: 'Acme',
-          headerNav: [
-            { label: 'About', page: { slug: 'about' }, newTab: false },
-            { label: 'Docs', url: 'https://docs.test', newTab: true },
-          ],
+          header: [{
+            __component: 'chrome.navbar',
+            id: 1,
+            items: [
+              { label: 'About', page: { slug: 'about' }, newTab: false },
+              { label: 'Docs', url: 'https://docs.test', newTab: true },
+            ],
+          }],
+          footer: [{ __component: 'chrome.footer', id: 2 }],
         },
       }),
     }));
     const r = await getSiteConfig(buildTime);
-    expect(r.nav.header).toEqual([
+    expect((r.chrome.header[0] as any).brand).toEqual({ name: 'Acme', logo: undefined });
+    expect((r.chrome.header[0] as any).links).toEqual([
       { label: 'About', href: '/about', external: false, newTab: false },
       { label: 'Docs', href: 'https://docs.test', external: true, newTab: true },
     ]);
+    expect((r.chrome.footer[0] as any).brand).toEqual({ name: 'Acme' });
   });
 });

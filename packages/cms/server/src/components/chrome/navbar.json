@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_chrome_navbars",
+  "info": {
+    "displayName": "Navbar",
+    "description": "The site header bar shipped by the press engine: nav links plus an optional call-to-action. Brand (logo + name) comes from Site Settings identity, never from this block."
+  },
+  "options": {},
+  "attributes": {
+    "items": { "type": "component", "repeatable": true, "component": "press.nav-item" },
+    "cta": { "type": "component", "repeatable": false, "component": "press.button" }
+  },
+  "config": {
+    "metadatas": {
+      "items": { "edit": { "label": "Navigation items" } },
+      "cta": { "edit": { "label": "Call to action", "description": "Optional button rendered at the end of the bar." } }
+    }
+  }
+}

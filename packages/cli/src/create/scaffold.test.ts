@@ -69,7 +69,7 @@ describe('scaffold', () => {
     expect(rootPkg.scripts.build).toBe('press build');
     expect(rootPkg.scripts.upgrade).toBe('press upgrade');
     // The STANDALONE root keeps pnpm.onlyBuiltDependencies (it IS the workspace root
-    // here, so the field takes effect); play:create strips this copy for the dogfood.
+    // here, so the field takes effect); create-playground strips this copy for the dogfood.
     expect(rootPkg.pnpm.onlyBuiltDependencies).toContain('better-sqlite3');
     // The generated .npmrc pins the Strapi-shaped pnpm settings and does NOT route
     // @ogs-tech to any registry — they resolve from the default (npm).

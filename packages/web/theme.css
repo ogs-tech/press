@@ -46,7 +46,16 @@ header {
   padding: var(--press-space-4) var(--press-space-5);
   border-bottom: 1px solid var(--press-color-border);
 }
-header a {
+/* Chrome navbar (chrome.navbar): brand + editable links + optional CTA in one
+   engine-owned bar — internal layout is renderer-owned so editors cannot break
+   the chrome (Spec §Decisions 6). */
+[data-block="chrome.navbar"] {
+  display: flex;
+  align-items: center;
+  gap: var(--press-space-3);
+  flex: 1;
+}
+[data-block="chrome.navbar"] [data-navbar="brand"] {
   display: inline-flex;
   align-items: center;
   gap: var(--press-space-2);
@@ -55,14 +64,34 @@ header a {
   font-family: var(--press-font-display, var(--press-font-display-default)), system-ui, sans-serif;
   font-weight: 600;
 }
-header img {
+[data-block="chrome.navbar"] [data-navbar="brand"] img {
   height: 28px;
   width: auto;
 }
+/* Navbar CTA: same token treatment as press.button (fill / outline). */
+[data-block="chrome.navbar"] [data-navbar="cta"] {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--press-space-2) var(--press-space-4);
+  border-radius: var(--press-radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1;
+}
+[data-block="chrome.navbar"] [data-navbar="cta"][data-variant="primary"] {
+  background: var(--press-color-primary);
+  color: var(--press-color-on-primary);
+}
+[data-block="chrome.navbar"] [data-navbar="cta"][data-variant="secondary"] {
+  background: transparent;
+  color: var(--press-color-primary);
+  border: 1px solid var(--press-color-border);
+}
 
-/* Header navigation (site chrome): editable menu rendered by SiteNav next to the
-   brand link. Pushed to the right of the logo; wraps gracefully on narrow
-   viewports (a JS hamburger is out of scope). Active link uses aria-current. */
+/* Header navigation (site chrome): editable menu rendered by the navbar's internal
+   NavLinks next to the brand link. Pushed to the right of the logo; wraps
+   gracefully on narrow viewports (a JS hamburger is out of scope). Active link
+   uses aria-current. */
 nav[data-press-nav="header"] {
   display: flex;
   flex-wrap: wrap;
@@ -94,6 +123,9 @@ nav[data-press-nav="header"] [data-press-nav-ext] {
   header {
     flex-wrap: wrap;
   }
+  [data-block="chrome.navbar"] {
+    flex-wrap: wrap;
+  }
   nav[data-press-nav="header"] {
     margin-left: 0;
     width: 100%;
@@ -115,6 +147,11 @@ footer {
   border-top: 1px solid var(--press-color-border);
   color: var(--press-color-muted);
   font-size: var(--press-text-sm);
+}
+
+/* Chrome footer (chrome.footer): the copyright line block. */
+[data-block="chrome.footer"] {
+  display: block;
 }
 
 /* Reference blocks: decomposed text palette (press.paragraph / heading / list /

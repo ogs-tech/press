@@ -38,6 +38,13 @@ describe('tsTypeForAttribute', () => {
   it('falls back to unknown for unrecognized types', () => {
     expect(tsTypeForAttribute({ type: 'relation' })).toBe('unknown');
   });
+
+  it('maps a component reference to its interface name, honoring `repeatable` (Spec §2)', () => {
+    expect(tsTypeForAttribute({ type: 'component', component: 'press.nav-item', repeatable: true }))
+      .toBe('PressNavItem[]');
+    expect(tsTypeForAttribute({ type: 'component', component: 'press.button', repeatable: false }))
+      .toBe('PressButton');
+  });
 });
 
 describe('generateTypes', () => {
@@ -178,5 +185,106 @@ describe('generateTypes with section.* blocks', () => {
 
   it('includes both sections in the PageBody union', () => {
     expect(out).toContain('export type PageBody = (SectionHero | SectionCta)[];');
+  });
+});
+
+describe('generateTypes with chrome blocks (site-setting DZs)', () => {
+  const schema = {
+    contentTypes: {
+      'plugin::press-cms.page': {
+        uid: 'plugin::press-cms.page',
+        info: { singularName: 'page' },
+        attributes: {
+          title: { type: 'string', required: true },
+          body: { type: 'dynamiczone', components: ['press.paragraph', 'press.button'] },
+        },
+      },
+      'plugin::press-cms.site-setting': {
+        uid: 'plugin::press-cms.site-setting',
+        info: { singularName: 'site-setting' },
+        attributes: {
+          name: { type: 'string' },
+          header: { type: 'dynamiczone', components: ['chrome.navbar', 'press.paragraph', 'custom.callout'] },
+          footer: { type: 'dynamiczone', components: ['chrome.footer'] },
+        },
+      },
+    },
+    components: {
+      'press.paragraph': {
+        uid: 'press.paragraph',
+        attributes: { content: { type: 'blocks', required: true } },
+      },
+      'press.button': {
+        uid: 'press.button',
+        attributes: {
+          label: { type: 'string', required: true },
+          href: { type: 'string', required: true },
+          variant: { type: 'enumeration', enum: ['primary', 'secondary'], default: 'primary', required: true },
+        },
+      },
+      'custom.callout': {
+        uid: 'custom.callout',
+        attributes: { message: { type: 'string', required: true } },
+      },
+      'chrome.navbar': {
+        uid: 'chrome.navbar',
+        attributes: {
+          items: { type: 'component', repeatable: true, component: 'press.nav-item' },
+          cta: { type: 'component', repeatable: false, component: 'press.button' },
+        },
+      },
+      'chrome.footer': {
+        uid: 'chrome.footer',
+        attributes: { text: { type: 'string' } },
+      },
+      'press.nav-item': {
+        uid: 'press.nav-item',
+        attributes: {
+          label: { type: 'string', required: true },
+          page: { type: 'relation' },
+          url: { type: 'string' },
+          newTab: { type: 'boolean', default: false },
+        },
+      },
+    },
+  };
+
+  const out = generateTypes(schema);
+
+  it('types nested component references (repeatable → array, single → plain)', () => {
+    expect(out).toContain('items?: PressNavItem[];');
+    expect(out).toContain('cta?: PressButton;');
+  });
+
+  it('emits a nested-only component WITHOUT __component — Strapi sends no discriminator for nested components (Spec §2)', () => {
+    expect(out).toContain('export interface PressNavItem {');
+    expect(out).not.toContain("__component: 'press.nav-item'");
+    // Its scalar fields survive with correct optionality.
+    expect(out).toContain('label: string;');
+    expect(out).toContain('url?: string;');
+    expect(out).toContain('newTab?: boolean;');
+  });
+
+  it('keeps __component on a component that IS a DZ member somewhere (press.button in body)', () => {
+    expect(out).toContain("__component: 'press.button'");
+  });
+
+  it('skips relation attributes — resolved at runtime by the web side, never consumed raw (Spec §2)', () => {
+    expect(out).not.toContain('page?:');
+    expect(out).not.toContain('page:');
+  });
+
+  it('emits HeaderBlocks and FooterBlocks unions alongside PageBody (Spec §2)', () => {
+    expect(out).toContain('export type HeaderBlocks = (ChromeNavbar | PressParagraph | CustomCallout)[];');
+    expect(out).toContain('export type FooterBlocks = (ChromeFooter)[];');
+    expect(out).toContain('export type PageBody = (PressParagraph | PressButton)[];');
+  });
+
+  it('omits the chrome unions when the schema has no site-setting entry (version-skew tolerance)', () => {
+    const pageOnly = { contentTypes: { 'plugin::press-cms.page': schema.contentTypes['plugin::press-cms.page'] }, components: { 'press.paragraph': schema.components['press.paragraph'], 'press.button': schema.components['press.button'] } };
+    const legacy = generateTypes(pageOnly);
+    expect(legacy).not.toContain('HeaderBlocks');
+    expect(legacy).not.toContain('FooterBlocks');
+    expect(legacy).toContain('export type PageBody');
   });
 });

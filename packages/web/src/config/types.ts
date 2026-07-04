@@ -1,3 +1,5 @@
+import type { Canonical } from '../urn';
+
 /** The only embedded theme this phase. The union exists so a second theme is additive, not breaking (Spec §2). */
 export type ThemeName = 'default';
 
@@ -51,8 +53,49 @@ export interface PressConfig {
       };
 }
 
-/** Fully-resolved config: every default applied, ready for the engine helpers. */
-export interface ResolvedPressConfig {
+/** A fully-resolved navigation link (page relation already collapsed to an href). */
+export interface ResolvedNavLink {
+  label: string;
+  href: string;
+  external: boolean;
+  newTab: boolean;
+}
+
+/**
+ * A chrome dynamic-zone entry. Loose by design: the zones admit press.* /
+ * section.* / custom.* blocks the engine cannot enumerate, and the renderer only
+ * dispatches on `__component`. Engine chrome.* entries gain `brand`/`links`
+ * during hydration (mapSiteSettings, Spec §3).
+ */
+export type ChromeBlock = { __component: string; id: number; [k: string]: unknown };
+
+/** Hydrated `chrome.navbar` — the exact props the Navbar renderer receives (Spec §3). */
+export interface ResolvedChromeNavbar {
+  __component: 'chrome.navbar';
+  id: number;
+  /** Injected from Site Settings identity — never stored on the block (Spec §1). */
+  brand: { name: string; logo?: string };
+  /** `items` resolved: page > url precedence, home slug → '/', external flag. */
+  links: ResolvedNavLink[];
+  cta?: { label?: string; href?: string; variant?: 'primary' | 'secondary' } | null;
+}
+
+/** Hydrated `chrome.footer` — brand injected for the copyright fallback (Spec §1). */
+export interface ResolvedChromeFooter {
+  __component: 'chrome.footer';
+  id: number;
+  text?: string | null;
+  brand: { name: string };
+}
+
+/**
+ * Fully-resolved config: every default applied, ready for the engine helpers.
+ * A canonical entity with a SYNTHETIC identity (canonical-urn Spec §3): Site
+ * Settings is a Strapi single type with no id in this wire contract, so the id
+ * segment is the constant 'default' — attached by mapSiteSettings even when
+ * the CMS is unreachable (identity is never CMS-sourced data here).
+ */
+export interface ResolvedPressConfig extends Canonical<'site-setting'> {
   brand: {
     name: string;
     logo?: string;
@@ -85,13 +128,15 @@ export interface ResolvedPressConfig {
     radius: ThemeRadius;
   };
   /**
-   * Site chrome navigation (site-settings, Plane B). Resolved from the CMS
-   * `headerNav` component list: each item is a final link — internal page slugs
-   * already collapsed to an href ('/' for the home slug), external flag set from
-   * the URL scheme. Empty when the CMS is empty/unreachable/malformed.
+   * Site chrome (Spec §3): the two Site-Settings Dynamic Zones, HYDRATED —
+   * chrome.navbar entries carry the resolved brand + links and chrome.footer
+   * entries carry the brand for the copyright fallback; all other blocks pass
+   * through untouched so BlockRenderer stays intentionally dumb. Empty when the
+   * CMS is empty/unreachable/malformed (unbranded over synthetic — Spec §4).
    */
-  nav: {
-    header: Array<{ label: string; href: string; external: boolean; newTab: boolean }>;
+  chrome: {
+    header: ChromeBlock[];
+    footer: ChromeBlock[];
   };
 }
 
@@ -132,10 +177,6 @@ export interface SiteSettingsData {
   } | null;
   themeColors?: Partial<ThemeColors> | null;
   themeRadius?: Partial<ThemeRadius> | null;
-  headerNav?: Array<{
-    label?: string;
-    page?: { slug?: string } | null;
-    url?: string;
-    newTab?: boolean;
-  }> | null;
+  header?: ChromeBlock[] | null;
+  footer?: ChromeBlock[] | null;
 }

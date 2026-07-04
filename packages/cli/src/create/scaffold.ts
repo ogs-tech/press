@@ -42,7 +42,7 @@ function rootPackageJson(name: string): string {
         // Standalone projects are their own workspace root, so this field takes
         // effect here (it lets Strapi's native deps build). When the scaffold is
         // consumed as a workspace member (the in-repo dogfood), pnpm ignores it and
-        // the root owns it instead — play:create strips this copy to kill the warn.
+        // the root owns it instead — create-playground strips this copy to kill the warn.
         pnpm: {
           onlyBuiltDependencies: [
             '@swc/core',

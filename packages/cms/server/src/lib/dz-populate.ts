@@ -15,3 +15,22 @@ export const buildBodyPopulate = (components: string[]): { body: { on: Record<st
     on: Object.fromEntries(components.map((uid) => [uid, { populate: '*' as const }])),
   },
 });
+
+/**
+ * Builds the document-service `populate` VALUE for one site-setting chrome
+ * dynamic zone (`header`/`footer`). Like the body, each admitted component gets
+ * `populate: '*'` — EXCEPT `chrome.navbar`: its `items.page` relation (internal
+ * link, resolved to its slug by the web side) and its `cta` component sit one
+ * level below what `'*'` reaches, so they are deep-populated explicitly
+ * (Spec §1/§3). Without this, every internal nav link silently falls back to
+ * its raw `url` field — the exact failure the old headerNav populate prevented.
+ */
+export const buildChromeDzPopulate = (components: string[]): { on: Record<string, unknown> } => ({
+  on: Object.fromEntries(
+    components.map((uid) =>
+      uid === 'chrome.navbar'
+        ? [uid, { populate: { items: { populate: { page: { fields: ['slug'] } } }, cta: true } }]
+        : [uid, { populate: '*' as const }],
+    ),
+  ),
+});

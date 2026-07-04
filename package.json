@@ -8,9 +8,7 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "play": "turbo run dev --filter playground",
-    "play:create": "tsx scripts/create-playground.ts",
-    "play:upgrade": "tsx scripts/upgrade-playground.ts",
+    "dev": "test -d apps/playground || tsx scripts/create-playground.ts && turbo run dev --filter playground",
     "pack:check": "pnpm build && pnpm -r --filter \"./packages/*\" publish --dry-run --no-git-checks",
     "version-packages": "changeset version && pnpm --filter @ogs-tech/create-press gen:versions && git add -A",
     "release": "turbo run build && changeset publish"

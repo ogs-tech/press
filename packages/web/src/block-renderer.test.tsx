@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { BlockRenderer } from './block-renderer';
+
+vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 
 describe('BlockRenderer — section blocks', () => {
   it('resolves a section.* block from the sectionBlocks registry', () => {
@@ -26,6 +28,34 @@ describe('BlockRenderer — section blocks', () => {
 
   it('skips an unknown component without crashing', () => {
     const blocks = [{ __component: 'section.does-not-exist', id: 1 } as any];
+    expect(() => renderToStaticMarkup(<BlockRenderer blocks={blocks} />)).not.toThrow();
+    expect(renderToStaticMarkup(<BlockRenderer blocks={blocks} />)).toBe('');
+  });
+});
+
+describe('BlockRenderer — chrome blocks', () => {
+  it('resolves chrome.* blocks from the chromeBlocks registry', () => {
+    const blocks = [
+      { __component: 'chrome.navbar', id: 1, brand: { name: 'Acme' }, links: [] } as any,
+      { __component: 'chrome.footer', id: 2, text: 'hello', brand: { name: 'Acme' } } as any,
+    ];
+    const out = renderToStaticMarkup(<BlockRenderer blocks={blocks} />);
+    expect(out).toContain('data-block="chrome.navbar"');
+    expect(out).toContain('data-block="chrome.footer"');
+  });
+
+  it('lets an adopter components map override a chrome renderer (adopter wins last, Spec §3)', () => {
+    const blocks = [{ __component: 'chrome.navbar', id: 1, brand: { name: 'Acme' }, links: [] } as any];
+    const MyNavbar = () => <div data-block="custom-navbar" />;
+    const out = renderToStaticMarkup(
+      <BlockRenderer blocks={blocks} components={{ 'chrome.navbar': MyNavbar }} />,
+    );
+    expect(out).toContain('data-block="custom-navbar"');
+    expect(out).not.toContain('data-block="chrome.navbar"');
+  });
+
+  it('skips an unknown component in a chrome zone without crashing', () => {
+    const blocks = [{ __component: 'chrome.does-not-exist', id: 1 } as any];
     expect(() => renderToStaticMarkup(<BlockRenderer blocks={blocks} />)).not.toThrow();
     expect(renderToStaticMarkup(<BlockRenderer blocks={blocks} />)).toBe('');
   });
