@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { blockKey } from './block-key';
+import { buildUrn } from './urn';
 
 describe('blockKey', () => {
   it('qualifies the id by __component so cross-type id collisions stay unique', () => {
@@ -8,10 +9,14 @@ describe('blockKey', () => {
     const image = { __component: 'press.image', id: 5 };
     const callout = { __component: 'custom.callout', id: 5 };
     expect(blockKey(image, 0)).not.toBe(blockKey(callout, 1));
-    expect(blockKey(image, 0)).toBe('press.image:5');
+    expect(blockKey(image, 0)).toBe('urn:press.image:5');
+  });
+
+  it('formats through the canonical urn primitive — one identity format, single-sourced', () => {
+    expect(blockKey({ __component: 'press.image', id: 5 }, 0)).toBe(buildUrn('press.image', 5));
   });
 
   it('falls back to the array index when id is absent', () => {
-    expect(blockKey({ __component: 'press.paragraph' }, 3)).toBe('press.paragraph:3');
+    expect(blockKey({ __component: 'press.paragraph' }, 3)).toBe('urn:press.paragraph:3');
   });
 });

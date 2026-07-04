@@ -3,6 +3,7 @@ import { buildMetadata } from './build-metadata';
 import type { ResolvedPressConfig } from './types';
 
 const resolved: ResolvedPressConfig = {
+  urn: 'urn:site-setting:default',
   brand: { name: 'Acme', favicon: '/favicon.ico' },
   site: { url: 'https://acme.test', locale: 'en' },
   seo: {

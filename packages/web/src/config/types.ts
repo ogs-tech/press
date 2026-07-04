@@ -1,3 +1,5 @@
+import type { Canonical } from '../urn';
+
 /** The only embedded theme this phase. The union exists so a second theme is additive, not breaking (Spec §2). */
 export type ThemeName = 'default';
 
@@ -86,8 +88,14 @@ export interface ResolvedChromeFooter {
   brand: { name: string };
 }
 
-/** Fully-resolved config: every default applied, ready for the engine helpers. */
-export interface ResolvedPressConfig {
+/**
+ * Fully-resolved config: every default applied, ready for the engine helpers.
+ * A canonical entity with a SYNTHETIC identity (canonical-urn Spec §3): Site
+ * Settings is a Strapi single type with no id in this wire contract, so the id
+ * segment is the constant 'default' — attached by mapSiteSettings even when
+ * the CMS is unreachable (identity is never CMS-sourced data here).
+ */
+export interface ResolvedPressConfig extends Canonical<'site-setting'> {
   brand: {
     name: string;
     logo?: string;

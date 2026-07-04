@@ -6,6 +6,7 @@ import type {
   SiteSettingsData,
 } from './config/types';
 import { DEFAULT_THEME } from './config/default-theme';
+import { buildUrn } from './urn';
 
 // Same module-level pattern as get-page.ts: read once, default to local Strapi.
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
@@ -97,6 +98,9 @@ export function mapSiteSettings(
     favicon: mediaUrl(c.favicon) ?? '',
   };
   return {
+    // Synthetic singleton identity — constant, present even when the CMS is
+    // down/empty (canonical-urn Spec §3).
+    urn: buildUrn('site-setting', 'default'),
     brand,
     site: {
       url: c.url ?? '',

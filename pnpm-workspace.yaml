@@ -3,8 +3,8 @@ packages:
   # The in-repo dogfood: the real `press create` output, committed and consumed
   # via workspace:* for a fast dev loop. Its packages/cms + packages/shared are
   # their own workspace members so the cms host resolves @press/cms and the web
-  # zone resolves <name>-shared by symlink (one workspace root per tree). Recreate
-  # from the live scaffold with `pnpm play:create` (or refresh the engine-owned
-  # host with `pnpm play:upgrade`).
+  # zone resolves <name>-shared by symlink (one workspace root per tree). `pnpm dev`
+  # recreates it from the live scaffold when absent; force-recreate with
+  # `pnpm exec tsx scripts/create-playground.ts`.
   - "apps/playground"
   - "apps/playground/packages/*"

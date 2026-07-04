@@ -7,6 +7,8 @@
 // the adopter's `shared/types/` zone by `press dev` (sync-types). The engine never
 // depends on a project's generated types; the project depends on these.
 
+import type { Canonical } from '../urn';
+
 /** A media field as serialized by the CMS REST contract. */
 export interface PressMedia {
   url: string;
@@ -143,8 +145,13 @@ export interface Block {
 /** The page dynamic zone, generically typed for engine consumers. */
 export type PageBody = Block[];
 
-/** The page envelope the engine fetches and renders (generic over its blocks). */
-export interface Page {
+/**
+ * The page envelope the engine fetches and renders (generic over its blocks).
+ * A canonical entity (canonical-urn Spec §2): `urn:page:{documentId}` is
+ * attached at the mapping boundary (map-page.ts) — derived web-side, never
+ * part of the CMS wire shape.
+ */
+export interface Page extends Canonical<'page'> {
   id: number;
   documentId: string;
   title: string;

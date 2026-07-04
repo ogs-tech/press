@@ -35,6 +35,11 @@ describe('mapSiteSettings', () => {
     expect(mapSiteSettings(buildTime, {})).toEqual(mapSiteSettings(buildTime, null));
   });
 
+  it('attaches the synthetic site-setting urn regardless of the CMS payload (canonical-urn Spec §3)', () => {
+    expect(mapSiteSettings(buildTime, null).urn).toBe('urn:site-setting:default');
+    expect(mapSiteSettings(buildTime, { name: 'Acme' }).urn).toBe('urn:site-setting:default');
+  });
+
   it('maps a full CMS payload verbatim and lets theme overrides win per key', () => {
     const r = mapSiteSettings(buildTime, {
       name: 'Acme',

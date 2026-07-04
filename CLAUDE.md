@@ -37,8 +37,7 @@ Root requires **Node 20.x** and **pnpm 10.x**.
 | `pnpm build` | `turbo run build` — only `cms` actually compiles (`strapi-plugin build`); `web`/`shared` ship source. |
 | `pnpm -r test` | Run the vitest suites across `cli`, `web`, `cms`. |
 | `pnpm -r --if-present typecheck` | `tsc --noEmit` per package. **There is no eslint** — typecheck + tests are the quality gate. |
-| `pnpm play` | Boot the dogfood playground (`press dev`: cms `:1337/admin` + web `:3000`). |
-| `pnpm play:create` / `pnpm play:upgrade` | Recreate the playground from the live scaffold / refresh just the engine-owned host. |
+| `pnpm dev` | Boot the dogfood playground (`press dev`: cms `:1337/admin` + web `:3000`); recreates `apps/playground` from the live scaffold when absent. Force-recreate: `pnpm exec tsx scripts/create-playground.ts`. |
 | `pnpm pack:check` | `pnpm build` + dry-run publish of the engine packages. |
 
 Focused / single test:
@@ -75,6 +74,8 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
 3. The shape — `PressSchema` — is single-sourced in `@ogs-tech/press-shared` and imported
    **type-only** by both sides. The generator references **no Strapi types** on
    purpose. `press dev` re-syncs whenever the schema changes (`util/watch-schema.ts`).
+   The ~2s poll is deliberately absent from the cms http log: the plugin drops that
+   one line in development (`lib/quiet-schema-log.ts`) — don't "fix" the silence.
 
 ### Reference blocks + the custom-block extension point
 
@@ -130,6 +131,28 @@ This split is recent and easy to get wrong:
   for identity** by design.
 - Routing reads only the build-time anchor, so the `/home → /` redirect stays
   deterministic and CMS-independent.
+
+### Canonical identity (URNs)
+
+- Web-only identity primitives in `packages/web/src/urn.ts`: the closed union
+  `Entity` (`'page' | 'site-setting'`), the template-literal `Urn<E>` =
+  `urn:{entity}:{id}`, the `Canonical<E extends Entity>` interface
+  (`{ urn: Urn<E> }`), and the pure `buildUrn(entity, id)` factory — interface +
+  factory, no classes, so a urn stays a plain string across the RSC boundary.
+  The wire/CMS contract is untouched: a urn is never sent or stored by press-cms.
+- `Page extends Canonical<'page'>`: `urn:page:{documentId}` is attached by the
+  pure `mapPage` (`map-page.ts`, mirroring the `mapSiteSettings` pure-mapper +
+  thin-fetcher split); `getPage` stays a thin fetcher.
+- `ResolvedPressConfig extends Canonical<'site-setting'>`: `mapSiteSettings`
+  attaches the SYNTHETIC constant `urn:site-setting:default` — a single type has
+  no id in this wire contract, so identity is never CMS-sourced and survives an
+  unreachable CMS.
+- `blockKey` formats its React key through the same primitive with
+  `__component` as the entity segment (`urn:press.image:5`) — a COMPUTED
+  identity, never stored: DZ block ids are ephemeral (unique only per component
+  table, no document identity), so blocks deliberately stay OUT of the closed
+  `Entity` union. Extending `Entity` is additive; widening a call site to plain
+  `string` is not allowed.
 
 ### Versioning + upgrade
 

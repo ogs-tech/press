@@ -6,7 +6,11 @@
  * pnpm-workspace.yaml / pnpm.onlyBuiltDependencies — the monorepo root owns
  * those), with @ogs-tech/press-* pinned to workspace:*.
  *
- *   pnpm play:create
+ * `pnpm dev` runs this automatically when apps/playground is absent (nothing to
+ * destroy). To force-recreate an EXISTING tree — only needed when the scaffold
+ * structure changes — run it directly:
+ *
+ *   pnpm exec tsx scripts/create-playground.ts
  *
  * Unlike the old in-directory `regenerate`, this tool lives OUTSIDE the directory
  * it rebuilds, so there is no self-preservation swap and the playground keeps no
@@ -83,4 +87,4 @@ rmSync(tmp, { recursive: true, force: true });
 console.log('> pnpm install (links the new packages/* workspace members)');
 execFileSync('pnpm', ['install'], { cwd: repoRoot, stdio: 'inherit' });
 
-console.log('\nplayground created. Run `pnpm play` to boot it.\n');
+console.log('\nplayground created. Run `pnpm dev` to boot it.\n');
