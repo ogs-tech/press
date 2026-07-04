@@ -65,10 +65,11 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
 
 ### The contract + type-sync loop
 
-1. cms serializes its **runtime view** — the `page` content-type plus exactly the
-   components admitted into its `body` Dynamic Zone — to `GET /api/press/schema`
-   (`cms/.../lib/serialize-schema.ts`). Reading the live registry means the schema can
-   never disagree with what Strapi actually serves.
+1. cms serializes its **runtime view** — the `page` and `site-setting` content-types
+   plus exactly the components admitted into the three engine Dynamic Zones (page
+   `body`, site-setting `header`/`footer`), following nested component references —
+   to `GET /api/press/schema` (`cms/.../lib/serialize-schema.ts`). Reading the live
+   registry means the schema can never disagree with what Strapi actually serves.
 2. web's generator (`web/src/generator/generate.ts`) turns that JSON into
    framework-agnostic TS, written to the adopter's `shared/types/generated.ts`.
 3. The shape — `PressSchema` — is single-sourced in `@ogs-tech/press-shared` and imported
@@ -82,20 +83,34 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
   `src/components`, so the plugin **injects** these into the components registry during
   `register()` (`cms/.../lib/inject-components.ts`).
 - **Extension point:** any component the adopter drops under the cms host's
-  `src/components/custom/` is auto-admitted into the page `body` Dynamic Zone
-  (`admitCustomBlocks`). The engine never names individual adopter blocks — only the
-  `custom` category is the stable contract.
+  `src/components/custom/` is auto-admitted into every engine Dynamic Zone — the page
+  `body` and the site-setting `header`/`footer` (`admitCustomBlocks`). The engine
+  never names individual adopter blocks — only the `custom` category is the stable
+  contract.
 - **Engine sections (`section.*`):** a second engine-owned palette of *composite*
   sections (`section.hero`, `section.cta`) — flat (scalar/media/enum) blocks
   injected under the `section` category and admitted into the page `body` Dynamic
   Zone **statically** (listed in `content-types/page/schema.json`), not via the
   dynamic `custom.*` push. They keep the `press.*` atoms intact and flow through the
   unchanged type-sync pipeline. `press.hero` stays removed — sections are never `press.*`.
-- On the web side, `BlockRenderer` merges three maps by `__component`:
-  `{ ...referenceBlocks, ...sectionBlocks, ...components }` — engine `press.*` atoms,
-  engine `section.*` sections (`src/section-blocks.ts`), then the adopter's
+- **Engine chrome (`chrome.*`):** a third engine-owned palette for the site chrome
+  (`chrome.navbar`, `chrome.footer`) — injected like `press.*` but admitted **only**
+  into the `site-setting` `header`/`footer` Dynamic Zones (statically listed in its
+  schema), never the page `body`. `chrome.navbar` nests `press.nav-item[]` + an
+  optional `press.button` cta; brand (logo + name) is never stored on the block —
+  `mapSiteSettings` hydrates it from Site Settings identity, plus the resolved nav
+  links, before rendering. The serializer follows these nested component refs and
+  the generator emits nested-only components without `__component` and adds
+  `HeaderBlocks`/`FooterBlocks` unions. `bootstrap()` seeds `header: [navbar]`,
+  `footer: [footer]` exactly once (plugin-store flag) — an editor-emptied zone is
+  respected.
+- On the web side, `BlockRenderer` merges four maps by `__component`:
+  `{ ...referenceBlocks, ...sectionBlocks, ...chromeBlocks, ...components }` —
+  engine `press.*` atoms, engine `section.*` sections (`src/section-blocks.ts`),
+  engine `chrome.*` chrome (`src/chrome-blocks.ts`), then the adopter's
   **explicit** `customBlocks` map (no global registry). Adopter blocks win last, so
-  any `section.*` is overridable via `components={{ 'section.hero': MyHero }}`. An
+  any `section.*`/`chrome.*` is overridable via
+  `components={{ 'section.hero': MyHero, 'chrome.navbar': MyNavbar }}`. An
   unknown component is skipped with a dev-only warning, never a crash.
 
 ### Build-time anchors vs. runtime Site Settings
@@ -107,11 +122,12 @@ This split is recent and easy to get wrong:
   and `theme.fonts` (which `next/font` must know at build time). The engine **reads**
   this file but **never rewrites** it. A destructive `ThemeName` change fails `tsc`
   right at the `defineConfig` call site.
-- **Identity, SEO, and theme color/radius VALUES** live in the CMS **"Site Settings"**
-  single type — edited in the admin, fetched at runtime by `getSiteConfig` (ISR ~60s),
-  no redeploy. Any failure (CMS down, malformed body) maps as if the record were
-  *empty* → the site renders unbranded/default-themed rather than crashing. There is
-  **no `press.config` fallback for identity** by design.
+- **Identity, SEO, theme color/radius VALUES, and the block-composed `header`/`footer`
+  chrome** live in the CMS **"Site Settings"** single type — edited in the admin,
+  fetched at runtime by `getSiteConfig` (ISR ~60s), no redeploy. Any failure (CMS down,
+  malformed body) maps as if the record were *empty* → the site renders
+  unbranded/default-themed rather than crashing. There is **no `press.config` fallback
+  for identity** by design.
 - Routing reads only the build-time anchor, so the `/home → /` redirect stays
   deterministic and CMS-independent.
 

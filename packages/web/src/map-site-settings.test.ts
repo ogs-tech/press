@@ -27,8 +27,8 @@ describe('mapSiteSettings', () => {
     expect(r.routes.home).toBe('home');
     expect(r.theme.name).toBe('default');
     expect(r.theme.fonts).toEqual({ body: 'Inter' });
-    // navigation: empty when the CMS is empty (AC5)
-    expect(r.nav.header).toEqual([]);
+    // chrome: empty zones when the CMS is empty (Spec §4)
+    expect(r.chrome).toEqual({ header: [], footer: [] });
   });
 
   it('maps an empty {} CMS identically to null', () => {
@@ -85,61 +85,100 @@ describe('mapSiteSettings', () => {
   });
 });
 
-describe('mapSiteSettings — headerNav resolution', () => {
-  it('resolves an internal page to /slug, external false', () => {
+describe('mapSiteSettings — chrome hydration (Spec §3)', () => {
+  const navbar = (extra: Record<string, unknown> = {}) =>
+    ({ __component: 'chrome.navbar', id: 1, ...extra });
+
+  const headerWith = (items: unknown[]) =>
+    mapSiteSettings(buildTime, { name: 'Acme', header: [navbar({ items })] });
+
+  const linksOf = (r: ReturnType<typeof mapSiteSettings>) =>
+    (r.chrome.header[0] as any).links;
+
+  it('injects the resolved brand (name + logo) into chrome.navbar — never stored on the block', () => {
     const r = mapSiteSettings(buildTime, {
-      headerNav: [{ label: 'About', page: { slug: 'about' }, newTab: false }],
+      name: 'Acme',
+      logo: { url: '/uploads/logo.png' },
+      header: [navbar()],
     });
-    expect(r.nav.header).toEqual([
+    expect((r.chrome.header[0] as any).brand).toEqual({
+      name: 'Acme',
+      logo: 'http://localhost:1337/uploads/logo.png',
+    });
+  });
+
+  it('resolves an internal page item to /slug, external false', () => {
+    const r = headerWith([{ label: 'About', page: { slug: 'about' }, newTab: false }]);
+    expect(linksOf(r)).toEqual([{ label: 'About', href: '/about', external: false, newTab: false }]);
+  });
+
+  it('collapses the home slug to /', () => {
+    const r = headerWith([{ label: 'Home', page: { slug: 'home' } }]); // buildTime.routes.home === 'home'
+    expect(linksOf(r)[0].href).toBe('/');
+  });
+
+  it('resolves an external url with external:true and honors newTab', () => {
+    const r = headerWith([{ label: 'Docs', url: 'https://docs.test', newTab: true }]);
+    expect(linksOf(r)).toEqual([{ label: 'Docs', href: 'https://docs.test', external: true, newTab: true }]);
+  });
+
+  it('treats a non-http url as internal-style (external: false)', () => {
+    const r = headerWith([{ label: 'Contact', url: '/contact' }]);
+    expect(linksOf(r)).toEqual([{ label: 'Contact', href: '/contact', external: false, newTab: false }]);
+  });
+
+  it('lets page win over url when both are set (precedence)', () => {
+    const r = headerWith([{ label: 'Both', page: { slug: 'about' }, url: 'https://ignored.test' }]);
+    expect(linksOf(r)[0]).toEqual({ label: 'Both', href: '/about', external: false, newTab: false });
+  });
+
+  it('drops an item with neither page nor url', () => {
+    const r = headerWith([
+      { label: 'Keep', url: '/keep' },
+      { label: 'Drop' },
+      { label: 'DropToo', page: null, url: '' },
+    ]);
+    expect(linksOf(r).map((l: any) => l.label)).toEqual(['Keep']);
+  });
+
+  it('hydrates a navbar with no items to empty links (the seeded default renders brand-only)', () => {
+    const r = mapSiteSettings(buildTime, { name: 'Acme', header: [navbar()] });
+    expect(linksOf(r)).toEqual([]);
+  });
+
+  it('keeps the navbar cta untouched (renderer consumes it as-is)', () => {
+    const cta = { label: 'Sign up', href: '/signup', variant: 'primary' };
+    const r = mapSiteSettings(buildTime, { header: [navbar({ cta })] });
+    expect((r.chrome.header[0] as any).cta).toEqual(cta);
+  });
+
+  it('injects the brand into chrome.footer for the copyright fallback', () => {
+    const r = mapSiteSettings(buildTime, {
+      name: 'Acme',
+      footer: [{ __component: 'chrome.footer', id: 2, text: '' }],
+    });
+    expect((r.chrome.footer[0] as any).brand).toEqual({ name: 'Acme' });
+  });
+
+  it('passes non-chrome blocks through untouched (BlockRenderer stays dumb)', () => {
+    const hero = { __component: 'section.hero', id: 3, title: 'Big' };
+    const r = mapSiteSettings(buildTime, { header: [hero] });
+    expect(r.chrome.header).toEqual([hero]);
+  });
+
+  it('hydrates the footer zone with the same rules as the header (a navbar works in either zone)', () => {
+    const r = mapSiteSettings(buildTime, {
+      name: 'Acme',
+      footer: [navbar({ items: [{ label: 'About', page: { slug: 'about' } }] })],
+    });
+    expect((r.chrome.footer[0] as any).links).toEqual([
       { label: 'About', href: '/about', external: false, newTab: false },
     ]);
   });
 
-  it('collapses the home slug to /', () => {
-    const r = mapSiteSettings(buildTime, {
-      headerNav: [{ label: 'Home', page: { slug: 'home' } }], // buildTime.routes.home === 'home'
-    });
-    expect(r.nav.header[0].href).toBe('/');
-    expect(r.nav.header[0].external).toBe(false);
-  });
-
-  it('resolves an external url with external:true and honors newTab', () => {
-    const r = mapSiteSettings(buildTime, {
-      headerNav: [{ label: 'Docs', url: 'https://docs.test', newTab: true }],
-    });
-    expect(r.nav.header).toEqual([
-      { label: 'Docs', href: 'https://docs.test', external: true, newTab: true },
-    ]);
-  });
-
-  it('treats a non-http url as internal-style (external:false)', () => {
-    const r = mapSiteSettings(buildTime, {
-      headerNav: [{ label: 'Contact', url: '/contact' }],
-    });
-    expect(r.nav.header[0]).toEqual({ label: 'Contact', href: '/contact', external: false, newTab: false });
-  });
-
-  it('lets page win over url when both are set (precedence)', () => {
-    const r = mapSiteSettings(buildTime, {
-      headerNav: [{ label: 'Both', page: { slug: 'about' }, url: 'https://ignored.test' }],
-    });
-    expect(r.nav.header[0]).toEqual({ label: 'Both', href: '/about', external: false, newTab: false });
-  });
-
-  it('drops an item with neither page nor url', () => {
-    const r = mapSiteSettings(buildTime, {
-      headerNav: [
-        { label: 'Keep', url: '/keep' },
-        { label: 'Drop' }, // neither page nor url
-        { label: 'DropToo', page: null, url: '' },
-      ],
-    });
-    expect(r.nav.header.map((l) => l.label)).toEqual(['Keep']);
-  });
-
-  it('maps absent / empty headerNav to []', () => {
-    expect(mapSiteSettings(buildTime, { headerNav: [] }).nav.header).toEqual([]);
-    expect(mapSiteSettings(buildTime, {}).nav.header).toEqual([]);
-    expect(mapSiteSettings(buildTime, null).nav.header).toEqual([]);
+  it('maps absent / empty zones and a null CMS to empty arrays', () => {
+    expect(mapSiteSettings(buildTime, { header: [], footer: [] }).chrome).toEqual({ header: [], footer: [] });
+    expect(mapSiteSettings(buildTime, {}).chrome).toEqual({ header: [], footer: [] });
+    expect(mapSiteSettings(buildTime, null).chrome).toEqual({ header: [], footer: [] });
   });
 });

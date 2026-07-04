@@ -13,6 +13,8 @@ import themeRadiusSchema from '../components/theme-radius.json';
 import navItemSchema from '../components/nav-item.json';
 import heroSectionSchema from '../components/section/hero.json';
 import ctaSectionSchema from '../components/section/cta.json';
+import chromeNavbarSchema from '../components/chrome/navbar.json';
+import chromeFooterSchema from '../components/chrome/footer.json';
 import { toGlobalId } from './global-id';
 
 /**
@@ -47,6 +49,11 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
   // Separate category from press.* keeps the atomic palette intact (Spec §5.1).
   { category: 'section', name: 'hero', schema: heroSectionSchema as Record<string, unknown> },
   { category: 'section', name: 'cta', schema: ctaSectionSchema as Record<string, unknown> },
+  // Composite chrome blocks: header/footer bars admitted ONLY into the
+  // site-setting chrome DZs, never the page body (Spec §1). The bar's internal
+  // layout is renderer-owned so editors cannot break the chrome (Spec §Decisions 6).
+  { category: 'chrome', name: 'navbar', schema: chromeNavbarSchema as Record<string, unknown> },
+  { category: 'chrome', name: 'footer', schema: chromeFooterSchema as Record<string, unknown> },
   // Configuration components used by the Site Settings single type (not page blocks).
   { category: 'press', name: 'seo', schema: seoSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },
@@ -90,57 +97,72 @@ export const injectComponents = ({ strapi }: { strapi: Core.Strapi }): void => {
 };
 
 /**
- * Admits all adopter custom.* components into the engine's page Dynamic Zone.
+ * Engine Dynamic Zones that accept adopter custom.* blocks. The page body plus
+ * the two site-setting chrome zones (Spec §1) — the adopter contract is
+ * unchanged: only the "custom" CATEGORY is the stable extension point, never
+ * individually named blocks.
+ */
+const CUSTOM_DZ_TARGETS: Array<{ uid: string; attribute: string }> = [
+  { uid: 'plugin::press-cms.page', attribute: 'body' },
+  { uid: 'plugin::press-cms.site-setting', attribute: 'header' },
+  { uid: 'plugin::press-cms.site-setting', attribute: 'footer' },
+];
+
+/**
+ * Admits all adopter custom.* components into the engine's Dynamic Zones.
  *
  * Contract: any component the adopter places under <host>/src/components/custom/
- * is automatically admitted into the engine's reference Dynamic Zone (body field
- * on plugin::press-cms.page). The engine NEVER names specific adopter blocks;
- * only the "custom" category is the stable extension-point contract.
+ * is automatically admitted into every engine DZ (page body + site-setting
+ * header/footer). The engine NEVER names specific adopter blocks; only the
+ * "custom" category is the stable extension-point contract.
  *
  * Timing: loadApplicationContext runs loadPlugins + loadComponents in parallel
  * (Promise.all). module.load() registers plugin content-types synchronously when
- * the plugin module is added, so plugin::press-cms.page IS present in the
+ * the plugin module is added, so both engine content-types ARE present in the
  * content-types registry by the time plugin register() fires.
  */
 export const admitCustomBlocks = ({ strapi }: { strapi: Core.Strapi }): void => {
-  const pageContentType = strapi.get('content-types').get('plugin::press-cms.page');
-
-  // Invariant: the engine ships plugin::press-cms.page, so it MUST be registered
-  // by the time this register hook fires. If it isn't, custom.* admission cannot
-  // happen and the engine would boot half-broken (blocks silently absent from the
-  // DZ → incomplete types → pages with unknown components). Fail loud, abort boot.
-  if (!pageContentType) {
-    throw new Error(
-      "[press-cms] invariant violated: 'plugin::press-cms.page' is absent from the " +
-        'content-types registry at register time — custom.* blocks cannot be admitted, ' +
-        'aborting boot. Likely an engine content-type load failure or a Strapi version mismatch.',
-    );
-  }
-
-  const bodyAttr = (pageContentType.attributes as Record<string, { type: string; components?: string[] }>)?.body;
-
-  if (!bodyAttr || bodyAttr.type !== 'dynamiczone' || !Array.isArray(bodyAttr.components)) {
-    throw new Error(
-      "[press-cms] invariant violated: 'plugin::press-cms.page' has no 'body' dynamic zone " +
-        '(or it has an unexpected shape) at register time. The page Dynamic Zone is the engine ' +
-        'extension point for custom.* blocks — aborting boot. Likely a changed page schema or a ' +
-        'Strapi version mismatch.',
-    );
-  }
-
   const componentRegistry = strapi.get('components');
-  const admitted: string[] = [];
+  const customUids = [...componentRegistry.keys()].filter((uid) => uid.startsWith('custom.'));
 
-  for (const uid of componentRegistry.keys()) {
-    if (uid.startsWith('custom.') && !bodyAttr.components.includes(uid)) {
-      bodyAttr.components.push(uid);
-      admitted.push(uid);
+  for (const { uid, attribute } of CUSTOM_DZ_TARGETS) {
+    const contentType = strapi.get('content-types').get(uid);
+
+    // Invariant: the engine ships both content-types, so they MUST be registered
+    // by the time this register hook fires. If one isn't, custom.* admission
+    // cannot happen and the engine would boot half-broken (blocks silently absent
+    // from the DZ → incomplete types → unknown components). Fail loud, abort boot.
+    if (!contentType) {
+      throw new Error(
+        `[press-cms] invariant violated: '${uid}' is absent from the content-types ` +
+          'registry at register time — custom.* blocks cannot be admitted, aborting boot. ' +
+          'Likely an engine content-type load failure or a Strapi version mismatch.',
+      );
     }
-  }
 
-  if (admitted.length > 0) {
-    strapi.log.info(`[press-cms] admitted custom blocks into page Dynamic Zone: ${admitted.join(', ')}`);
-  } else {
-    strapi.log.debug('[press-cms] no custom.* components found to admit');
+    const dzAttr = (contentType.attributes as Record<string, { type: string; components?: string[] }>)?.[attribute];
+
+    if (!dzAttr || dzAttr.type !== 'dynamiczone' || !Array.isArray(dzAttr.components)) {
+      throw new Error(
+        `[press-cms] invariant violated: '${uid}' has no '${attribute}' dynamic zone ` +
+          '(or it has an unexpected shape) at register time. The engine Dynamic Zones are the ' +
+          'extension point for custom.* blocks — aborting boot. Likely a changed schema or a ' +
+          'Strapi version mismatch.',
+      );
+    }
+
+    const admitted: string[] = [];
+    for (const customUid of customUids) {
+      if (!dzAttr.components.includes(customUid)) {
+        dzAttr.components.push(customUid);
+        admitted.push(customUid);
+      }
+    }
+
+    if (admitted.length > 0) {
+      strapi.log.info(`[press-cms] admitted custom blocks into ${uid}#${attribute}: ${admitted.join(', ')}`);
+    } else {
+      strapi.log.debug(`[press-cms] no custom.* components to admit into ${uid}#${attribute}`);
+    }
   }
 };

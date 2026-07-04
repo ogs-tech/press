@@ -30,12 +30,23 @@ const SCALARS: Record<string, string> = {
   boolean: 'boolean', json: 'unknown',
 };
 
+const PAGE_UID = 'plugin::press-cms.page';
+const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
+
 /** Maps a single Strapi attribute to its TS type expression. */
 export const tsTypeForAttribute = (attr: Attr): string => {
   if (attr.type === 'enumeration' && Array.isArray(attr.enum)) {
     return attr.enum.length
       ? attr.enum.map((v) => `'${v}'`).join(' | ')
       : 'never';
+  }
+  if (attr.type === 'component' && typeof attr.component === 'string') {
+    // A nested component reference (Spec §2). NOTE: Strapi sends no __component
+    // discriminator for nested components; when the referenced component is also
+    // a DZ member (so its interface carries __component), the nested value simply
+    // omits that field on the wire — never discriminate a nested value on it.
+    const ref = pascalForUid(attr.component);
+    return attr.repeatable ? `${ref}[]` : ref;
   }
   if (attr.type === 'media') {
     return attr.multiple ? 'PressMedia[]' : 'PressMedia';
@@ -48,6 +59,9 @@ const emitInterfaceBody = (attributes: Record<string, Attr>, indent = '  '): str
     .map(([name, attr]) => {
       // DZ inside a component is out of scope for Spec 1; skip if present.
       if (attr.type === 'dynamiczone') return null;
+      // Relations are out of generator scope (Spec §2): the nav-item `page`
+      // relation is resolved at runtime by the web side, never consumed raw.
+      if (attr.type === 'relation') return null;
       const optional = attr.required ? '' : '?';
       return `${indent}${name}${optional}: ${tsTypeForAttribute(attr)};`;
     })
@@ -72,13 +86,23 @@ export const generateTypes = (schema: PressSchema): string => {
     '',
   ];
 
+  const page = schema.contentTypes[PAGE_UID] ?? Object.values(schema.contentTypes)[0];
+  const siteSetting = schema.contentTypes[SITE_SETTING_UID];
+
+  const bodyUids = page.attributes.body?.components ?? [];
+  const headerUids = siteSetting?.attributes.header?.components ?? [];
+  const footerUids = siteSetting?.attributes.footer?.components ?? [];
+  // Strapi sends the __component discriminator ONLY for dynamic-zone entries; a
+  // component that appears solely nested inside another must not claim one (Spec §2).
+  const dzMembers = new Set([...bodyUids, ...headerUids, ...footerUids]);
+
   const componentTypeNames: Record<string, string> = {};
   for (const [uid, comp] of Object.entries(schema.components)) {
     const name = pascalForUid(uid);
     componentTypeNames[uid] = name;
     blocks.push(
       `export interface ${name} {`,
-      `  __component: '${uid}';`,
+      ...(dzMembers.has(uid) ? [`  __component: '${uid}';`] : []),
       `  id: number;`,
       emitInterfaceBody(comp.attributes),
       `}`,
@@ -86,15 +110,17 @@ export const generateTypes = (schema: PressSchema): string => {
     );
   }
 
-  // The page content-type (single one in Spec 1).
-  const page = Object.values(schema.contentTypes)[0];
-  const bodyAttr = page.attributes.body;
-  const union = (bodyAttr?.components ?? [])
-    .map((uid) => componentTypeNames[uid])
-    .filter(Boolean)
-    .join(' | ');
+  const union = (uids: string[]): string =>
+    uids.map((uid) => componentTypeNames[uid]).filter(Boolean).join(' | ');
 
-  blocks.push(`export type PageBody = (${union || 'never'})[];`, '');
+  blocks.push(`export type PageBody = (${union(bodyUids) || 'never'})[];`, '');
+
+  // Chrome DZ unions (Spec §2). Emitted only when the cms serves the site-setting
+  // entry — an older press-cms without chrome must not break type-sync.
+  if (siteSetting) {
+    blocks.push(`export type HeaderBlocks = (${union(headerUids) || 'never'})[];`, '');
+    blocks.push(`export type FooterBlocks = (${union(footerUids) || 'never'})[];`, '');
+  }
 
   const pageFields = Object.entries(page.attributes)
     .map(([name, attr]) => {

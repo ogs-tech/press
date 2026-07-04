@@ -1,4 +1,10 @@
-import type { BuildTimeConfig, ResolvedPressConfig, SiteSettingsData } from './config/types';
+import type {
+  BuildTimeConfig,
+  ChromeBlock,
+  ResolvedNavLink,
+  ResolvedPressConfig,
+  SiteSettingsData,
+} from './config/types';
 import { DEFAULT_THEME } from './config/default-theme';
 
 // Same module-level pattern as get-page.ts: read once, default to local Strapi.
@@ -11,15 +17,20 @@ function mediaUrl(media: { url?: string } | null | undefined): string | undefine
   return url.startsWith('http') ? url : `${CMS_URL}${url}`;
 }
 
-type RawNavItem = NonNullable<SiteSettingsData['headerNav']>[number];
-type ResolvedNavLink = ResolvedPressConfig['nav']['header'][number];
+/** A raw `chrome.navbar` nav item as populated by the site-setting controller. */
+interface RawNavItem {
+  label?: string;
+  page?: { slug?: string } | null;
+  url?: string;
+  newTab?: boolean;
+}
 
 /**
- * Resolves a CMS nav item into a final link (site-settings spec §5.2).
- * Precedence: `page` wins over `url`. An internal page collapses to '/' when its
- * slug is the home slug (reusing the same routes.home anchor as the /home → /
- * redirect — CMS-independent). An item with neither page nor url is dropped
- * (returns null). The external flag is true only for http(s) URLs.
+ * Resolves a CMS nav item into a final link (Spec §3). Precedence: `page` wins
+ * over `url`. An internal page collapses to '/' when its slug is the home slug
+ * (reusing the same routes.home anchor as the /home → / redirect —
+ * CMS-independent). An item with neither page nor url is dropped (returns null).
+ * The external flag is true only for http(s) URLs.
  */
 function resolveNavItem(item: RawNavItem, homeSlug: string): ResolvedNavLink | null {
   const label = item.label ?? '';
@@ -35,6 +46,36 @@ function resolveNavItem(item: RawNavItem, homeSlug: string): ResolvedNavLink | n
 }
 
 /**
+ * Hydrates one chrome dynamic zone (Spec §3): `chrome.navbar` gains the resolved
+ * brand + links (page > url precedence, home slug → '/', external flag) and
+ * `chrome.footer` gains the brand for its copyright fallback — identity is never
+ * stored on a block (Spec §1). Every other block passes through untouched so
+ * BlockRenderer stays intentionally dumb.
+ */
+function hydrateChromeBlocks(
+  blocks: ChromeBlock[] | null | undefined,
+  brand: ResolvedPressConfig['brand'],
+  homeSlug: string,
+): ChromeBlock[] {
+  return (blocks ?? []).map((block) => {
+    if (block.__component === 'chrome.navbar') {
+      const items = (block.items as RawNavItem[] | null | undefined) ?? [];
+      return {
+        ...block,
+        brand: { name: brand.name, logo: brand.logo },
+        links: items
+          .map((item) => resolveNavItem(item, homeSlug))
+          .filter((link): link is ResolvedNavLink => link !== null),
+      };
+    }
+    if (block.__component === 'chrome.footer') {
+      return { ...block, brand: { name: brand.name } };
+    }
+    return block;
+  });
+}
+
+/**
  * Pure CMS-shape → ResolvedPressConfig (site-settings-cms spec §3.2). Same input
  * → same output, no I/O, no mutation — unit-testable without a server, safe in an
  * RSC. Identity/SEO come ONLY from the CMS: a present value is used as-is, a
@@ -42,7 +83,7 @@ function resolveNavItem(item: RawNavItem, homeSlug: string): ResolvedNavLink | n
  * field" unambiguously means empty (AC2/AC3). Theme colours/radii resolve over
  * DEFAULT_THEME per key — the engine's shipped base, never empty (AC4). Build-time
  * anchors (routes, theme.name, theme.fonts) come from `buildTime` (AC8). The
- * output is the exact shape buildMetadata/buildThemeStyle already accept.
+ * chrome DZs are hydrated here (chrome-blocks Spec §3) so the renderers stay dumb.
  */
 export function mapSiteSettings(
   buildTime: BuildTimeConfig,
@@ -50,12 +91,13 @@ export function mapSiteSettings(
 ): ResolvedPressConfig {
   const c = cms ?? {};
   const seo = c.seo ?? {};
+  const brand = {
+    name: c.name ?? '',
+    logo: mediaUrl(c.logo),
+    favicon: mediaUrl(c.favicon) ?? '',
+  };
   return {
-    brand: {
-      name: c.name ?? '',
-      logo: mediaUrl(c.logo),
-      favicon: mediaUrl(c.favicon) ?? '',
-    },
+    brand,
     site: {
       url: c.url ?? '',
       locale: c.locale ?? '',
@@ -75,10 +117,9 @@ export function mapSiteSettings(
       fonts: buildTime.theme.fonts,
       radius: { ...DEFAULT_THEME.radius, ...(c.themeRadius ?? {}) },
     },
-    nav: {
-      header: (c.headerNav ?? [])
-        .map((item) => resolveNavItem(item, buildTime.routes.home))
-        .filter((link): link is ResolvedNavLink => link !== null),
+    chrome: {
+      header: hydrateChromeBlocks(c.header, brand, buildTime.routes.home),
+      footer: hydrateChromeBlocks(c.footer, brand, buildTime.routes.home),
     },
   };
 }
