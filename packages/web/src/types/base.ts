@@ -103,6 +103,34 @@ export interface PressSpacer {
 }
 
 /**
+ * Engine section `section.hero` — engine-owned (mirrors cms section/hero.json).
+ * Hand-written here so the engine can type its own renderer; ALSO generated into
+ * the adopter's generated.ts by the type-sync loop (Spec §5.2).
+ */
+export interface SectionHero {
+  __component: 'section.hero';
+  id: number;
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  image?: PressMedia;
+  ctaLabel?: string;
+  ctaHref?: string;
+  align?: 'left' | 'center';
+}
+
+/** Engine section `section.cta` — engine-owned (mirrors cms section/cta.json). */
+export interface SectionCta {
+  __component: 'section.cta';
+  id: number;
+  title: string;
+  subtitle?: string;
+  buttonLabel: string;
+  buttonHref: string;
+  align?: 'left' | 'center';
+}
+
+/**
  * Structural shape every dynamic-zone entry satisfies. The renderer only reads
  * `__component`/`id` and spreads the rest, so the generic envelope is enough for
  * engine code; the adopter's generated types refine this per block.

@@ -11,6 +11,8 @@ import seoSchema from '../components/seo.json';
 import themeColorsSchema from '../components/theme-colors.json';
 import themeRadiusSchema from '../components/theme-radius.json';
 import navItemSchema from '../components/nav-item.json';
+import heroSectionSchema from '../components/section/hero.json';
+import ctaSectionSchema from '../components/section/cta.json';
 import { toGlobalId } from './global-id';
 
 /**
@@ -41,6 +43,10 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
   { category: 'press', name: 'button', schema: buttonSchema as Record<string, unknown> },
   { category: 'press', name: 'separator', schema: separatorSchema as Record<string, unknown> },
   { category: 'press', name: 'spacer', schema: spacerSchema as Record<string, unknown> },
+  // Composite sections: engine-owned, flat (scalar/media/enum) building blocks.
+  // Separate category from press.* keeps the atomic palette intact (Spec §5.1).
+  { category: 'section', name: 'hero', schema: heroSectionSchema as Record<string, unknown> },
+  { category: 'section', name: 'cta', schema: ctaSectionSchema as Record<string, unknown> },
   // Configuration components used by the Site Settings single type (not page blocks).
   { category: 'press', name: 'seo', schema: seoSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },

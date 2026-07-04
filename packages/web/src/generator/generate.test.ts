@@ -113,3 +113,70 @@ describe('generateTypes', () => {
     expect(out.startsWith('// AUTO-GENERATED')).toBe(true);
   });
 });
+
+describe('generateTypes with section.* blocks', () => {
+  // v1 sections are FLAT (scalar/media/enum), so the existing generator emits them
+  // with zero change — this test pins that contract (Spec §7).
+  const schema = {
+    contentTypes: {
+      'plugin::press-cms.page': {
+        uid: 'plugin::press-cms.page',
+        info: { singularName: 'page' },
+        attributes: {
+          title: { type: 'string', required: true },
+          body: { type: 'dynamiczone', components: ['section.hero', 'section.cta'] },
+        },
+      },
+    },
+    components: {
+      'section.hero': {
+        uid: 'section.hero',
+        attributes: {
+          eyebrow: { type: 'string' },
+          title: { type: 'string', required: true },
+          subtitle: { type: 'text' },
+          image: { type: 'media', multiple: false, allowedTypes: ['images'] },
+          ctaLabel: { type: 'string' },
+          ctaHref: { type: 'string' },
+          align: { type: 'enumeration', enum: ['left', 'center'], default: 'left' },
+        },
+      },
+      'section.cta': {
+        uid: 'section.cta',
+        attributes: {
+          title: { type: 'string', required: true },
+          subtitle: { type: 'text' },
+          buttonLabel: { type: 'string', required: true },
+          buttonHref: { type: 'string', required: true },
+          align: { type: 'enumeration', enum: ['left', 'center'], default: 'left' },
+        },
+      },
+    },
+  };
+
+  const out = generateTypes(schema);
+
+  it('derives PascalCase interface names from the section uids', () => {
+    expect(pascalForUid('section.hero')).toBe('SectionHero');
+    expect(pascalForUid('section.cta')).toBe('SectionCta');
+  });
+
+  it('emits a SectionHero interface with correctly optional/required flat fields', () => {
+    expect(out).toContain("__component: 'section.hero'");
+    expect(out).toContain('title: string;');                 // required → no ?
+    expect(out).toContain('eyebrow?: string;');              // optional
+    expect(out).toContain('subtitle?: string;');             // text → string, optional
+    expect(out).toContain('image?: PressMedia;');            // single media, optional
+    expect(out).toContain("align?: 'left' | 'center';");     // enum union, optional (default ≠ required)
+  });
+
+  it('emits a SectionCta interface with required button fields', () => {
+    expect(out).toContain("__component: 'section.cta'");
+    expect(out).toContain('buttonLabel: string;');
+    expect(out).toContain('buttonHref: string;');
+  });
+
+  it('includes both sections in the PageBody union', () => {
+    expect(out).toContain('export type PageBody = (SectionHero | SectionCta)[];');
+  });
+});

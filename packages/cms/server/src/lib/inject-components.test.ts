@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { admitCustomBlocks, injectComponents } from './inject-components';
+import pageSchema from '../content-types/page/schema.json';
 
 const PAGE_UID = 'plugin::press-cms.page';
 
@@ -116,5 +117,36 @@ describe('injectComponents', () => {
     expect(components.get('press.nav-item')?.modelType).toBe('component'); // injected
     expect(page.attributes.body.components).toContain('custom.callout');   // custom admitted
     expect(page.attributes.body.components).not.toContain('press.nav-item'); // never admitted
+  });
+
+  it('injects section.hero and section.cta under category "section" with a derived globalId', () => {
+    // Sections mirror the press.* injection mechanism but under a SEPARATE category
+    // so the atomic press.* boundary stays intact (Spec §5.1).
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+
+    expect(components.get('section.hero')?.modelType).toBe('component');
+    expect(components.get('section.hero')?.category).toBe('section');
+    expect(components.get('section.hero')?.globalId).toBe('ComponentSectionHero');
+
+    expect(components.get('section.cta')?.modelType).toBe('component');
+    expect(components.get('section.cta')?.category).toBe('section');
+    expect(components.get('section.cta')?.globalId).toBe('ComponentSectionCta');
+
+    // Sections are NOT press.hero — the removed atom stays removed (Spec §3).
+    expect(components.get('press.hero')).toBeUndefined();
+  });
+});
+
+describe('page body dynamic zone (static section admission)', () => {
+  it('lists section.hero and section.cta alongside the press.* atoms', () => {
+    // Sections are engine-owned and deterministic, so they are admitted STATICALLY
+    // in the page schema (not via the dynamic custom.* push) — Spec §5.1.
+    const components = pageSchema.attributes.body.components as string[];
+    expect(components).toContain('section.hero');
+    expect(components).toContain('section.cta');
+    // Additive: the press.* atoms remain admitted, unchanged (Spec §2).
+    expect(components).toContain('press.paragraph');
+    expect(components).toContain('press.image');
   });
 });

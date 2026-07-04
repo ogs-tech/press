@@ -85,9 +85,18 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
   `src/components/custom/` is auto-admitted into the page `body` Dynamic Zone
   (`admitCustomBlocks`). The engine never names individual adopter blocks — only the
   `custom` category is the stable contract.
-- On the web side, `BlockRenderer` merges `referenceBlocks` (`press.*`) with the
-  adopter's **explicit** `customBlocks` map (no global registry). It picks by
-  `__component`; an unknown component is skipped with a dev-only warning, never a crash.
+- **Engine sections (`section.*`):** a second engine-owned palette of *composite*
+  sections (`section.hero`, `section.cta`) — flat (scalar/media/enum) blocks
+  injected under the `section` category and admitted into the page `body` Dynamic
+  Zone **statically** (listed in `content-types/page/schema.json`), not via the
+  dynamic `custom.*` push. They keep the `press.*` atoms intact and flow through the
+  unchanged type-sync pipeline. `press.hero` stays removed — sections are never `press.*`.
+- On the web side, `BlockRenderer` merges three maps by `__component`:
+  `{ ...referenceBlocks, ...sectionBlocks, ...components }` — engine `press.*` atoms,
+  engine `section.*` sections (`src/section-blocks.ts`), then the adopter's
+  **explicit** `customBlocks` map (no global registry). Adopter blocks win last, so
+  any `section.*` is overridable via `components={{ 'section.hero': MyHero }}`. An
+  unknown component is skipped with a dev-only warning, never a crash.
 
 ### Build-time anchors vs. runtime Site Settings
 
