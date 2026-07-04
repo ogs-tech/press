@@ -1,6 +1,7 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
-import { buildMetadata, buildThemeStyle, getSiteConfig, SiteNav } from '@ogs-tech/press-web';
+import { BlockRenderer, buildMetadata, buildThemeStyle, getSiteConfig } from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
+import { customBlocks } from '../press.blocks';
 import { buildTime } from '../press-config';
 
 // Default-theme fonts, loaded + optimized by next/font at build time. Each exposes
@@ -29,18 +30,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <style dangerouslySetInnerHTML={{ __html: buildThemeStyle(site) }} />
       </head>
       <body>
+        {/* Block-composed chrome (Spec §3): the same pipeline as the page body,
+            hydrated by mapSiteSettings. An unreachable CMS → empty zones →
+            header/footer render nothing (unbranded over synthetic, Spec §4). */}
         <header>
-          <a href="/">
-            {site.brand.logo ? <img src={site.brand.logo} alt="" /> : null}
-            <span>{site.brand.name}</span>
-          </a>
-          <SiteNav links={site.nav.header} />
+          <BlockRenderer blocks={site.chrome.header} components={customBlocks} />
         </header>
         <main>{children}</main>
         <footer>
-          <small>
-            {site.brand.name} · {new Date().getFullYear()}
-          </small>
+          <BlockRenderer blocks={site.chrome.footer} components={customBlocks} />
         </footer>
       </body>
     </html>
