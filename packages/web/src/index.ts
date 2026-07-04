@@ -14,7 +14,6 @@ export { Spacer } from './blocks/spacer';
 export { Hero } from './sections/hero';
 export { Cta } from './sections/cta';
 export { sectionBlocks } from './section-blocks';
-export { SiteNav } from './nav';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildMetadata } from './config/build-metadata';

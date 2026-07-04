@@ -1,20 +1,20 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import type { ResolvedNavLink } from './config/types';
+import type { ResolvedNavLink } from '../config/types';
 
 /**
- * SiteNav — the editable header navigation (site chrome, Plane B). A client
- * component only because it reads usePathname() to mark the active link; the data
- * is already fully resolved by mapSiteSettings, so this renders plain <a> links
- * (matching the brand link in the host header). Empty list → renders nothing, so
- * a missing/unreachable CMS leaves the header showing just the logo (AC5).
+ * NavLinks — the navbar's internal link list (Spec §3: the old SiteNav becomes
+ * the internal nav of the navbar renderer). A client component ONLY because it
+ * reads usePathname() to mark the active link; the data is already fully
+ * resolved by mapSiteSettings, so this renders plain <a> links. Empty list →
+ * renders nothing.
  *
  * - Active link: exact href === pathname → aria-current="page" (also the CSS hook).
  * - newTab (editor opt-in): target="_blank" + rel="noopener noreferrer".
  * - external (http(s) URL): trailing ↗ affordance, independent of newTab.
  */
-export function SiteNav({ links }: { links: ResolvedNavLink[] }) {
+export function NavLinks({ links }: { links: ResolvedNavLink[] }) {
   const pathname = usePathname();
   if (links.length === 0) return null;
   return (
