@@ -65,10 +65,11 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
 
 ### The contract + type-sync loop
 
-1. cms serializes its **runtime view** — the `page` content-type plus exactly the
-   components admitted into its `body` Dynamic Zone — to `GET /api/press/schema`
-   (`cms/.../lib/serialize-schema.ts`). Reading the live registry means the schema can
-   never disagree with what Strapi actually serves.
+1. cms serializes its **runtime view** — the `page` and `site-setting` content-types
+   plus exactly the components admitted into the three engine Dynamic Zones (page
+   `body`, site-setting `header`/`footer`), following nested component references —
+   to `GET /api/press/schema` (`cms/.../lib/serialize-schema.ts`). Reading the live
+   registry means the schema can never disagree with what Strapi actually serves.
 2. web's generator (`web/src/generator/generate.ts`) turns that JSON into
    framework-agnostic TS, written to the adopter's `shared/types/generated.ts`.
 3. The shape — `PressSchema` — is single-sourced in `@ogs-tech/press-shared` and imported
