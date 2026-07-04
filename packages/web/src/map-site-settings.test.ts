@@ -122,6 +122,11 @@ describe('mapSiteSettings — chrome hydration (Spec §3)', () => {
     expect(linksOf(r)).toEqual([{ label: 'Docs', href: 'https://docs.test', external: true, newTab: true }]);
   });
 
+  it('treats a non-http url as internal-style (external: false)', () => {
+    const r = headerWith([{ label: 'Contact', url: '/contact' }]);
+    expect(linksOf(r)).toEqual([{ label: 'Contact', href: '/contact', external: false, newTab: false }]);
+  });
+
   it('lets page win over url when both are set (precedence)', () => {
     const r = headerWith([{ label: 'Both', page: { slug: 'about' }, url: 'https://ignored.test' }]);
     expect(linksOf(r)[0]).toEqual({ label: 'Both', href: '/about', external: false, newTab: false });
