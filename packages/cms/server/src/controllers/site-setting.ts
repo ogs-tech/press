@@ -26,6 +26,16 @@ const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
       seo: { populate: { image: true } },
       themeColors: true,
       themeRadius: true,
+      // Nested category components + the privacy page's slug sit one level below
+      // what a shallow populate reaches — same reason as seo.image above.
+      cookieConsent: {
+        populate: {
+          necessary: true,
+          analytics: true,
+          marketing: true,
+          privacyPage: { fields: ['slug'] },
+        },
+      },
       header: buildChromeDzPopulate(header),
       footer: buildChromeDzPopulate(footer),
     };

@@ -13,4 +13,8 @@ describe('buildUrn', () => {
   it('keeps equal ids under different entities distinct (the entity segment qualifies the id)', () => {
     expect(buildUrn('page', '1')).not.toBe(buildUrn('site-setting', '1'));
   });
+
+  it('formats the synthetic plugin identity (cookie-consent Spec §1)', () => {
+    expect(buildUrn('plugin', 'cookie-consent')).toBe('urn:plugin:cookie-consent');
+  });
 });

@@ -12,7 +12,7 @@
  * aggregate earns a stored urn (media, blocks with persisted identity).
  * Mirrors ThemeName's "additive, not breaking" precedent (config/types.ts).
  */
-export type Entity = 'page' | 'site-setting';
+export type Entity = 'page' | 'site-setting' | 'plugin';
 
 /**
  * A `urn:{entity}:{id}` identity string. Generic over any string — NOT bounded

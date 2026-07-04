@@ -1,5 +1,12 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
-import { BlockRenderer, buildMetadata, buildThemeStyle, getSiteConfig } from '@ogs-tech/press-web';
+import {
+  BlockRenderer,
+  buildConsentBootstrapScript,
+  buildMetadata,
+  buildThemeStyle,
+  CookieConsentBanner,
+  getSiteConfig,
+} from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
 import { customBlocks } from '../press.blocks';
 import { buildTime } from '../press-config';
@@ -28,6 +35,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         {/* The single injection point for token values (CMS-sourced or DEFAULT_THEME). */}
         <style dangerouslySetInnerHTML={{ __html: buildThemeStyle(site) }} />
+        {/* Pre-paint consent check (cookie-consent Spec §5): stamps
+            <html data-press-consent="decided"> so theme.css hides the banner
+            before first paint for a visitor who already decided. The visitor's
+            decision stays client-only — never read via cookies() in the RSC
+            tree, which would force the whole route dynamic. */}
+        <script dangerouslySetInnerHTML={{ __html: buildConsentBootstrapScript() }} />
       </head>
       <body>
         {/* Block-composed chrome (Spec §3): the same pipeline as the page body,
@@ -40,6 +53,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer>
           <BlockRenderer blocks={site.chrome.footer} components={customBlocks} />
         </footer>
+        {/* Cookie-consent plugin mount (cookie-consent Spec §1/§5): config is
+            CMS-sourced and fails OPEN (banner shows with engine defaults when
+            the CMS is unreachable — a consent gate must not vanish on a hiccup). */}
+        <CookieConsentBanner key={site.plugins.cookieConsent.urn} plugin={site.plugins.cookieConsent} />
       </body>
     </html>
   );

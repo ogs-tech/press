@@ -183,6 +183,7 @@ describe('injectComponents', () => {
       'press.paragraph', 'press.heading', 'press.list', 'press.quote',
       'press.image', 'press.button', 'press.separator', 'press.spacer',
       'press.seo', 'press.theme-colors', 'press.theme-radius', 'press.nav-item',
+      'press.cookie-category', 'press.cookie-consent',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -281,6 +282,49 @@ describe('page body dynamic zone (static section admission)', () => {
     // Additive: the press.* atoms remain admitted, unchanged (Spec §2).
     expect(components).toContain('press.paragraph');
     expect(components).toContain('press.image');
+  });
+});
+
+describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () => {
+  it('attaches press.cookie-consent as a config component, never a DZ member', () => {
+    expect((siteSettingSchema.attributes as any).cookieConsent).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'press.cookie-consent',
+    });
+    // Config components stay out of every Dynamic Zone (the press.seo rule).
+    for (const zone of ['header', 'footer'] as const) {
+      const components = (siteSettingSchema.attributes as any)[zone].components as string[];
+      expect(components).not.toContain('press.cookie-consent');
+      expect(components).not.toContain('press.cookie-category');
+    }
+    expect(pageSchema.attributes.body.components).not.toContain('press.cookie-consent');
+  });
+
+  it('nests the three engine-fixed category components (closed key set, Spec §2)', () => {
+    const { strapi, components } = (() => {
+      const map = new Map<string, any>();
+      return {
+        strapi: {
+          get: (key: string) => (key === 'components' ? map : undefined),
+          log: { warn() {}, info() {}, debug() {}, error() {} },
+        } as any,
+        components: map,
+      };
+    })();
+    injectComponents({ strapi });
+    expect(components.get('press.cookie-consent')?.attributes).toMatchObject({
+      enabled: { type: 'boolean', default: true },
+      necessary: { type: 'component', repeatable: false, component: 'press.cookie-category' },
+      analytics: { type: 'component', repeatable: false, component: 'press.cookie-category' },
+      marketing: { type: 'component', repeatable: false, component: 'press.cookie-category' },
+      privacyPage: { type: 'relation', relation: 'oneToOne', target: 'plugin::press-cms.page' },
+    });
+    expect(components.get('press.cookie-category')?.attributes).toMatchObject({
+      enabled: { type: 'boolean', default: true },
+      label: { type: 'string' },
+      description: { type: 'text' },
+    });
   });
 });
 

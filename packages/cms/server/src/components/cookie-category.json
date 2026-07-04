@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_press_cookie_categories",
+  "info": {
+    "displayName": "Cookie Category",
+    "icon": "check",
+    "description": "One consent category offered by the cookie banner: an on/off switch plus its visitor-facing copy"
+  },
+  "options": {},
+  "attributes": {
+    "enabled": { "type": "boolean", "default": true },
+    "label": { "type": "string" },
+    "description": { "type": "text" }
+  },
+  "config": {
+    "metadatas": {
+      "enabled": { "edit": { "label": "Offered", "description": "Whether this category appears in the banner's preferences panel." } },
+      "label": { "edit": { "label": "Label", "description": "Leave empty to use the engine default." } },
+      "description": { "edit": { "label": "Description", "description": "Leave empty to use the engine default." } }
+    }
+  }
+}

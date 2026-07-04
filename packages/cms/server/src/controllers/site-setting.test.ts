@@ -75,4 +75,18 @@ describe('site-setting controller', () => {
     // never the shallow wildcard that caused the 404
     expect(populate).not.toBe('*');
   });
+
+  it('deep-populates cookieConsent (nested categories + privacy page slug) — cookie-consent Spec §1', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.cookieConsent).toEqual({
+      populate: {
+        necessary: true,
+        analytics: true,
+        marketing: true,
+        privacyPage: { fields: ['slug'] },
+      },
+    });
+  });
 });

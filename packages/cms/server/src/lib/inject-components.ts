@@ -11,6 +11,8 @@ import seoSchema from '../components/seo.json';
 import themeColorsSchema from '../components/theme-colors.json';
 import themeRadiusSchema from '../components/theme-radius.json';
 import navItemSchema from '../components/nav-item.json';
+import cookieCategorySchema from '../components/cookie-category.json';
+import cookieConsentSchema from '../components/cookie-consent.json';
 import heroSectionSchema from '../components/section/hero.json';
 import ctaSectionSchema from '../components/section/cta.json';
 import chromeNavbarSchema from '../components/chrome/navbar.json';
@@ -59,6 +61,10 @@ const ENGINE_COMPONENTS: Array<{ category: string; name: string; schema: Record<
   { category: 'press', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },
   { category: 'press', name: 'theme-radius', schema: themeRadiusSchema as Record<string, unknown> },
   { category: 'press', name: 'nav-item', schema: navItemSchema as Record<string, unknown> },
+  // Cookie-consent plugin config (cookie-consent Spec §1): the banner's editable
+  // surface. Config components like seo — injected, never admitted into a DZ.
+  { category: 'press', name: 'cookie-category', schema: cookieCategorySchema as Record<string, unknown> },
+  { category: 'press', name: 'cookie-consent', schema: cookieConsentSchema as Record<string, unknown> },
 ];
 
 /**
