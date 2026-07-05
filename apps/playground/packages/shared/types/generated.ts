@@ -10,61 +10,61 @@ export interface PressMedia {
   mime?: string;
 }
 
-export interface PressParagraph {
-  __component: 'press.paragraph';
+export interface PresetAtomParagraph {
+  __component: 'preset-atom.paragraph';
   id: number;
   content: unknown;
 }
 
-export interface PressHeading {
-  __component: 'press.heading';
+export interface PresetAtomHeading {
+  __component: 'preset-atom.heading';
   id: number;
   text: string;
   level: '1' | '2' | '3' | '4' | '5' | '6';
 }
 
-export interface PressList {
-  __component: 'press.list';
+export interface PresetAtomList {
+  __component: 'preset-atom.list';
   id: number;
   content: unknown;
 }
 
-export interface PressQuote {
-  __component: 'press.quote';
+export interface PresetAtomQuote {
+  __component: 'preset-atom.quote';
   id: number;
   content: unknown;
   citation?: string;
 }
 
-export interface PressImage {
-  __component: 'press.image';
+export interface PresetAtomImage {
+  __component: 'preset-atom.image';
   id: number;
   image: PressMedia;
   caption?: string;
 }
 
-export interface PressButton {
-  __component: 'press.button';
+export interface PresetAtomButton {
+  __component: 'preset-atom.button';
   id: number;
   label: string;
   href: string;
   variant: 'primary' | 'secondary';
 }
 
-export interface PressSeparator {
-  __component: 'press.separator';
+export interface PresetAtomSeparator {
+  __component: 'preset-atom.separator';
   id: number;
   variant: 'line' | 'dots';
 }
 
-export interface PressSpacer {
-  __component: 'press.spacer';
+export interface PresetAtomSpacer {
+  __component: 'preset-atom.spacer';
   id: number;
   size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export interface SectionHero {
-  __component: 'section.hero';
+export interface PresetOrganismHero {
+  __component: 'preset-organism.hero';
   id: number;
   eyebrow?: string;
   title: string;
@@ -75,8 +75,8 @@ export interface SectionHero {
   align?: 'left' | 'center';
 }
 
-export interface SectionCta {
-  __component: 'section.cta';
+export interface PresetOrganismCta {
+  __component: 'preset-organism.cta';
   id: number;
   title: string;
   subtitle?: string;
@@ -85,38 +85,38 @@ export interface SectionCta {
   align?: 'left' | 'center';
 }
 
-export interface CustomCallout {
-  __component: 'custom.callout';
+export interface CustomOrganismCallout {
+  __component: 'custom-organism.callout';
   id: number;
   message: string;
   variant?: 'info' | 'warning' | 'success';
 }
 
-export interface ChromeNavbar {
-  __component: 'chrome.navbar';
+export interface PresetOrganismNavbar {
+  __component: 'preset-organism.navbar';
   id: number;
-  items?: PressNavItem[];
-  cta?: PressButton;
+  items?: PresetMoleculeNavItem[];
+  cta?: PresetAtomButton;
 }
 
-export interface ChromeFooter {
-  __component: 'chrome.footer';
+export interface PresetOrganismFooter {
+  __component: 'preset-organism.footer';
   id: number;
   text?: string;
 }
 
-export interface PressNavItem {
+export interface PresetMoleculeNavItem {
   id: number;
   label: string;
   url?: string;
   newTab?: boolean;
 }
 
-export type PageBody = (PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | SectionHero | SectionCta | CustomCallout)[];
+export type PageBody = (PresetAtomParagraph | PresetAtomHeading | PresetAtomList | PresetAtomQuote | PresetAtomImage | PresetAtomButton | PresetAtomSeparator | PresetAtomSpacer | PresetOrganismHero | PresetOrganismCta | CustomOrganismCallout)[];
 
-export type HeaderBlocks = (ChromeNavbar | ChromeFooter | PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | SectionHero | SectionCta | CustomCallout)[];
+export type HeaderBlocks = (PresetOrganismNavbar | PresetOrganismFooter | PresetAtomParagraph | PresetAtomHeading | PresetAtomList | PresetAtomQuote | PresetAtomImage | PresetAtomButton | PresetAtomSeparator | PresetAtomSpacer | CustomOrganismCallout)[];
 
-export type FooterBlocks = (ChromeNavbar | ChromeFooter | PressParagraph | PressHeading | PressList | PressQuote | PressImage | PressButton | PressSeparator | PressSpacer | SectionHero | SectionCta | CustomCallout)[];
+export type FooterBlocks = (PresetOrganismNavbar | PresetOrganismFooter | PresetAtomParagraph | PresetAtomHeading | PresetAtomList | PresetAtomQuote | PresetAtomImage | PresetAtomButton | PresetAtomSeparator | PresetAtomSpacer | CustomOrganismCallout)[];
 
 export interface Page {
   id: number;

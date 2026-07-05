@@ -18,7 +18,7 @@ const pascalSegment = (s: string): string =>
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join('');
 
-/** `press.paragraph` → `PressParagraph`, `custom.call-to-action` → `CustomCallToAction`. */
+/** `preset-atom.paragraph` → `PresetAtomParagraph`, `custom-organism.call-to-action` → `CustomOrganismCallToAction`. */
 export const pascalForUid = (uid: string): string =>
   uid.split('.').map(pascalSegment).join('');
 

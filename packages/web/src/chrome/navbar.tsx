@@ -2,7 +2,7 @@ import type { ResolvedChromeNavbar } from '../config/types';
 import { NavLinks } from './nav-links';
 
 /**
- * Chrome block `chrome.navbar` (Spec §1): brand + nav links + optional CTA in
+ * Chrome organism `preset-organism.navbar` (Spec §1): brand + nav links + optional CTA in
  * one engine-owned bar — the internal layout is renderer-owned so editors cannot
  * break the chrome (Spec §Decisions 6). Receives HYDRATED props (Spec §3):
  * mapSiteSettings resolved the links and injected the brand from Site Settings
@@ -13,7 +13,7 @@ import { NavLinks } from './nav-links';
 export function Navbar({ brand, links, cta }: ResolvedChromeNavbar) {
   const hasCta = Boolean(cta?.label && cta?.href);
   return (
-    <div data-block="chrome.navbar">
+    <div data-block="preset-organism.navbar">
       <a data-navbar="brand" href="/">
         {brand?.logo ? <img src={brand.logo} alt="" /> : null}
         <span>{brand?.name}</span>

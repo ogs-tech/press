@@ -1,13 +1,13 @@
-import type { PressButton } from '../types/base';
+import type { PresetAtomButton } from '../types/base';
 
 /**
- * Reference block `press.button` — a call-to-action link styled as a button. The
+ * Atom `preset-atom.button` — a call-to-action link styled as a button. The
  * `variant` drives theming via a `data-variant` hook in theme.css (primary fills
  * with the brand colour, secondary is an outline). Plain <a>, no JS.
  */
-export function Button({ label, href, variant }: PressButton) {
+export function Button({ label, href, variant }: PresetAtomButton) {
   return (
-    <div data-block="press.button">
+    <div data-block="preset-atom.button">
       <a href={href} data-variant={variant ?? 'primary'}>
         {label}
       </a>

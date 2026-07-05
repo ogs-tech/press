@@ -60,7 +60,7 @@ describe('seedSiteSetting — chrome composition (Spec §4)', () => {
   });
 
   it('never overwrites a composed DZ — only the empty sibling is seeded', async () => {
-    const composed = [{ __component: 'chrome.navbar', id: 7, items: [{ label: 'Docs' }] }];
+    const composed = [{ __component: 'preset-organism.navbar', id: 7, items: [{ label: 'Docs' }] }];
     const { strapi, updates } = fakeStrapi({ documentId: 'doc-1', header: composed, footer: [] });
     await seedSiteSetting(strapi);
     expect(updates).toEqual([{ documentId: 'doc-1', data: { footer: DEFAULT_CHROME.footer } }]);

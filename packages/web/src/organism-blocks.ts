@@ -1,14 +1,20 @@
 import type { ComponentType } from 'react';
 import { Hero } from './sections/hero';
 import { Cta } from './sections/cta';
+import { Navbar } from './chrome/navbar';
+import { Footer } from './chrome/footer';
 
 /**
- * Engine-owned SECTION registry (Spec §5.2). Kept SEPARATE from referenceBlocks
- * so the documented invariant "referenceBlocks is press.* only" holds, and the
- * three-palette split (press.* atoms / section.* sections / custom.* adopter) is
- * mirrored in code. BlockRenderer merges this between reference and adopter maps.
+ * Engine-owned ORGANISM registry — composed sections for the page body
+ * (hero/cta) and the site chrome (navbar/footer), unified into one Atomic Design
+ * layer (the old `section.*` / `chrome.*` split). Kept SEPARATE from atomBlocks so the
+ * layer boundary is mirrored in code. BlockRenderer merges this after the atoms
+ * and before the adopter map — every organism is overridable via the explicit
+ * `components` prop (e.g. `{ 'preset-organism.navbar': MyNavbar }`).
  */
-export const sectionBlocks: Record<string, ComponentType<any>> = {
-  'section.hero': Hero,
-  'section.cta': Cta,
+export const organismBlocks: Record<string, ComponentType<any>> = {
+  'preset-organism.hero': Hero,
+  'preset-organism.cta': Cta,
+  'preset-organism.navbar': Navbar,
+  'preset-organism.footer': Footer,
 };

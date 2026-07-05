@@ -20,7 +20,7 @@ const CATEGORY_IDS: ConsentCategory[] = ['necessary', 'analytics', 'marketing'];
  * silently disappears on a CMS hiccup fails open on a legal obligation — the
  * worst failure mode under LGPD; blank brand text is an honest state, a
  * missing consent gate is not. Copy merges with `||` (not `??`) so an
- * editor-cleared '' also falls back — the chrome.footer `text || fallback`
+ * editor-cleared '' also falls back — the preset-organism.footer `text || fallback`
  * precedent for copy that renders broken when blank.
  *
  * The urn is SYNTHETIC (`urn:plugin:cookie-consent`) — identity is never

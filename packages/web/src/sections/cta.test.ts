@@ -3,12 +3,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Cta } from './cta';
 
 const render = (props: Record<string, unknown>): string =>
-  renderToStaticMarkup(Cta({ __component: 'section.cta', id: 1, ...(props as any) }));
+  renderToStaticMarkup(Cta({ __component: 'preset-organism.cta', id: 1, ...(props as any) }));
 
 describe('Cta renderer', () => {
-  it('wraps output in a data-block="section.cta" section', () => {
+  it('wraps output in a data-block="preset-organism.cta" section', () => {
     expect(render({ title: 'Start now', buttonLabel: 'Go', buttonHref: '/go' }))
-      .toContain('<section data-block="section.cta"');
+      .toContain('<section data-block="preset-organism.cta"');
   });
 
   it('renders the title as an h2', () => {

@@ -1,7 +1,7 @@
 export { BlockRenderer } from './block-renderer';
 export { getPage } from './get-page';
 export { getSiteConfig } from './get-site-config';
-export { referenceBlocks } from './reference-blocks';
+export { atomBlocks } from './atom-blocks';
 export { renderBlocks } from './blocks/blocks-content';
 export { Paragraph } from './blocks/paragraph';
 export { Heading } from './blocks/heading';
@@ -13,10 +13,9 @@ export { Separator } from './blocks/separator';
 export { Spacer } from './blocks/spacer';
 export { Hero } from './sections/hero';
 export { Cta } from './sections/cta';
-export { sectionBlocks } from './section-blocks';
 export { Navbar } from './chrome/navbar';
 export { Footer } from './chrome/footer';
-export { chromeBlocks } from './chrome-blocks';
+export { organismBlocks } from './organism-blocks';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildMetadata } from './config/build-metadata';
@@ -52,16 +51,16 @@ export type {
   BlocksContent,
   BlocksNode,
   BlocksText,
-  PressParagraph,
-  PressHeading,
-  PressList,
-  PressQuote,
-  PressImage,
-  PressButton,
-  PressSeparator,
-  PressSpacer,
-  SectionHero,
-  SectionCta,
+  PresetAtomParagraph,
+  PresetAtomHeading,
+  PresetAtomList,
+  PresetAtomQuote,
+  PresetAtomImage,
+  PresetAtomButton,
+  PresetAtomSeparator,
+  PresetAtomSpacer,
+  PresetOrganismHero,
+  PresetOrganismCta,
 } from './types/base';
 export type {
   PressConfig,

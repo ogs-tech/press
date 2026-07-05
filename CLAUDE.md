@@ -16,7 +16,7 @@ dogfoods it through `apps/playground`.
   TS source (no build); imported **type-only** by cms + web so it never enters a
   runtime artifact.
 - `packages/cms` — `@ogs-tech/press-cms`: a Strapi 5 **plugin**. Owns the `page` and
-  `site-setting` content-types, injects the `press.*` reference blocks, and serves
+  `site-setting` content-types, injects the `preset-*` component palette, and serves
   `GET /api/press/schema`. Compiled with `strapi-plugin build`.
 - `packages/web` — `@ogs-tech/press-web`: the Next.js host template, block renderer,
   runtime CLI (`press dev/build/upgrade`), config helpers, and CMS→TS type-sync. Ships
@@ -77,57 +77,75 @@ materialized `press-config.ts` / `press.blocks.ts` inside it).
    The ~2s poll is deliberately absent from the cms http log: the plugin drops that
    one line in development (`lib/quiet-schema-log.ts`) — don't "fix" the silence.
 
-### Reference blocks + the custom-block extension point
+### Component palette — Atomic Design (`{owner}-{layer}.{name}`)
 
-- The engine ships a Gutenberg-style `press.*` core palette (paragraph, heading, list,
-  quote, image, button, separator, spacer). Strapi only scans the *host app's*
-  `src/components`, so the plugin **injects** these into the components registry during
-  `register()` (`cms/.../lib/inject-components.ts`).
-- **Extension point (custom kinds):** the adopter's component *category folder*
-  declares placement (`admitCustomBlocks`): `src/components/custom/` is auto-admitted
-  into every engine Dynamic Zone (page `body` + site-setting `header`/`footer`),
-  `custom-section/` into the page `body` only, and `custom-chrome/` into
-  `header`/`footer` only — the `${category}.` uid-prefix match keeps the kinds
-  disjoint. The engine never names individual adopter blocks — only these `custom*`
-  categories are the stable contract. `custom-chrome.*` gets no brand/links
-  hydration (that is `chrome.navbar`-specific in `mapSiteSettings`).
-- **Engine sections (`section.*`):** a second engine-owned palette of *composite*
-  sections (`section.hero`, `section.cta`) — flat (scalar/media/enum) blocks
-  injected under the `section` category and admitted into the page `body` Dynamic
-  Zone **statically** (listed in `content-types/page/schema.json`), not via the
-  dynamic `custom.*` push. They keep the `press.*` atoms intact and flow through the
-  unchanged type-sync pipeline. `press.hero` stays removed — sections are never `press.*`.
-- **Engine chrome (`chrome.*`):** a third engine-owned palette for the site chrome
-  (`chrome.navbar`, `chrome.footer`) — injected like `press.*` but admitted **only**
-  into the `site-setting` `header`/`footer` Dynamic Zones (statically listed in its
-  schema), never the page `body`. `chrome.navbar` nests `press.nav-item[]` + an
-  optional `press.button` cta; brand (logo + name) is never stored on the block —
-  `mapSiteSettings` hydrates it from Site Settings identity, plus the resolved nav
-  links, before rendering. The serializer follows these nested component refs and
-  the generator emits nested-only components without `__component` and adds
-  `HeaderBlocks`/`FooterBlocks` unions. `bootstrap()` seeds `header: [navbar]`,
-  `footer: [footer]` exactly once (plugin-store flag) — an editor-emptied zone is
-  respected.
-- **Picker presentation (admin bundle):** every engine component JSON sets
-  `info.icon` (Strapi's fixed icon enum), and the plugin's `./strapi-admin` bundle
-  (`cms/admin/src/index.ts`) exists solely to `registerTrads` the category labels —
-  the picker resolves accordion titles via react-intl with the RAW category string
-  as message id (`press` → "Blocks", `chrome` → "Site chrome", en + pt). Labels are
-  presentation-only; uids never change for display. Adopter `src/admin/app.tsx`
+The palette is a unified Atomic Design model with ONE naming scheme: `{owner}-{layer}`
+is the Strapi category, `{name}` the component. Owner ∈ `preset` (engine) | `custom`
+(adopter); layer ∈ `atom | molecule | organism | config | layout | template`. The old
+ad-hoc `press.*`/`section.*`/`chrome.*` prefixes are gone — this model replaced them
+(a wire-breaking rename; fine pre-release). The word "press" survives only as the
+PRODUCT/plugin id (`plugin::press-cms.*`, `/api/press/schema`), never as a category.
+
+- **Preset (engine) — the category IS the atomic LAYER.** Injected into the components
+  registry during `register()` (`cms/.../lib/inject-components.ts`), since Strapi only
+  scans the *host app's* `src/components`. `PRESET_LAYERS` is the single source of truth
+  for the layer set; each entry registers under `preset-${layer}`:
+  - `preset-atom.*` — paragraph, heading, list, quote, image, button, separator, spacer.
+  - `preset-molecule.nav-item` — nested inside the navbar; never a DZ member.
+  - `preset-organism.*` — hero, cta (page body) **and** navbar, footer (site chrome):
+    one layer, unified from the old `section.*`/`chrome.*` palettes.
+  - `preset-config.*` — seo, theme-colors, theme-radius, cookie-consent, cookie-category:
+    non-block settings referenced by `component:` fields on Site Settings, never a DZ member.
+  - `preset-layout` + `preset-template` are RESERVED (labelled, no components yet):
+    layout ← the Grid System task; template ← page-set plugins.
+- **Preset PLACEMENT is declared statically, per content-type — NOT by the category.**
+  The category carries the layer; where a preset block may go is listed in each
+  `schema.json`: `preset-atom.*` in all three engine DZs (page `body`, site-setting
+  `header`/`footer`); `preset-organism.hero`/`.cta` in the page `body` only;
+  `preset-organism.navbar`/`.footer` in `header`/`footer` only. This is why organisms
+  span placements (a hero is body-only, a navbar is chrome-only) while sharing one
+  category — placement lives in the schema, not the uid. Because the engine names its
+  OWN blocks, per-block placement never violates the "never name individual blocks" rule
+  (that rule protects the *adopter* extension point below).
+- **Custom (adopter) — the category is the atomic LAYER too; placement is UNIVERSAL.**
+  The adopter drops a component under `src/components/custom-${layer}/` (e.g.
+  `custom-organism/`); Strapi derives the `custom-${layer}` category from the folder.
+  Every `custom-*` block (legacy bare `custom.*` still matches, for migration) is
+  admitted into EVERY engine DZ by `admitCustomBlocks` — the editor decides placement in
+  the picker. The engine NEVER names individual adopter blocks; the `custom*` category
+  prefix is the whole extension-point contract. (Deliberate asymmetry: the engine curates
+  its own blocks' placement tightly in `schema.json`; adopter blocks are unrestricted —
+  control differs, the layer axis is shared.)
+- **Navbar/footer hydration:** `preset-organism.navbar` nests `preset-molecule.nav-item[]`
+  + an optional `preset-atom.button` cta; brand (logo + name) is never stored on the
+  block — `mapSiteSettings` hydrates it (and the resolved nav links) from Site Settings
+  identity before rendering (specific to `preset-organism.navbar`/`.footer`). The
+  serializer follows these nested refs; the generator emits nested-only components without
+  `__component` and adds `HeaderBlocks`/`FooterBlocks` unions. `bootstrap()` seeds
+  `header: [preset-organism.navbar]`, `footer: [preset-organism.footer]` exactly once
+  (plugin-store flag) — an editor-emptied zone is respected.
+- **Picker presentation (admin bundle):** every engine component JSON sets `info.icon`
+  (Strapi's fixed icon enum); the plugin's `./strapi-admin` bundle (`cms/admin/src/index.ts`)
+  exists solely to `registerTrads` the category labels — the picker resolves accordion
+  titles via react-intl with the RAW category string as message id (`preset-atom` →
+  "Atoms", `preset-organism` → "Organisms", `custom-organism` → "Custom organisms", en +
+  pt). `preset-config`/`preset-molecule` never surface in a picker but are labelled for
+  completeness; `preset-layout`/`preset-template` are labelled ahead of their components.
+  Labels are presentation-only; uids never change for display. Adopter `src/admin/app.tsx`
   translations override the engine's.
 - **Page templates:** `bootstrap()` also seeds a "Privacy Policy" page (slug
   `privacy-policy`) exactly once (`privacyPageSeeded` flag,
-  `lib/seed-page-privacy-policy.ts`) — a DRAFT composed of `press.*` atoms with
+  `lib/seed-page-privacy-policy.ts`) — a DRAFT composed of `preset-atom.*` atoms with
   placeholder guidance, never auto-published; an adopter page already on the slug
   or an editor-deleted page is respected forever.
-- On the web side, `BlockRenderer` merges four maps by `__component`:
-  `{ ...referenceBlocks, ...sectionBlocks, ...chromeBlocks, ...components }` —
-  engine `press.*` atoms, engine `section.*` sections (`src/section-blocks.ts`),
-  engine `chrome.*` chrome (`src/chrome-blocks.ts`), then the adopter's
-  **explicit** `customBlocks` map (no global registry). Adopter blocks win last, so
-  any `section.*`/`chrome.*` is overridable via
-  `components={{ 'section.hero': MyHero, 'chrome.navbar': MyNavbar }}`. An
-  unknown component is skipped with a dev-only warning, never a crash.
+- On the web side, `BlockRenderer` merges the engine registries with the adopter map by
+  `__component`: `{ ...atomBlocks, ...organismBlocks, ...components }` — engine
+  `preset-atom.*` atoms (`src/atom-blocks.ts`), engine `preset-organism.*` organisms
+  (`src/organism-blocks.ts`, sections + chrome unified), then the adopter's **explicit**
+  `customBlocks` map (no global registry). Adopter blocks win last, so any
+  `preset-organism.*` is overridable via
+  `components={{ 'preset-organism.hero': MyHero, 'preset-organism.navbar': MyNavbar }}`.
+  An unknown component is skipped with a dev-only warning, never a crash.
 
 ### Build-time anchors vs. runtime Site Settings
 
@@ -158,8 +176,8 @@ This split is recent and easy to get wrong:
   each new plugin is a deliberate press-web major) → explicit mount in the host
   `layout.tsx`. A second plugin (e.g. consent-gated third-party scripts) costs
   exactly what the first did: 1 CMS component + 1 mapper + 1 key + 1 mount line.
-- **Cookie consent is plugin #1.** Config lives in the `press.cookie-consent` /
-  `press.cookie-category` components on Site Settings (injected, never
+- **Cookie consent is plugin #1.** Config lives in the `preset-config.cookie-consent` /
+  `preset-config.cookie-category` components on Site Settings (injected, never
   DZ-admitted, so — like `seo`/`themeColors` — they are OUTSIDE the type-sync
   pipeline and mirrored manually in `SiteSettingsData`/`ResolvedPressConfig`).
   Categories are a CLOSED code union (`necessary | analytics | marketing`) so
@@ -207,12 +225,12 @@ This split is recent and easy to get wrong:
   `urn:plugin:{id}`); the per-type id-sourcing rationale lives in the "Engine
   plugins" and "Build-time anchors" sections above, not repeated here. (2)
   TYPE-level: `component` → `urn:component:{uid}` via `componentUrn`, naming a
-  palette REGISTRATION (`press.image`, `section.hero`, `chrome.navbar`, adopter
-  `custom.*`). No object implements `Canonical<'component'>` — the
-  reference/section/chrome-block registries ARE the canonical base; today's one
-  consumer is `BlockRenderer`'s "no component registered" dev warning. (3)
-  COMPUTED: `blockKey` formats `Urn<string>` with `__component` as the entity
-  segment (`urn:press.image:5`) — a per-instance key, never stored: DZ block ids
+  palette REGISTRATION (`preset-atom.image`, `preset-organism.hero`,
+  `preset-organism.navbar`, adopter `custom-*`). No object implements
+  `Canonical<'component'>` — the atom/organism-block registries ARE the canonical
+  base; today's one consumer is `BlockRenderer`'s "no component registered" dev
+  warning. (3) COMPUTED: `blockKey` formats `Urn<string>` with `__component` as the
+  entity segment (`urn:preset-atom.image:5`) — a per-instance key, never stored: DZ block ids
   are ephemeral (unique only per component table), so block INSTANCES stay OUT of
   `Entity`. Extending `Entity` is additive; widening a call site to plain
   `string` is not allowed.

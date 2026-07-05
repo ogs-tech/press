@@ -1,8 +1,8 @@
 // cms/scripts/seed.mjs — One-shot sample content for the cms host. Boots it
 // programmatically (CMS server must be STOPPED), fills the Site Settings single
 // type (identity/SEO + theme), uploads a few tiny PNGs, and creates a PUBLISHED
-// 'home' page that showcases the Gutenberg-style core palette (heading, paragraph,
-// list, quote, separator, image, button, spacer) plus the adopter's custom.callout,
+// 'home' page that showcases the Atomic Design core palette (heading, paragraph,
+// list, quote, separator, image, button, spacer) plus the adopter's custom-organism.callout,
 // so the first `press dev` renders a branded, themed site.
 // Skip-if-empty: seeds only a fresh CMS — existing content is never overwritten
 // (delete cms/.tmp to reset).
@@ -22,7 +22,7 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 const SLUG = 'home';
 
 // A visible 480×270 (16:9) placeholder cover — brand primary over accent — so
-// press.image renders a real image rather than a degenerate 1×1 transparent pixel.
+// preset-atom.image renders a real image rather than a degenerate 1×1 transparent pixel.
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAeAAAAEOCAIAAADe+FMwAAAC+ElEQVR42u3UQQ0AIAwAsVnAB2LwhoLJws0s8NySJlVwj4t1DwANhQQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAYNIBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEGrAGDQABg0gEEDYNAABg2AQQNg0AAGDYBBAxg0AAYNgEEDGDQABg1g0AAYNIBBA2DQABg0gEEDYNAABg2AQQNg0AAGDYBBAxg0AAYNYNAAGDQABg1g0AAYNIBBA2DQABg0gEEDYNAABg2AQQMYtAoABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAYNIBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg1g0AAYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBAxg0AAYNwO+gX24AGjJoAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgADBrAoAEwaACDBsCgAQwaAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgAgwbAoAEwaACDBsCgAQwaAIMGwKABDBoAgwYwaAAMGsCgJQAwaAAMGsCgATBoAIMGwKABMGgAgwbAoAEMGgCDBsCgAQwaAIMGMGgADBrAoAEwaAAMGsCgATBoAIMGwKABMGgAgwbAoAEMGgCDBjBoAAwaAIMGMGgADBrAoAEwaAAMGsCgATBoAIMGwKABDFoFAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgADBrAoAEwaACDBsCgAQwaAIMGwKABJiqe+vFZK33AgwAAAABJRU5ErkJggg==',
   'base64',
@@ -88,8 +88,8 @@ async function main() {
     const tmpDir = path.join(process.cwd(), '.tmp');
     mkdirSync(tmpDir, { recursive: true });
 
-    // Upload one cover image so press.image proves a media field crosses the REST
-    // contract — press.image is the engine's media-serialization example (Spec §5.2).
+    // Upload one cover image so preset-atom.image proves a media field crosses the REST
+    // contract — preset-atom.image is the engine's media-serialization example (Spec §5.2).
     const uploadImage = async (name) => {
       const filepath = path.join(tmpDir, name);
       writeFileSync(filepath, PNG);
@@ -102,17 +102,17 @@ async function main() {
     const coverImageId = await uploadImage('press-cover.png');
     console.log(`[seed] uploaded cover image id=${coverImageId}`);
 
-    // Create the published "Hello from press" home from the Gutenberg-style core
+    // Create the published "Hello from press" home from the Atomic Design core
     // palette: atomic text blocks (heading/paragraph/list/quote), structural blocks
-    // (separator/button/spacer), media (image single), and the adopter's custom.callout.
+    // (separator/button/spacer), media (image single), and the adopter's custom-organism.callout.
     const page = await app.documents(PAGE_UID).create({
       data: {
         title: 'Hello from press',
         slug: SLUG,
         body: [
-          { __component: 'press.heading', text: 'Hello from press', level: '1' },
+          { __component: 'preset-atom.heading', text: 'Hello from press', level: '1' },
           {
-            __component: 'press.paragraph',
+            __component: 'preset-atom.paragraph',
             content: [
               {
                 type: 'paragraph',
@@ -124,9 +124,9 @@ async function main() {
               },
             ],
           },
-          { __component: 'press.heading', text: 'What ships in the box', level: '2' },
+          { __component: 'preset-atom.heading', text: 'What ships in the box', level: '2' },
           {
-            __component: 'press.list',
+            __component: 'preset-atom.list',
             content: [
               {
                 type: 'list',
@@ -150,7 +150,7 @@ async function main() {
                     type: 'list-item',
                     children: [
                       { type: 'text', text: 'Your own ' },
-                      { type: 'text', text: 'custom.*', code: true },
+                      { type: 'text', text: 'custom-*', code: true },
                       { type: 'text', text: ' blocks, admitted automatically into the page.' },
                     ],
                   },
@@ -159,14 +159,14 @@ async function main() {
             ],
           },
           {
-            __component: 'press.quote',
+            __component: 'preset-atom.quote',
             content: [
               { type: 'paragraph', children: [{ type: 'text', text: 'The contract is HTML on the server.' }] },
             ],
             citation: 'The press engine',
           },
           {
-            __component: 'press.paragraph',
+            __component: 'preset-atom.paragraph',
             content: [
               {
                 type: 'paragraph',
@@ -178,16 +178,16 @@ async function main() {
               },
             ],
           },
-          { __component: 'press.separator', variant: 'line' },
+          { __component: 'preset-atom.separator', variant: 'line' },
           {
-            __component: 'press.image',
+            __component: 'preset-atom.image',
             image: coverImageId,
             caption: 'A single image — proof one media field crosses the REST contract.',
           },
-          { __component: 'press.button', label: 'Get started', href: 'https://github.com/ogs-tech/press', variant: 'primary' },
-          { __component: 'press.spacer', size: 'lg' },
+          { __component: 'preset-atom.button', label: 'Get started', href: 'https://github.com/ogs-tech/press', variant: 'primary' },
+          { __component: 'preset-atom.spacer', size: 'lg' },
           {
-            __component: 'custom.callout',
+            __component: 'custom-organism.callout',
             message: 'Adopter callout renders via the Project-zone block map',
             variant: 'success',
           },

@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { PressButton } from '../types/base';
+import type { PresetAtomButton } from '../types/base';
 import { Button } from './button';
 
-const render = (props: { label: string; href: string; variant?: PressButton['variant'] }): string =>
-  renderToStaticMarkup(Button({ __component: 'press.button', id: 1, ...(props as any) }));
+const render = (props: { label: string; href: string; variant?: PresetAtomButton['variant'] }): string =>
+  renderToStaticMarkup(Button({ __component: 'preset-atom.button', id: 1, ...(props as any) }));
 
 describe('Button renderer', () => {
   it('renders an anchor with the label and href inside the data-block wrapper', () => {
     const html = render({ label: 'Get started', href: '/start', variant: 'primary' });
-    expect(html).toContain('<div data-block="press.button">');
+    expect(html).toContain('<div data-block="preset-atom.button">');
     expect(html).toContain('href="/start"');
     expect(html).toContain('>Get started</a>');
   });

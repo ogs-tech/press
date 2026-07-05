@@ -6,8 +6,8 @@ export const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 
 /** Default chrome composition (Spec §4): a navbar (empty items) + a footer (empty text). */
 export const DEFAULT_CHROME = {
-  header: [{ __component: 'chrome.navbar' }],
-  footer: [{ __component: 'chrome.footer' }],
+  header: [{ __component: 'preset-organism.navbar' }],
+  footer: [{ __component: 'preset-organism.footer' }],
 };
 
 const CHROME_SEED_KEY = 'chromeSeeded';

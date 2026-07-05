@@ -7,10 +7,10 @@ import type { BlocksContent, BlocksNode, BlocksText } from '../types/base';
  * static prose into a hydrated client island and add a runtime dependency, both
  * against the engine's server-rendered, JS-free block principle).
  *
- * Used by the decomposed text reference blocks (press.paragraph / press.list /
- * press.quote) whose `content` is a Strapi blocks field. Tolerance mirrors
+ * Used by the text atom blocks (preset-atom.paragraph / preset-atom.list /
+ * preset-atom.quote) whose `content` is a Strapi blocks field. Tolerance mirrors
  * BlockRenderer: an unknown node type (or an embedded `image` node — images belong
- * in press.image) renders nothing rather than throwing.
+ * in preset-atom.image) renders nothing rather than throwing.
  */
 
 type Inline = BlocksNode | BlocksText;

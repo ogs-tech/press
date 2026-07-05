@@ -30,7 +30,7 @@ describe('mapCookieConsent (cookie-consent Spec §3)', () => {
     expect(r.texts.acceptAllLabel).toBe(DEFAULT_COOKIE_CONSENT.texts.acceptAllLabel);
   });
 
-  it("falls back on an editor-cleared '' — || semantics, the chrome.footer precedent", () => {
+  it("falls back on an editor-cleared '' — || semantics, the preset-organism.footer precedent", () => {
     const r = mapCookieConsent({ title: '', acceptAllLabel: '' }, HOME);
     expect(r.texts.title).toBe(DEFAULT_COOKIE_CONSENT.texts.title);
     expect(r.texts.acceptAllLabel).toBe(DEFAULT_COOKIE_CONSENT.texts.acceptAllLabel);

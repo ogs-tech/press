@@ -6,12 +6,12 @@ export const PAGE_UID = 'plugin::press-cms.page';
 
 const PRIVACY_SEED_KEY = 'privacyPageSeeded';
 
-/** A press.heading section title (level 2 — the page title itself is the h1). */
-const heading = (text: string) => ({ __component: 'press.heading', text, level: '2' });
+/** A preset-atom.heading section title (level 2 — the page title itself is the h1). */
+const heading = (text: string) => ({ __component: 'preset-atom.heading', text, level: '2' });
 
-/** A press.paragraph block; `content` is Strapi rich-text blocks JSON, not a plain string. */
+/** A preset-atom.paragraph block; `content` is Strapi rich-text blocks JSON, not a plain string. */
 const paragraph = (text: string) => ({
-  __component: 'press.paragraph',
+  __component: 'preset-atom.paragraph',
   content: [{ type: 'paragraph', children: [{ type: 'text', text }] }],
 });
 

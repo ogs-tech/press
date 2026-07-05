@@ -28,7 +28,10 @@ const pageWithBody = (components: string[]) => ({
   attributes: { body: { type: 'dynamiczone', components } },
 });
 
-const siteSettingWithChrome = (header: string[] = ['chrome.navbar'], footer: string[] = ['chrome.footer']) => ({
+const siteSettingWithChrome = (
+  header: string[] = ['preset-organism.navbar'],
+  footer: string[] = ['preset-organism.footer'],
+) => ({
   uid: SITE_SETTING_UID,
   attributes: {
     header: { type: 'dynamiczone', components: header },
@@ -37,113 +40,111 @@ const siteSettingWithChrome = (header: string[] = ['chrome.navbar'], footer: str
 });
 
 describe('admitCustomBlocks', () => {
-  it('admits every custom.* component into the page body AND both chrome DZs', () => {
-    const page = pageWithBody(['press.paragraph']);
+  it('admits every custom block into the page body AND both chrome DZs (universal placement)', () => {
+    const page = pageWithBody(['preset-atom.paragraph']);
     const siteSetting = siteSettingWithChrome();
     const strapi = makeStrapi({
       page,
       siteSetting,
-      componentUids: ['press.paragraph', 'custom.callout', 'custom.banner'],
+      componentUids: ['preset-atom.paragraph', 'custom-organism.callout', 'custom-atom.badge'],
     });
 
     admitCustomBlocks({ strapi });
 
-    // The adopter contract is unchanged: only the custom CATEGORY is stable, now
-    // flowing into all three engine DZs (Spec §1).
-    expect(page.attributes.body.components).toEqual(['press.paragraph', 'custom.callout', 'custom.banner']);
-    expect(siteSetting.attributes.header.components).toEqual(['chrome.navbar', 'custom.callout', 'custom.banner']);
-    expect(siteSetting.attributes.footer.components).toEqual(['chrome.footer', 'custom.callout', 'custom.banner']);
-  });
-
-  it('is idempotent: an already-admitted custom.* block is not duplicated in any DZ', () => {
-    const page = pageWithBody(['press.paragraph', 'custom.callout']);
-    const siteSetting = siteSettingWithChrome(['chrome.navbar', 'custom.callout'], ['chrome.footer', 'custom.callout']);
-    const strapi = makeStrapi({ page, siteSetting, componentUids: ['press.paragraph', 'custom.callout'] });
-
-    admitCustomBlocks({ strapi });
-
-    expect(page.attributes.body.components).toEqual(['press.paragraph', 'custom.callout']);
-    expect(siteSetting.attributes.header.components).toEqual(['chrome.navbar', 'custom.callout']);
-    expect(siteSetting.attributes.footer.components).toEqual(['chrome.footer', 'custom.callout']);
-  });
-
-  it('never pushes chrome.* into the page body (chrome is not a custom category)', () => {
-    const page = pageWithBody(['press.paragraph']);
-    const siteSetting = siteSettingWithChrome();
-    const strapi = makeStrapi({
-      page,
-      siteSetting,
-      componentUids: ['press.paragraph', 'chrome.navbar', 'chrome.footer'],
-    });
-
-    admitCustomBlocks({ strapi });
-
-    expect(page.attributes.body.components).toEqual(['press.paragraph']);
-  });
-
-  it('admits custom-section.* into the page body only (placement kind: section)', () => {
-    const page = pageWithBody(['press.paragraph']);
-    const siteSetting = siteSettingWithChrome();
-    const strapi = makeStrapi({
-      page,
-      siteSetting,
-      componentUids: ['custom-section.pricing'],
-    });
-
-    admitCustomBlocks({ strapi });
-
-    expect(page.attributes.body.components).toContain('custom-section.pricing');
-    expect(siteSetting.attributes.header.components).not.toContain('custom-section.pricing');
-    expect(siteSetting.attributes.footer.components).not.toContain('custom-section.pricing');
-  });
-
-  it('admits custom-chrome.* into header/footer only, never the page body (placement kind: chrome)', () => {
-    const page = pageWithBody(['press.paragraph']);
-    const siteSetting = siteSettingWithChrome();
-    const strapi = makeStrapi({
-      page,
-      siteSetting,
-      componentUids: ['custom-chrome.mega-menu'],
-    });
-
-    admitCustomBlocks({ strapi });
-
-    expect(page.attributes.body.components).not.toContain('custom-chrome.mega-menu');
-    expect(siteSetting.attributes.header.components).toContain('custom-chrome.mega-menu');
-    expect(siteSetting.attributes.footer.components).toContain('custom-chrome.mega-menu');
-  });
-
-  it('routes every custom kind to its own zones when all three are present', () => {
-    const page = pageWithBody(['press.paragraph']);
-    const siteSetting = siteSettingWithChrome();
-    const strapi = makeStrapi({
-      page,
-      siteSetting,
-      componentUids: ['custom.callout', 'custom-section.pricing', 'custom-chrome.mega-menu'],
-    });
-
-    admitCustomBlocks({ strapi });
-
-    // The `${category}.` prefix keeps kinds disjoint: bare custom goes everywhere,
-    // each hyphenated kind lands only in its declared zones.
+    // The adopter contract: the `custom*` category is stable and flows into ALL
+    // three engine DZs. Placement is not a category concern on the custom side —
+    // the editor decides where each block goes (unified-components).
     expect(page.attributes.body.components).toEqual([
-      'press.paragraph', 'custom.callout', 'custom-section.pricing',
+      'preset-atom.paragraph', 'custom-organism.callout', 'custom-atom.badge',
     ]);
     expect(siteSetting.attributes.header.components).toEqual([
-      'chrome.navbar', 'custom.callout', 'custom-chrome.mega-menu',
+      'preset-organism.navbar', 'custom-organism.callout', 'custom-atom.badge',
     ]);
     expect(siteSetting.attributes.footer.components).toEqual([
-      'chrome.footer', 'custom.callout', 'custom-chrome.mega-menu',
+      'preset-organism.footer', 'custom-organism.callout', 'custom-atom.badge',
     ]);
+  });
+
+  it('is idempotent: an already-admitted custom block is not duplicated in any DZ', () => {
+    const page = pageWithBody(['preset-atom.paragraph', 'custom-organism.callout']);
+    const siteSetting = siteSettingWithChrome(
+      ['preset-organism.navbar', 'custom-organism.callout'],
+      ['preset-organism.footer', 'custom-organism.callout'],
+    );
+    const strapi = makeStrapi({
+      page,
+      siteSetting,
+      componentUids: ['preset-atom.paragraph', 'custom-organism.callout'],
+    });
+
+    admitCustomBlocks({ strapi });
+
+    expect(page.attributes.body.components).toEqual(['preset-atom.paragraph', 'custom-organism.callout']);
+    expect(siteSetting.attributes.header.components).toEqual(['preset-organism.navbar', 'custom-organism.callout']);
+    expect(siteSetting.attributes.footer.components).toEqual(['preset-organism.footer', 'custom-organism.callout']);
+  });
+
+  it('never admits a preset (non-custom) component — only the engine schema.json places those', () => {
+    const page = pageWithBody(['preset-atom.paragraph']);
+    const siteSetting = siteSettingWithChrome();
+    const strapi = makeStrapi({
+      page,
+      siteSetting,
+      componentUids: ['preset-atom.paragraph', 'preset-organism.navbar', 'preset-organism.hero'],
+    });
+
+    admitCustomBlocks({ strapi });
+
+    // preset-* blocks are curated statically per content-type; admitCustomBlocks
+    // touches only `custom*` categories, so nothing changes here.
+    expect(page.attributes.body.components).toEqual(['preset-atom.paragraph']);
+    expect(siteSetting.attributes.header.components).toEqual(['preset-organism.navbar']);
+    expect(siteSetting.attributes.footer.components).toEqual(['preset-organism.footer']);
+  });
+
+  it('admits every custom LAYER (atom/molecule/organism) into every zone alike', () => {
+    const page = pageWithBody(['preset-atom.paragraph']);
+    const siteSetting = siteSettingWithChrome();
+    const strapi = makeStrapi({
+      page,
+      siteSetting,
+      componentUids: ['custom-atom.badge', 'custom-molecule.field', 'custom-organism.pricing'],
+    });
+
+    admitCustomBlocks({ strapi });
+
+    // The atomic LAYER is organization only (picker grouping + type names); it
+    // does NOT restrict placement — every custom-* lands in all three DZs.
+    for (const zone of [
+      page.attributes.body.components,
+      siteSetting.attributes.header.components,
+      siteSetting.attributes.footer.components,
+    ]) {
+      expect(zone).toContain('custom-atom.badge');
+      expect(zone).toContain('custom-molecule.field');
+      expect(zone).toContain('custom-organism.pricing');
+    }
+  });
+
+  it('still admits a legacy bare custom.* block (forgiving migration path)', () => {
+    const page = pageWithBody(['preset-atom.paragraph']);
+    const siteSetting = siteSettingWithChrome();
+    const strapi = makeStrapi({ page, siteSetting, componentUids: ['custom.legacy'] });
+
+    admitCustomBlocks({ strapi });
+
+    expect(page.attributes.body.components).toContain('custom.legacy');
+    expect(siteSetting.attributes.header.components).toContain('custom.legacy');
+    expect(siteSetting.attributes.footer.components).toContain('custom.legacy');
   });
 
   it('throws (aborts boot) when the page content-type is absent from the registry', () => {
-    const strapi = makeStrapi({ siteSetting: siteSettingWithChrome(), componentUids: ['custom.callout'] });
+    const strapi = makeStrapi({ siteSetting: siteSettingWithChrome(), componentUids: ['custom-organism.callout'] });
     expect(() => admitCustomBlocks({ strapi })).toThrow(/plugin::press-cms\.page.*absent/);
   });
 
   it('throws (aborts boot) when the site-setting content-type is absent from the registry', () => {
-    const strapi = makeStrapi({ page: pageWithBody(['press.paragraph']), componentUids: ['custom.callout'] });
+    const strapi = makeStrapi({ page: pageWithBody(['preset-atom.paragraph']), componentUids: ['custom-organism.callout'] });
     expect(() => admitCustomBlocks({ strapi })).toThrow(/plugin::press-cms\.site-setting.*absent/);
   });
 
@@ -151,16 +152,16 @@ describe('admitCustomBlocks', () => {
     const strapi = makeStrapi({
       page: { uid: PAGE_UID, attributes: { body: { type: 'string' } } },
       siteSetting: siteSettingWithChrome(),
-      componentUids: ['custom.callout'],
+      componentUids: ['custom-organism.callout'],
     });
     expect(() => admitCustomBlocks({ strapi })).toThrow(/no 'body' dynamic zone/);
   });
 
   it('throws (aborts boot) when a chrome DZ is missing or malformed', () => {
     const strapi = makeStrapi({
-      page: pageWithBody(['press.paragraph']),
+      page: pageWithBody(['preset-atom.paragraph']),
       siteSetting: { uid: SITE_SETTING_UID, attributes: { header: { type: 'string' } } },
-      componentUids: ['custom.callout'],
+      componentUids: ['custom-organism.callout'],
     });
     expect(() => admitCustomBlocks({ strapi })).toThrow(/no 'header' dynamic zone/);
   });
@@ -176,14 +177,16 @@ describe('injectComponents', () => {
     return { strapi, components };
   };
 
-  it('registers every engine press.* component as a component model', () => {
+  it('registers every engine preset-* component as a component model', () => {
     const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
     const expected = [
-      'press.paragraph', 'press.heading', 'press.list', 'press.quote',
-      'press.image', 'press.button', 'press.separator', 'press.spacer',
-      'press.seo', 'press.theme-colors', 'press.theme-radius', 'press.nav-item',
-      'press.cookie-category', 'press.cookie-consent',
+      'preset-atom.paragraph', 'preset-atom.heading', 'preset-atom.list', 'preset-atom.quote',
+      'preset-atom.image', 'preset-atom.button', 'preset-atom.separator', 'preset-atom.spacer',
+      'preset-molecule.nav-item',
+      'preset-organism.hero', 'preset-organism.cta', 'preset-organism.navbar', 'preset-organism.footer',
+      'preset-config.seo', 'preset-config.theme-colors', 'preset-config.theme-radius',
+      'preset-config.cookie-category', 'preset-config.cookie-consent',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -191,27 +194,28 @@ describe('injectComponents', () => {
     }
   });
 
-  it('no longer injects the removed press.hero / press.rich-text blocks', () => {
+  it('no longer registers any legacy press.* / section.* / chrome.* uid (rename is complete)', () => {
     const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
-    expect(components.get('press.hero')).toBeUndefined();
-    expect(components.get('press.rich-text')).toBeUndefined();
+    for (const legacy of ['press.paragraph', 'press.heading', 'press.nav-item', 'press.seo', 'section.hero', 'chrome.navbar']) {
+      expect(components.get(legacy)).toBeUndefined();
+    }
   });
 
   it('skips a component already present in the registry (idempotent injection)', () => {
     const { strapi, components } = makeStrapi();
-    components.set('press.paragraph', { uid: 'press.paragraph', preexisting: true });
+    components.set('preset-atom.paragraph', { uid: 'preset-atom.paragraph', preexisting: true });
     injectComponents({ strapi });
-    expect(components.get('press.paragraph')).toEqual({ uid: 'press.paragraph', preexisting: true });
-    expect(components.get('press.seo')?.modelType).toBe('component'); // others still injected
+    expect(components.get('preset-atom.paragraph')).toEqual({ uid: 'preset-atom.paragraph', preexisting: true });
+    expect(components.get('preset-config.seo')?.modelType).toBe('component'); // others still injected
   });
 
-  it('injects press.nav-item but never admits it into the page Dynamic Zone', () => {
-    // nav-item is a Site-Settings config component (like press.seo). Injecting it
-    // registers the component, but it must NOT leak into the page block palette —
-    // only custom.* is admitted into the page body Dynamic Zone.
+  it('injects preset-molecule.nav-item but never admits it into the page Dynamic Zone', () => {
+    // nav-item is a molecule nested inside the navbar. Injecting it registers the
+    // component, but it must NOT leak into the page block palette — only custom-*
+    // is admitted into the page body Dynamic Zone.
     const components = new Map<string, any>();
-    const page = pageWithBody(['press.paragraph']);
+    const page = pageWithBody(['preset-atom.paragraph']);
     const contentTypes = new Map<string, any>([
       [PAGE_UID, page],
       [SITE_SETTING_UID, siteSettingWithChrome()],
@@ -223,82 +227,79 @@ describe('injectComponents', () => {
     } as any;
 
     injectComponents({ strapi });
-    components.set('custom.callout', { uid: 'custom.callout' }); // a real custom block
+    components.set('custom-organism.callout', { uid: 'custom-organism.callout' }); // a real custom block
     admitCustomBlocks({ strapi });
 
-    expect(components.get('press.nav-item')?.modelType).toBe('component'); // injected
-    expect(page.attributes.body.components).toContain('custom.callout');   // custom admitted
-    expect(page.attributes.body.components).not.toContain('press.nav-item'); // never admitted
+    expect(components.get('preset-molecule.nav-item')?.modelType).toBe('component'); // injected
+    expect(page.attributes.body.components).toContain('custom-organism.callout');    // custom admitted
+    expect(page.attributes.body.components).not.toContain('preset-molecule.nav-item'); // never admitted
   });
 
-  it('injects section.hero and section.cta under category "section" with a derived globalId', () => {
-    // Sections mirror the press.* injection mechanism but under a SEPARATE category
-    // so the atomic press.* boundary stays intact (Spec §5.1).
+  it('injects the organism sections (hero/cta) under category "preset-organism" with a derived globalId', () => {
     const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
 
-    expect(components.get('section.hero')?.modelType).toBe('component');
-    expect(components.get('section.hero')?.category).toBe('section');
-    expect(components.get('section.hero')?.globalId).toBe('ComponentSectionHero');
+    expect(components.get('preset-organism.hero')?.modelType).toBe('component');
+    expect(components.get('preset-organism.hero')?.category).toBe('preset-organism');
+    expect(components.get('preset-organism.hero')?.globalId).toBe('ComponentPresetOrganismHero');
 
-    expect(components.get('section.cta')?.modelType).toBe('component');
-    expect(components.get('section.cta')?.category).toBe('section');
-    expect(components.get('section.cta')?.globalId).toBe('ComponentSectionCta');
-
-    // Sections are NOT press.hero — the removed atom stays removed (Spec §3).
-    expect(components.get('press.hero')).toBeUndefined();
+    expect(components.get('preset-organism.cta')?.modelType).toBe('component');
+    expect(components.get('preset-organism.cta')?.category).toBe('preset-organism');
+    expect(components.get('preset-organism.cta')?.globalId).toBe('ComponentPresetOrganismCta');
   });
 
-  it('injects chrome.navbar and chrome.footer under category "chrome" with a derived globalId', () => {
-    // Chrome blocks mirror the section.* injection mechanism under their own
-    // category: composite bars admitted only into the site-setting chrome DZs,
-    // never the page body (Spec §1).
+  it('injects the organism chrome (navbar/footer) under category "preset-organism" with a derived globalId', () => {
+    // navbar/footer are organisms too (unified from the old chrome.* palette); the
+    // placement split lives in schema.json, not the category.
     const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
 
-    expect(components.get('chrome.navbar')?.modelType).toBe('component');
-    expect(components.get('chrome.navbar')?.category).toBe('chrome');
-    expect(components.get('chrome.navbar')?.globalId).toBe('ComponentChromeNavbar');
-    // Composite shape (Spec §1): nested nav items + optional CTA, no brand fields.
-    expect(components.get('chrome.navbar')?.attributes).toMatchObject({
-      items: { type: 'component', repeatable: true, component: 'press.nav-item' },
-      cta: { type: 'component', repeatable: false, component: 'press.button' },
+    expect(components.get('preset-organism.navbar')?.modelType).toBe('component');
+    expect(components.get('preset-organism.navbar')?.category).toBe('preset-organism');
+    expect(components.get('preset-organism.navbar')?.globalId).toBe('ComponentPresetOrganismNavbar');
+    // Composite shape: nested nav items + optional CTA, no brand fields.
+    expect(components.get('preset-organism.navbar')?.attributes).toMatchObject({
+      items: { type: 'component', repeatable: true, component: 'preset-molecule.nav-item' },
+      cta: { type: 'component', repeatable: false, component: 'preset-atom.button' },
     });
 
-    expect(components.get('chrome.footer')?.modelType).toBe('component');
-    expect(components.get('chrome.footer')?.category).toBe('chrome');
-    expect(components.get('chrome.footer')?.globalId).toBe('ComponentChromeFooter');
-    expect(components.get('chrome.footer')?.attributes).toMatchObject({ text: { type: 'string' } });
+    expect(components.get('preset-organism.footer')?.modelType).toBe('component');
+    expect(components.get('preset-organism.footer')?.category).toBe('preset-organism');
+    expect(components.get('preset-organism.footer')?.globalId).toBe('ComponentPresetOrganismFooter');
+    expect(components.get('preset-organism.footer')?.attributes).toMatchObject({ text: { type: 'string' } });
   });
 });
 
-describe('page body dynamic zone (static section admission)', () => {
-  it('lists section.hero and section.cta alongside the press.* atoms', () => {
-    // Sections are engine-owned and deterministic, so they are admitted STATICALLY
-    // in the page schema (not via the dynamic custom.* push) — Spec §5.1.
+describe('page body dynamic zone (static organism admission)', () => {
+  it('lists preset-organism.hero and preset-organism.cta alongside the preset-atom.* atoms', () => {
+    // Body organisms are engine-owned and deterministic, so they are admitted
+    // STATICALLY in the page schema (not via the dynamic custom-* push).
     const components = pageSchema.attributes.body.components as string[];
-    expect(components).toContain('section.hero');
-    expect(components).toContain('section.cta');
-    // Additive: the press.* atoms remain admitted, unchanged (Spec §2).
-    expect(components).toContain('press.paragraph');
-    expect(components).toContain('press.image');
+    expect(components).toContain('preset-organism.hero');
+    expect(components).toContain('preset-organism.cta');
+    // The atoms remain admitted, unchanged.
+    expect(components).toContain('preset-atom.paragraph');
+    expect(components).toContain('preset-atom.image');
+    // Chrome organisms are NOT page-body blocks (placement: header/footer only).
+    expect(components).not.toContain('preset-organism.navbar');
+    expect(components).not.toContain('preset-organism.footer');
   });
 });
 
 describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () => {
-  it('attaches press.cookie-consent as a config component, never a DZ member', () => {
+  it('attaches preset-config.cookie-consent as a config component, never a DZ member', () => {
     expect((siteSettingSchema.attributes as any).cookieConsent).toEqual({
       type: 'component',
       repeatable: false,
-      component: 'press.cookie-consent',
+      component: 'preset-config.cookie-consent',
     });
-    // Config components stay out of every Dynamic Zone (the press.seo rule).
+    // Config components stay out of every Dynamic Zone (the preset-config rule).
     for (const zone of ['header', 'footer'] as const) {
       const components = (siteSettingSchema.attributes as any)[zone].components as string[];
-      expect(components).not.toContain('press.cookie-consent');
-      expect(components).not.toContain('press.cookie-category');
+      expect(components).not.toContain('preset-config.cookie-consent');
+      expect(components).not.toContain('preset-config.cookie-category');
     }
-    expect(pageSchema.attributes.body.components).not.toContain('press.cookie-consent');
+    expect(pageSchema.attributes.body.components).not.toContain('preset-config.cookie-consent');
   });
 
   it('nests the three engine-fixed category components (closed key set, Spec §2)', () => {
@@ -313,14 +314,14 @@ describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () =
       };
     })();
     injectComponents({ strapi });
-    expect(components.get('press.cookie-consent')?.attributes).toMatchObject({
+    expect(components.get('preset-config.cookie-consent')?.attributes).toMatchObject({
       enabled: { type: 'boolean', default: true },
-      necessary: { type: 'component', repeatable: false, component: 'press.cookie-category' },
-      analytics: { type: 'component', repeatable: false, component: 'press.cookie-category' },
-      marketing: { type: 'component', repeatable: false, component: 'press.cookie-category' },
+      necessary: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
+      analytics: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
+      marketing: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
       privacyPage: { type: 'relation', relation: 'oneToOne', target: 'plugin::press-cms.page' },
     });
-    expect(components.get('press.cookie-category')?.attributes).toMatchObject({
+    expect(components.get('preset-config.cookie-category')?.attributes).toMatchObject({
       enabled: { type: 'boolean', default: true },
       label: { type: 'string' },
       description: { type: 'text' },
@@ -329,17 +330,17 @@ describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () =
 });
 
 describe('site-setting chrome dynamic zones (static admission)', () => {
-  it('admits chrome.* + press.* atoms + section.* into header and footer, statically', () => {
-    // Chrome DZs admit everything except custom.* (which arrives dynamically) —
-    // listed statically like section.* in the page body (Spec §1).
+  it('admits preset-organism.navbar/footer + preset-atom.* atoms into header and footer, statically', () => {
+    // Chrome DZs admit the chrome organisms and every atom (custom-* arrives
+    // dynamically). Body organisms (hero/cta) are NOT chrome blocks.
     for (const zone of ['header', 'footer'] as const) {
       const components = (siteSettingSchema.attributes as any)[zone].components as string[];
-      expect(components).toContain('chrome.navbar');
-      expect(components).toContain('chrome.footer');
-      expect(components).toContain('press.paragraph');
-      expect(components).toContain('press.button');
-      expect(components).toContain('section.hero');
-      expect(components).toContain('section.cta');
+      expect(components).toContain('preset-organism.navbar');
+      expect(components).toContain('preset-organism.footer');
+      expect(components).toContain('preset-atom.paragraph');
+      expect(components).toContain('preset-atom.button');
+      expect(components).not.toContain('preset-organism.hero');
+      expect(components).not.toContain('preset-organism.cta');
     }
   });
 
@@ -347,8 +348,8 @@ describe('site-setting chrome dynamic zones (static admission)', () => {
     expect((siteSettingSchema.attributes as any).headerNav).toBeUndefined();
   });
 
-  it('keeps chrome.* out of the page body Dynamic Zone', () => {
-    expect(pageSchema.attributes.body.components).not.toContain('chrome.navbar');
-    expect(pageSchema.attributes.body.components).not.toContain('chrome.footer');
+  it('keeps the chrome organisms out of the page body Dynamic Zone', () => {
+    expect(pageSchema.attributes.body.components).not.toContain('preset-organism.navbar');
+    expect(pageSchema.attributes.body.components).not.toContain('preset-organism.footer');
   });
 });

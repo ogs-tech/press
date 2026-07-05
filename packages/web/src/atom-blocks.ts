@@ -9,19 +9,18 @@ import { Separator } from './blocks/separator';
 import { Spacer } from './blocks/spacer';
 
 /**
- * Engine-owned reference block registry (Spec §5.3). The engine references
- * `press.*` ONLY — a Gutenberg-style core palette: atomic text blocks
+ * Engine-owned ATOM registry — the Atomic Design base layer: atomic text blocks
  * (paragraph/heading/list/quote), media (image) and structural
- * (button/separator/spacer). Adopter `custom.*` blocks are never named here —
+ * (button/separator/spacer). Adopter `custom-*` blocks are never named here —
  * they arrive via the explicit `components` prop on <BlockRenderer/>.
  */
-export const referenceBlocks: Record<string, ComponentType<any>> = {
-  'press.paragraph': Paragraph,
-  'press.heading': Heading,
-  'press.list': List,
-  'press.quote': Quote,
-  'press.image': Image,
-  'press.button': Button,
-  'press.separator': Separator,
-  'press.spacer': Spacer,
+export const atomBlocks: Record<string, ComponentType<any>> = {
+  'preset-atom.paragraph': Paragraph,
+  'preset-atom.heading': Heading,
+  'preset-atom.list': List,
+  'preset-atom.quote': Quote,
+  'preset-atom.image': Image,
+  'preset-atom.button': Button,
+  'preset-atom.separator': Separator,
+  'preset-atom.spacer': Spacer,
 };

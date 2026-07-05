@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_cookie_consents",
+  "collectionName": "components_preset_config_cookie_consents",
   "info": {
     "displayName": "Cookie Consent",
     "icon": "shield",
@@ -16,9 +16,9 @@
     "saveLabel": { "type": "string" },
     "privacyLinkLabel": { "type": "string" },
     "privacyPage": { "type": "relation", "relation": "oneToOne", "target": "plugin::press-cms.page" },
-    "necessary": { "type": "component", "repeatable": false, "component": "press.cookie-category" },
-    "analytics": { "type": "component", "repeatable": false, "component": "press.cookie-category" },
-    "marketing": { "type": "component", "repeatable": false, "component": "press.cookie-category" }
+    "necessary": { "type": "component", "repeatable": false, "component": "preset-config.cookie-category" },
+    "analytics": { "type": "component", "repeatable": false, "component": "preset-config.cookie-category" },
+    "marketing": { "type": "component", "repeatable": false, "component": "preset-config.cookie-category" }
   },
   "config": {
     "metadatas": {

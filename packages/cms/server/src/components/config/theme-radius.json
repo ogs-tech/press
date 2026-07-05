@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_theme_radii",
+  "collectionName": "components_preset_config_theme_radii",
   "info": { "displayName": "Theme Radius", "icon": "crop", "description": "Theme corner-radius token overrides served at runtime by the press engine" },
   "options": {},
   "attributes": {

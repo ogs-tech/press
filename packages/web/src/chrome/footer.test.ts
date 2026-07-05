@@ -3,11 +3,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Footer } from './footer';
 
 const render = (props: Record<string, unknown>): string =>
-  renderToStaticMarkup(Footer({ __component: 'chrome.footer', id: 1, ...(props as any) }));
+  renderToStaticMarkup(Footer({ __component: 'preset-organism.footer', id: 1, ...(props as any) }));
 
 describe('Footer renderer', () => {
-  it('wraps output in a data-block="chrome.footer" element', () => {
-    expect(render({ text: 'hi', brand: { name: 'Acme' } })).toContain('data-block="chrome.footer"');
+  it('wraps output in a data-block="preset-organism.footer" element', () => {
+    expect(render({ text: 'hi', brand: { name: 'Acme' } })).toContain('data-block="preset-organism.footer"');
   });
 
   it('renders the editor text verbatim when present', () => {

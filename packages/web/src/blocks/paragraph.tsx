@@ -1,12 +1,11 @@
-import type { PressParagraph } from '../types/base';
+import type { PresetAtomParagraph } from '../types/base';
 import { renderBlocks } from './blocks-content';
 
 /**
- * Reference block `press.paragraph` — editorial prose, server-rendered for SEO.
+ * Atom `preset-atom.paragraph` — editorial prose, server-rendered for SEO.
  * `content` is a Strapi blocks field rendered by the engine's in-house renderer
- * (no client hydration, zero runtime deps). The decomposed counterpart of the
- * retired press.rich-text's paragraph nodes.
+ * (no client hydration, zero runtime deps).
  */
-export function Paragraph({ content }: PressParagraph) {
-  return <section data-block="press.paragraph">{renderBlocks(content)}</section>;
+export function Paragraph({ content }: PresetAtomParagraph) {
+  return <section data-block="preset-atom.paragraph">{renderBlocks(content)}</section>;
 }

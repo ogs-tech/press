@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_chrome_navbars",
+  "collectionName": "components_preset_organism_navbars",
   "info": {
     "displayName": "Navbar",
     "icon": "layout",
@@ -7,8 +7,8 @@
   },
   "options": {},
   "attributes": {
-    "items": { "type": "component", "repeatable": true, "component": "press.nav-item" },
-    "cta": { "type": "component", "repeatable": false, "component": "press.button" }
+    "items": { "type": "component", "repeatable": true, "component": "preset-molecule.nav-item" },
+    "cta": { "type": "component", "repeatable": false, "component": "preset-atom.button" }
   },
   "config": {
     "metadatas": {

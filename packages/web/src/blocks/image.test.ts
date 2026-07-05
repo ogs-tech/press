@@ -3,17 +3,17 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { PressMedia } from '../types/base';
 import { Image } from './image';
 
-// press.image is the engine's media-serialization example: it proves a media field
+// preset-atom.image is the engine's media-serialization example: it proves a media field
 // crosses the REST contract. Each src is resolved ABSOLUTE against CMS_URL (unset
 // here → engine default) so contract tests need no domain config.
 const render = (props: { image?: PressMedia; caption?: string }): string =>
-  renderToStaticMarkup(Image({ __component: 'press.image', id: 1, ...(props as any) }));
+  renderToStaticMarkup(Image({ __component: 'preset-atom.image', id: 1, ...(props as any) }));
 
 const img = (url: string, alternativeText?: string | null): PressMedia => ({ url, alternativeText });
 
 describe('Image renderer', () => {
-  it('wraps output in a data-block="press.image" figure', () => {
-    expect(render({ image: img('/uploads/a.png') })).toContain('<figure data-block="press.image">');
+  it('wraps output in a data-block="preset-atom.image" figure', () => {
+    expect(render({ image: img('/uploads/a.png') })).toContain('<figure data-block="preset-atom.image">');
   });
 
   it('resolves a relative image url absolute against CMS_URL', () => {

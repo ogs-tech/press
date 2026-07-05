@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_section_heroes",
+  "collectionName": "components_preset_organism_heroes",
   "info": { "displayName": "Hero", "icon": "landscape", "description": "A hero section shipped by the press engine" },
   "options": {},
   "attributes": {

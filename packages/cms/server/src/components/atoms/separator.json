@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_separators",
+  "collectionName": "components_preset_atom_separators",
   "info": { "displayName": "Separator", "icon": "oneWay", "description": "A horizontal divider shipped by the press engine" },
   "options": {},
   "attributes": {

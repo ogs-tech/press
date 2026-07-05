@@ -1,12 +1,11 @@
 import type { ComponentType } from 'react';
-import { referenceBlocks } from './reference-blocks';
-import { sectionBlocks } from './section-blocks';
-import { chromeBlocks } from './chrome-blocks';
+import { atomBlocks } from './atom-blocks';
+import { organismBlocks } from './organism-blocks';
 import { blockKey } from './block-key';
 import { componentUrn } from './urn';
 
 // Minimal structural shape the renderer needs from a dynamic-zone entry. No index
-// signature: the sync-generated component interfaces (PressParagraph, PressImage, CustomCallout, …)
+// signature: the sync-generated component interfaces (PresetAtomParagraph, PresetAtomImage, CustomOrganismCallout, …)
 // have none, and a type with an index signature can't accept one without it — so
 // `PageBody` (the call-site type) would fail to satisfy `Block[]`. The renderer only
 // reads `__component` and `id` and spreads the rest, so the extra fields aren't typed here.
@@ -24,15 +23,15 @@ interface BlockRendererProps {
 
 /**
  * Iterates the dynamic zone, picks a component by `__component`, renders it with
- * the block's typed props. Reference blocks merge first; adopter blocks override
+ * the block's typed props. Engine blocks merge first; adopter blocks override
  * by key. Unknown `__component` → tolerant fallback (render nothing + a dev-only
  * warning), never a crash — mirroring the engine's tolerant admission (Spec §5.3).
  */
 export function BlockRenderer({ blocks, components = {} }: BlockRendererProps) {
-  // Four-palette merge (Spec §3): press.* atoms, section.* sections, chrome.*
-  // chrome, then the adopter's explicit components — adopter wins last for
+  // Layer merge: preset-atom.* atoms, then preset-organism.* organisms (sections
+  // + chrome), then the adopter's explicit components — adopter wins last for
   // per-key override.
-  const registry = { ...referenceBlocks, ...sectionBlocks, ...chromeBlocks, ...components };
+  const registry = { ...atomBlocks, ...organismBlocks, ...components };
   return (
     <>
       {blocks.map((block, i) => {

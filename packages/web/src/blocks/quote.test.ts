@@ -4,14 +4,14 @@ import type { BlocksContent } from '../types/base';
 import { Quote } from './quote';
 
 const render = (props: { content: BlocksContent; citation?: string }): string =>
-  renderToStaticMarkup(Quote({ __component: 'press.quote', id: 1, ...props }));
+  renderToStaticMarkup(Quote({ __component: 'preset-atom.quote', id: 1, ...props }));
 
 const content: BlocksContent = [{ type: 'paragraph', children: [{ type: 'text', text: 'To be, or not to be.' }] }];
 
 describe('Quote renderer', () => {
   it('wraps the prose in a <blockquote> inside the data-block section', () => {
     const html = render({ content });
-    expect(html).toContain('<section data-block="press.quote">');
+    expect(html).toContain('<section data-block="preset-atom.quote">');
     expect(html).toContain('<blockquote><p>To be, or not to be.</p></blockquote>');
   });
 

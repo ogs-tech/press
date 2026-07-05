@@ -6,7 +6,7 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 /**
  * The engine owns the wire shape: the controller computes the populate
  * server-side and `ctx.query` is never honored. `populate: '*'` is SHALLOW — it
- * would leave `chrome.navbar's items.page` (and `seo.image`) unpopulated, so every internal
+ * would leave `preset-organism.navbar's items.page` (and `seo.image`) unpopulated, so every internal
  * nav link silently falls back to its raw `url` and an internal page link 404s.
  * These tests pin the deep-populate contract the web resolver (mapSiteSettings)
  * depends on.
@@ -18,8 +18,8 @@ describe('site-setting controller', () => {
     const contentType = vi.fn(() => ({
       uid: SITE_SETTING_UID,
       attributes: {
-        header: { type: 'dynamiczone', components: ['chrome.navbar', 'press.paragraph', 'custom.callout'] },
-        footer: { type: 'dynamiczone', components: ['chrome.footer', 'custom.callout'] },
+        header: { type: 'dynamiczone', components: ['preset-organism.navbar', 'preset-atom.paragraph', 'custom-organism.callout'] },
+        footer: { type: 'dynamiczone', components: ['preset-organism.footer', 'custom-organism.callout'] },
       },
     }));
     const strapi = { documents, contentType } as any;
@@ -38,17 +38,17 @@ describe('site-setting controller', () => {
     const { strapi, ctx, findFirst } = run();
     await siteSetting({ strapi }).find(ctx);
     const { populate } = findFirst.mock.calls[0][0];
-    // custom.* flows through with the same shallow '*' as body blocks.
-    expect(populate.header.on['press.paragraph']).toEqual({ populate: '*' });
-    expect(populate.header.on['custom.callout']).toEqual({ populate: '*' });
-    expect(populate.footer.on['chrome.footer']).toEqual({ populate: '*' });
+    // custom-* flows through with the same shallow '*' as body blocks.
+    expect(populate.header.on['preset-atom.paragraph']).toEqual({ populate: '*' });
+    expect(populate.header.on['custom-organism.callout']).toEqual({ populate: '*' });
+    expect(populate.footer.on['preset-organism.footer']).toEqual({ populate: '*' });
   });
 
-  it('deep-populates chrome.navbar (items.page slug + cta) so internal nav links resolve to their slug', async () => {
+  it('deep-populates preset-organism.navbar (items.page slug + cta) so internal nav links resolve to their slug', async () => {
     const { strapi, ctx, findFirst } = run();
     await siteSetting({ strapi }).find(ctx);
     const { populate } = findFirst.mock.calls[0][0];
-    expect(populate.header.on['chrome.navbar']).toEqual({
+    expect(populate.header.on['preset-organism.navbar']).toEqual({
       populate: { items: { populate: { page: { fields: ['slug'] } } }, cta: true },
     });
   });

@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_section_ctas",
+  "collectionName": "components_preset_organism_ctas",
   "info": { "displayName": "Call to Action", "icon": "rocket", "description": "A call-to-action banner shipped by the press engine" },
   "options": {},
   "attributes": {

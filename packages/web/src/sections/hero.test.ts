@@ -3,16 +3,16 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { PressMedia } from '../types/base';
 import { Hero } from './hero';
 
-// Mirrors the press.image contract test: renderers are called as functions and
+// Mirrors the preset-atom.image contract test: renderers are called as functions and
 // resolve media absolute against CMS_URL (unset here → engine default).
 const render = (props: Record<string, unknown>): string =>
-  renderToStaticMarkup(Hero({ __component: 'section.hero', id: 1, ...(props as any) }));
+  renderToStaticMarkup(Hero({ __component: 'preset-organism.hero', id: 1, ...(props as any) }));
 
 const img = (url: string, alternativeText?: string | null): PressMedia => ({ url, alternativeText });
 
 describe('Hero renderer', () => {
-  it('wraps output in a data-block="section.hero" section', () => {
-    expect(render({ title: 'Ship faster' })).toContain('<section data-block="section.hero"');
+  it('wraps output in a data-block="preset-organism.hero" section', () => {
+    expect(render({ title: 'Ship faster' })).toContain('<section data-block="preset-organism.hero"');
   });
 
   it('renders the title as an h1', () => {

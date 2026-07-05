@@ -17,16 +17,16 @@
     "body": {
       "type": "dynamiczone",
       "components": [
-        "press.paragraph",
-        "press.heading",
-        "press.list",
-        "press.quote",
-        "press.image",
-        "press.button",
-        "press.separator",
-        "press.spacer",
-        "section.hero",
-        "section.cta"
+        "preset-atom.paragraph",
+        "preset-atom.heading",
+        "preset-atom.list",
+        "preset-atom.quote",
+        "preset-atom.image",
+        "preset-atom.button",
+        "preset-atom.separator",
+        "preset-atom.spacer",
+        "preset-organism.hero",
+        "preset-organism.cta"
       ]
     }
   }

@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_theme_colors",
+  "collectionName": "components_preset_config_theme_colors",
   "info": { "displayName": "Theme Colors", "icon": "paintBrush", "description": "Theme colour token overrides served at runtime by the press engine" },
   "options": {},
   "attributes": {

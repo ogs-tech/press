@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_seos",
+  "collectionName": "components_preset_config_seos",
   "info": { "displayName": "SEO", "icon": "search", "description": "SEO defaults served at runtime by the press engine" },
   "options": {},
   "attributes": {

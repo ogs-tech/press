@@ -33,7 +33,7 @@ describe('scaffold', () => {
     expect(has('packages/shared/types/generated.ts')).toBe(true);
     // cms zone (schema stays auto-discovered by Strapi)
     expect(has('packages/cms/config/plugins.ts')).toBe(true);
-    expect(has('packages/cms/src/components/custom/callout.json')).toBe(true);
+    expect(has('packages/cms/src/components/custom-organism/callout.json')).toBe(true);
     expect(has('packages/cms/src/index.ts')).toBe(true);
     expect(has('packages/cms/package.json')).toBe(true);
     expect(has('packages/cms/.env')).toBe(true);
@@ -99,11 +99,11 @@ describe('scaffold', () => {
     const target = path.join(scratchParent(), 'my-site');
     scaffold({ target, name: 'my-site' });
 
-    // The adopter's Callout block imports CustomCallout from shared/types — that
+    // The adopter's Callout block imports CustomOrganismCallout from shared/types — that
     // chain resolves through generated.ts, which `press dev` only writes on the
     // first sync. Without a committed baseline, a fresh `tsc`/`press build` breaks.
     const generated = readFileSync(path.join(target, 'packages/shared/types/generated.ts'), 'utf8');
-    expect(generated).toContain('export interface CustomCallout');
+    expect(generated).toContain('export interface CustomOrganismCallout');
     expect(generated).toMatch(/'info' \| 'warning' \| 'success'/);
 
     // It is COMMITTED (not gitignored), so CI and teammate clones typecheck with

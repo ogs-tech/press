@@ -10,11 +10,11 @@ vi.mock('next/navigation', () => ({ usePathname: () => nav.pathname }));
 import { Navbar } from './navbar';
 
 const render = (props: Record<string, unknown>): string =>
-  renderToStaticMarkup(createElement(Navbar as any, { __component: 'chrome.navbar', id: 1, ...props }));
+  renderToStaticMarkup(createElement(Navbar as any, { __component: 'preset-organism.navbar', id: 1, ...props }));
 
 describe('Navbar renderer', () => {
-  it('wraps output in a data-block="chrome.navbar" element', () => {
-    expect(render({ brand: { name: 'Acme' }, links: [] })).toContain('data-block="chrome.navbar"');
+  it('wraps output in a data-block="preset-organism.navbar" element', () => {
+    expect(render({ brand: { name: 'Acme' }, links: [] })).toContain('data-block="preset-organism.navbar"');
   });
 
   it('renders the hydrated brand as a home link with logo + name (Spec §1: brand never stored on the block)', () => {
@@ -61,6 +61,6 @@ describe('Navbar renderer', () => {
     // Direct BlockRenderer use outside mapSiteSettings must degrade, not throw —
     // mirroring the tolerant admission principle.
     expect(() => render({})).not.toThrow();
-    expect(render({})).toContain('data-block="chrome.navbar"');
+    expect(render({})).toContain('data-block="preset-organism.navbar"');
   });
 });

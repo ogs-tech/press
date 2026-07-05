@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_spacers",
+  "collectionName": "components_preset_atom_spacers",
   "info": { "displayName": "Spacer", "icon": "expand", "description": "Vertical spacing shipped by the press engine" },
   "options": {},
   "attributes": {

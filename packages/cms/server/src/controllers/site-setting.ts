@@ -10,10 +10,10 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
  *
  * The engine owns the populate (Spec §5.1 of the site-settings spec): `ctx.query`
  * is NOT honored (public `auth: false` route). `populate: '*'` is SHALLOW, so
- * `seo.image` and the chrome DZs' nested content (`chrome.navbar` items.page +
- * cta) are deep-populated explicitly. The chrome DZ component lists are read from
- * the live content-type at request time — like the page controller — so admitted
- * custom.* blocks populate too.
+ * `seo.image` and the chrome DZs' nested content (`preset-organism.navbar`
+ * items.page + cta) are deep-populated explicitly. The chrome DZ component lists
+ * are read from the live content-type at request time — like the page controller
+ * — so admitted custom-* blocks populate too.
  */
 const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
   const chromePopulate = () => {

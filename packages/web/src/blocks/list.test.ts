@@ -4,14 +4,14 @@ import type { BlocksContent } from '../types/base';
 import { List } from './list';
 
 const render = (content: BlocksContent): string =>
-  renderToStaticMarkup(List({ __component: 'press.list', id: 1, content }));
+  renderToStaticMarkup(List({ __component: 'preset-atom.list', id: 1, content }));
 
 const li = (value: string): any => ({ type: 'list-item', children: [{ type: 'text', text: value }] });
 
 describe('List renderer', () => {
-  it('wraps output in a data-block="press.list" section', () => {
+  it('wraps output in a data-block="preset-atom.list" section', () => {
     expect(render([{ type: 'list', format: 'unordered', children: [li('a')] }]))
-      .toContain('<section data-block="press.list">');
+      .toContain('<section data-block="preset-atom.list">');
   });
 
   it('renders an unordered list as <ul>', () => {

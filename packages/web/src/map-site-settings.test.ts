@@ -92,7 +92,7 @@ describe('mapSiteSettings', () => {
 
 describe('mapSiteSettings — chrome hydration (Spec §3)', () => {
   const navbar = (extra: Record<string, unknown> = {}) =>
-    ({ __component: 'chrome.navbar', id: 1, ...extra });
+    ({ __component: 'preset-organism.navbar', id: 1, ...extra });
 
   const headerWith = (items: unknown[]) =>
     mapSiteSettings(buildTime, { name: 'Acme', header: [navbar({ items })] });
@@ -100,7 +100,7 @@ describe('mapSiteSettings — chrome hydration (Spec §3)', () => {
   const linksOf = (r: ReturnType<typeof mapSiteSettings>) =>
     (r.chrome.header[0] as any).links;
 
-  it('injects the resolved brand (name + logo) into chrome.navbar — never stored on the block', () => {
+  it('injects the resolved brand (name + logo) into preset-organism.navbar — never stored on the block', () => {
     const r = mapSiteSettings(buildTime, {
       name: 'Acme',
       logo: { url: '/uploads/logo.png' },
@@ -157,16 +157,16 @@ describe('mapSiteSettings — chrome hydration (Spec §3)', () => {
     expect((r.chrome.header[0] as any).cta).toEqual(cta);
   });
 
-  it('injects the brand into chrome.footer for the copyright fallback', () => {
+  it('injects the brand into preset-organism.footer for the copyright fallback', () => {
     const r = mapSiteSettings(buildTime, {
       name: 'Acme',
-      footer: [{ __component: 'chrome.footer', id: 2, text: '' }],
+      footer: [{ __component: 'preset-organism.footer', id: 2, text: '' }],
     });
     expect((r.chrome.footer[0] as any).brand).toEqual({ name: 'Acme' });
   });
 
   it('passes non-chrome blocks through untouched (BlockRenderer stays dumb)', () => {
-    const hero = { __component: 'section.hero', id: 3, title: 'Big' };
+    const hero = { __component: 'preset-organism.hero', id: 3, title: 'Big' };
     const r = mapSiteSettings(buildTime, { header: [hero] });
     expect(r.chrome.header).toEqual([hero]);
   });

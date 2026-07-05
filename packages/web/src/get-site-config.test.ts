@@ -63,14 +63,14 @@ describe('getSiteConfig', () => {
         data: {
           name: 'Acme',
           header: [{
-            __component: 'chrome.navbar',
+            __component: 'preset-organism.navbar',
             id: 1,
             items: [
               { label: 'About', page: { slug: 'about' }, newTab: false },
               { label: 'Docs', url: 'https://docs.test', newTab: true },
             ],
           }],
-          footer: [{ __component: 'chrome.footer', id: 2 }],
+          footer: [{ __component: 'preset-organism.footer', id: 2 }],
         },
       }),
     }));

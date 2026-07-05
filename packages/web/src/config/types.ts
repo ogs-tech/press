@@ -63,16 +63,17 @@ export interface ResolvedNavLink {
 }
 
 /**
- * A chrome dynamic-zone entry. Loose by design: the zones admit press.* /
- * section.* / custom.* blocks the engine cannot enumerate, and the renderer only
- * dispatches on `__component`. Engine chrome.* entries gain `brand`/`links`
- * during hydration (mapSiteSettings, Spec §3).
+ * A chrome dynamic-zone entry. Loose by design: the zones admit preset-atom.* /
+ * preset-organism.* / custom-* blocks the engine cannot enumerate, and the
+ * renderer only dispatches on `__component`. The engine chrome organisms
+ * (preset-organism.navbar/footer) gain `brand`/`links` during hydration
+ * (mapSiteSettings, Spec §3).
  */
 export type ChromeBlock = { __component: string; id: number; [k: string]: unknown };
 
-/** Hydrated `chrome.navbar` — the exact props the Navbar renderer receives (Spec §3). */
+/** Hydrated `preset-organism.navbar` — the exact props the Navbar renderer receives (Spec §3). */
 export interface ResolvedChromeNavbar {
-  __component: 'chrome.navbar';
+  __component: 'preset-organism.navbar';
   id: number;
   /** Injected from Site Settings identity — never stored on the block (Spec §1). */
   brand: { name: string; logo?: string };
@@ -81,9 +82,9 @@ export interface ResolvedChromeNavbar {
   cta?: { label?: string; href?: string; variant?: 'primary' | 'secondary' } | null;
 }
 
-/** Hydrated `chrome.footer` — brand injected for the copyright fallback (Spec §1). */
+/** Hydrated `preset-organism.footer` — brand injected for the copyright fallback (Spec §1). */
 export interface ResolvedChromeFooter {
-  __component: 'chrome.footer';
+  __component: 'preset-organism.footer';
   id: number;
   text?: string | null;
   brand: { name: string };
@@ -130,8 +131,9 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
   };
   /**
    * Site chrome (Spec §3): the two Site-Settings Dynamic Zones, HYDRATED —
-   * chrome.navbar entries carry the resolved brand + links and chrome.footer
-   * entries carry the brand for the copyright fallback; all other blocks pass
+   * preset-organism.navbar entries carry the resolved brand + links and
+   * preset-organism.footer entries carry the brand for the copyright fallback;
+   * all other blocks pass
    * through untouched so BlockRenderer stays intentionally dumb. Empty when the
    * CMS is empty/unreachable/malformed (unbranded over synthetic — Spec §4).
    */

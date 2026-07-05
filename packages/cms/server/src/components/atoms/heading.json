@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_headings",
+  "collectionName": "components_preset_atom_headings",
   "info": { "displayName": "Heading", "icon": "hashtag", "description": "A standalone section heading shipped by the press engine" },
   "options": {},
   "attributes": {

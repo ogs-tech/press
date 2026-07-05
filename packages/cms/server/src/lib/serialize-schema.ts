@@ -48,8 +48,9 @@ const requireContentType = (strapi: Core.Strapi, uid: string) => {
  * loop): the page AND site-setting content-types plus exactly the components
  * currently admitted into the three engine Dynamic Zones (page `body`,
  * site-setting `header`/`footer`), FOLLOWING nested component references —
- * `chrome.navbar` references `press.nav-item` and `press.button`, so those enter
- * the map even though they are not direct DZ members (Spec §2). Reading the live
+ * `preset-organism.navbar` references `preset-molecule.nav-item` and
+ * `preset-atom.button`, so those enter the map even though they are not direct DZ
+ * members (Spec §2). Reading the live
  * registry (not loose JSON on disk) means the generator can never disagree with
  * what Strapi actually serves.
  */
@@ -66,7 +67,7 @@ export const serializeSchema = (strapi: Core.Strapi): PressSchema => {
 
   const components: PressSchema['components'] = {};
   // Breadth-first over DZ admissions + nested `type: 'component'` references, so
-  // nested-only components (press.nav-item) enter the map exactly once.
+  // nested-only components (preset-molecule.nav-item) enter the map exactly once.
   const queue = [...new Set(dzComponents)];
   while (queue.length > 0) {
     const uid = queue.shift()!;

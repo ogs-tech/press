@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_lists",
+  "collectionName": "components_preset_atom_lists",
   "info": { "displayName": "List", "icon": "bulletList", "description": "An ordered or unordered list shipped by the press engine" },
   "options": {},
   "attributes": {

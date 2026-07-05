@@ -1,8 +1,8 @@
 // Engine-owned base types (hand-written, always present — never generated).
 // These describe ONLY what the engine knows generically: the page envelope, a
-// structural dynamic-zone entry, and the engine's reference blocks (`press.*`).
+// structural dynamic-zone entry, and the engine's atom blocks (`preset-atom.*`).
 //
-// The PROJECT's concrete content types (the `custom.*` blocks, the discriminated
+// The PROJECT's concrete content types (the `custom-*` blocks, the discriminated
 // PageBody union) are NOT here — they are generated from the live CMS schema into
 // the adopter's `shared/types/` zone by `press dev` (sync-types). The engine never
 // depends on a project's generated types; the project depends on these.
@@ -43,74 +43,74 @@ export interface BlocksNode {
 /** The inline-formatted prose carried by a text block: the top-level blocks array. */
 export type BlocksContent = BlocksNode[];
 
-/** Reference block `press.paragraph` — engine-owned (mirrors cms paragraph.json). */
-export interface PressParagraph {
-  __component: 'press.paragraph';
+/** Atom `preset-atom.paragraph` — engine-owned (mirrors cms atoms/paragraph.json). */
+export interface PresetAtomParagraph {
+  __component: 'preset-atom.paragraph';
   id: number;
   content: BlocksContent;
 }
 
-/** Reference block `press.heading` — engine-owned (mirrors cms heading.json). */
-export interface PressHeading {
-  __component: 'press.heading';
+/** Atom `preset-atom.heading` — engine-owned (mirrors cms atoms/heading.json). */
+export interface PresetAtomHeading {
+  __component: 'preset-atom.heading';
   id: number;
   text: string;
   level: '1' | '2' | '3' | '4' | '5' | '6';
 }
 
-/** Reference block `press.list` — engine-owned (mirrors cms list.json). */
-export interface PressList {
-  __component: 'press.list';
+/** Atom `preset-atom.list` — engine-owned (mirrors cms atoms/list.json). */
+export interface PresetAtomList {
+  __component: 'preset-atom.list';
   id: number;
   content: BlocksContent;
 }
 
-/** Reference block `press.quote` — engine-owned (mirrors cms quote.json). */
-export interface PressQuote {
-  __component: 'press.quote';
+/** Atom `preset-atom.quote` — engine-owned (mirrors cms atoms/quote.json). */
+export interface PresetAtomQuote {
+  __component: 'preset-atom.quote';
   id: number;
   content: BlocksContent;
   citation?: string;
 }
 
-/** Reference block `press.image` — engine-owned (mirrors cms image.json). */
-export interface PressImage {
-  __component: 'press.image';
+/** Atom `preset-atom.image` — engine-owned (mirrors cms atoms/image.json). */
+export interface PresetAtomImage {
+  __component: 'preset-atom.image';
   id: number;
   image: PressMedia;
   caption?: string;
 }
 
-/** Reference block `press.button` — engine-owned (mirrors cms button.json). */
-export interface PressButton {
-  __component: 'press.button';
+/** Atom `preset-atom.button` — engine-owned (mirrors cms atoms/button.json). */
+export interface PresetAtomButton {
+  __component: 'preset-atom.button';
   id: number;
   label: string;
   href: string;
   variant: 'primary' | 'secondary';
 }
 
-/** Reference block `press.separator` — engine-owned (mirrors cms separator.json). */
-export interface PressSeparator {
-  __component: 'press.separator';
+/** Atom `preset-atom.separator` — engine-owned (mirrors cms atoms/separator.json). */
+export interface PresetAtomSeparator {
+  __component: 'preset-atom.separator';
   id: number;
   variant: 'line' | 'dots';
 }
 
-/** Reference block `press.spacer` — engine-owned (mirrors cms spacer.json). */
-export interface PressSpacer {
-  __component: 'press.spacer';
+/** Atom `preset-atom.spacer` — engine-owned (mirrors cms atoms/spacer.json). */
+export interface PresetAtomSpacer {
+  __component: 'preset-atom.spacer';
   id: number;
   size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 /**
- * Engine section `section.hero` — engine-owned (mirrors cms section/hero.json).
+ * Organism `preset-organism.hero` — engine-owned (mirrors cms organisms/hero.json).
  * Hand-written here so the engine can type its own renderer; ALSO generated into
  * the adopter's generated.ts by the type-sync loop (Spec §5.2).
  */
-export interface SectionHero {
-  __component: 'section.hero';
+export interface PresetOrganismHero {
+  __component: 'preset-organism.hero';
   id: number;
   eyebrow?: string;
   title: string;
@@ -121,9 +121,9 @@ export interface SectionHero {
   align?: 'left' | 'center';
 }
 
-/** Engine section `section.cta` — engine-owned (mirrors cms section/cta.json). */
-export interface SectionCta {
-  __component: 'section.cta';
+/** Organism `preset-organism.cta` — engine-owned (mirrors cms organisms/cta.json). */
+export interface PresetOrganismCta {
+  __component: 'preset-organism.cta';
   id: number;
   title: string;
   subtitle?: string;

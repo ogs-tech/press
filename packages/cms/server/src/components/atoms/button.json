@@ -1,5 +1,5 @@
 {
-  "collectionName": "components_press_buttons",
+  "collectionName": "components_preset_atom_buttons",
   "info": { "displayName": "Button", "icon": "cursor", "description": "A call-to-action button shipped by the press engine" },
   "options": {},
   "attributes": {

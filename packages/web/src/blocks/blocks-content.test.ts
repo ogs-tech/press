@@ -112,7 +112,7 @@ describe('renderBlocks', () => {
       expect(() => render([{ type: 'mystery', children: [text('?')] } as any, para(text('ok'))])).not.toThrow();
       expect(render([{ type: 'mystery', children: [text('?')] } as any, para(text('ok'))])).toContain('<p>ok</p>');
     });
-    it('skips an embedded image node (images belong in press.image)', () => {
+    it('skips an embedded image node (images belong in preset-atom.image)', () => {
       const html = render([{ type: 'image', image: { url: '/x.png' } } as any, para(text('caption-less'))]);
       expect(html).not.toContain('<img');
       expect(html).toContain('<p>caption-less</p>');

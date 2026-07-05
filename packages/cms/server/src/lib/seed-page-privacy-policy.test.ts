@@ -53,19 +53,19 @@ describe('seedPrivacyPolicyPage — page template seed', () => {
     expect(creates[0].data).not.toHaveProperty('status');
   });
 
-  it('composes the body from press.* atoms only (structure + placeholders)', async () => {
+  it('composes the body from preset-atom.* atoms only (structure + placeholders)', async () => {
     const components = new Set(PRIVACY_PAGE.body.map((block: any) => block.__component));
-    expect([...components].sort()).toEqual(['press.heading', 'press.paragraph']);
+    expect([...components].sort()).toEqual(['preset-atom.heading', 'preset-atom.paragraph']);
 
-    // press.paragraph content is Strapi rich-text blocks JSON, not a plain string.
-    const firstParagraph = PRIVACY_PAGE.body.find((b: any) => b.__component === 'press.paragraph') as any;
+    // preset-atom.paragraph content is Strapi rich-text blocks JSON, not a plain string.
+    const firstParagraph = PRIVACY_PAGE.body.find((b: any) => b.__component === 'preset-atom.paragraph') as any;
     expect(firstParagraph.content[0]).toMatchObject({
       type: 'paragraph',
       children: [{ type: 'text' }],
     });
 
     // Section headings sit under the page title: level 2, standard sections present.
-    const headings = PRIVACY_PAGE.body.filter((b: any) => b.__component === 'press.heading') as any[];
+    const headings = PRIVACY_PAGE.body.filter((b: any) => b.__component === 'preset-atom.heading') as any[];
     expect(headings.every((h) => h.level === '2')).toBe(true);
     expect(headings.map((h) => h.text)).toContain('Your Rights');
   });
