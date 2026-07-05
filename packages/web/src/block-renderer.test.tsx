@@ -31,6 +31,14 @@ describe('BlockRenderer — section blocks', () => {
     expect(() => renderToStaticMarkup(<BlockRenderer blocks={blocks} />)).not.toThrow();
     expect(renderToStaticMarkup(<BlockRenderer blocks={blocks} />)).toBe('');
   });
+
+  it('warns with the canonical component urn for an unknown block (identity class 2)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const blocks = [{ __component: 'section.does-not-exist', id: 1 } as any];
+    renderToStaticMarkup(<BlockRenderer blocks={blocks} />);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('urn:component:section.does-not-exist'));
+    warn.mockRestore();
+  });
 });
 
 describe('BlockRenderer — chrome blocks', () => {

@@ -1,4 +1,4 @@
-import { buildUrn } from './urn';
+import { buildUrn, type Urn } from './urn';
 
 /**
  * Stable React key for a single dynamic-zone entry.
@@ -15,6 +15,6 @@ import { buildUrn } from './urn';
  * stored on the block: a DZ entry's id is ephemeral, so the engine promises
  * nothing beyond the current render.
  */
-export function blockKey(block: { __component: string; id?: number | null }, index: number): string {
+export function blockKey(block: { __component: string; id?: number | null }, index: number): Urn<string> {
   return buildUrn(block.__component, block.id ?? index);
 }

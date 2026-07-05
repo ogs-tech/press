@@ -21,7 +21,7 @@ export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildMetadata } from './config/build-metadata';
 export { buildThemeStyle } from './config/build-theme-style';
-export { buildUrn } from './urn';
+export { buildUrn, componentUrn } from './urn';
 export type { Urn, Entity, Canonical } from './urn';
 export type { PressPlugin } from './plugin';
 export { CookieConsentBanner } from './plugins/cookie-consent/cookie-consent-banner';

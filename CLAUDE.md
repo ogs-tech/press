@@ -194,23 +194,27 @@ This split is recent and easy to get wrong:
 ### Canonical identity (URNs)
 
 - Web-only identity primitives in `packages/web/src/urn.ts`: the closed union
-  `Entity` (`'page' | 'site-setting' | 'plugin'`), the template-literal `Urn<E>` =
-  `urn:{entity}:{id}`, the `Canonical<E extends Entity>` interface
-  (`{ urn: Urn<E> }`), and the pure `buildUrn(entity, id)` factory — interface +
-  factory, no classes, so a urn stays a plain string across the RSC boundary.
-  The wire/CMS contract is untouched: a urn is never sent or stored by press-cms.
-- `Page extends Canonical<'page'>`: `urn:page:{documentId}` is attached by the
-  pure `mapPage` (`map-page.ts`, mirroring the `mapSiteSettings` pure-mapper +
-  thin-fetcher split); `getPage` stays a thin fetcher.
-- `ResolvedPressConfig extends Canonical<'site-setting'>`: `mapSiteSettings`
-  attaches the SYNTHETIC constant `urn:site-setting:default` — a single type has
-  no id in this wire contract, so identity is never CMS-sourced and survives an
-  unreachable CMS.
-- `blockKey` formats its React key through the same primitive with
-  `__component` as the entity segment (`urn:press.image:5`) — a COMPUTED
-  identity, never stored: DZ block ids are ephemeral (unique only per component
-  table, no document identity), so blocks deliberately stay OUT of the closed
-  `Entity` union. Extending `Entity` is additive; widening a call site to plain
+  `Entity` (`'page' | 'site-setting' | 'plugin' | 'component'`), the
+  template-literal `Urn<E>` = `urn:{entity}:{id}`, the `Canonical<E extends
+  Entity>` interface (`{ urn: Urn<E> }`), and the pure `buildUrn(entity, id)`
+  factory (+ the `componentUrn(uid)` convenience) — interface + factory, no
+  classes, so a urn stays a plain string across the RSC boundary. The wire/CMS
+  contract is untouched: a urn is never sent or stored by press-cms.
+- **Three identity CLASSES coexist — keep them straight.** (1) STORED (via
+  `Canonical<E>`): a durable id fixed independent of render — `Page`
+  (`urn:page:{documentId}`, attached by pure `mapPage`), `ResolvedPressConfig`
+  (synthetic `urn:site-setting:default`), and `PressPlugin<Id>` (synthetic
+  `urn:plugin:{id}`); the per-type id-sourcing rationale lives in the "Engine
+  plugins" and "Build-time anchors" sections above, not repeated here. (2)
+  TYPE-level: `component` → `urn:component:{uid}` via `componentUrn`, naming a
+  palette REGISTRATION (`press.image`, `section.hero`, `chrome.navbar`, adopter
+  `custom.*`). No object implements `Canonical<'component'>` — the
+  reference/section/chrome-block registries ARE the canonical base; today's one
+  consumer is `BlockRenderer`'s "no component registered" dev warning. (3)
+  COMPUTED: `blockKey` formats `Urn<string>` with `__component` as the entity
+  segment (`urn:press.image:5`) — a per-instance key, never stored: DZ block ids
+  are ephemeral (unique only per component table), so block INSTANCES stay OUT of
+  `Entity`. Extending `Entity` is additive; widening a call site to plain
   `string` is not allowed.
 
 ### Versioning + upgrade

@@ -7,12 +7,29 @@
  */
 
 /**
- * The CLOSED set of engine aggregates that carry a canonical STORED identity.
+ * The CLOSED set of engine entities that carry a canonical identity. Three
+ * identity CLASSES coexist in this file — keep them straight:
+ *
+ *  1. STORED (via `Canonical<E>`, `E extends Entity`): a durable id fixed
+ *     independent of the current render — a document id (`page`), a synthetic
+ *     singleton constant (`site-setting`, `plugin`). Attached once at a mapping
+ *     boundary; safe to treat as stable across renders and RSC hops.
+ *  2. TYPE-level (also an `Entity`, but keyed by a code-defined uid, not a
+ *     document): `component` → `urn:component:{uid}` names a palette
+ *     REGISTRATION (`press.image`, `section.hero`, `chrome.navbar`, adopter
+ *     `custom.*`). No object implements `Canonical<'component'>` — the palette
+ *     registries (reference/section/chrome-blocks) ARE the canonical base;
+ *     any uid in them has this identity for free via `componentUrn`.
+ *  3. COMPUTED (`Urn<string>`, NOT an `Entity`): formatted ad hoc for a value
+ *     with no durable identity of its own — `blockKey` qualifies a DZ row's
+ *     ephemeral numeric id with its `__component` (`urn:press.image:5`).
+ *     Deliberately never promoted into this union: a DZ row id isn't durable.
+ *
  * Extend this union — never widen a call site to plain `string` — when a new
- * aggregate earns a stored urn (media, blocks with persisted identity).
- * Mirrors ThemeName's "additive, not breaking" precedent (config/types.ts).
+ * entity earns a stored/type-level urn (e.g. media). Mirrors ThemeName's
+ * "additive, not breaking" precedent (config/types.ts).
  */
-export type Entity = 'page' | 'site-setting' | 'plugin';
+export type Entity = 'page' | 'site-setting' | 'plugin' | 'component';
 
 /**
  * A `urn:{entity}:{id}` identity string. Generic over any string — NOT bounded
@@ -39,4 +56,16 @@ export interface Canonical<E extends Entity = Entity> {
  */
 export function buildUrn<E extends string>(entity: E, id: string | number): Urn<E> {
   return `urn:${entity}:${id}`;
+}
+
+/**
+ * Canonical identity of a component TYPE (identity class 2 above): the palette
+ * registration keyed by its uid — `press.image`, `section.hero`, `chrome.navbar`,
+ * an adopter's `custom.*`. Thin wrapper over `buildUrn` so there is exactly one
+ * formatting implementation. Contrast `blockKey`, which formats the COMPUTED
+ * per-instance identity (`urn:{uid}:{id}`) — same primitive, different axis:
+ * here the uid IS the id segment, there it is the entity segment.
+ */
+export function componentUrn(uid: string): Urn<'component'> {
+  return buildUrn('component', uid);
 }
