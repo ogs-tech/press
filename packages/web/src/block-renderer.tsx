@@ -3,6 +3,7 @@ import { referenceBlocks } from './reference-blocks';
 import { sectionBlocks } from './section-blocks';
 import { chromeBlocks } from './chrome-blocks';
 import { blockKey } from './block-key';
+import { componentUrn } from './urn';
 
 // Minimal structural shape the renderer needs from a dynamic-zone entry. No index
 // signature: the sync-generated component interfaces (PressParagraph, PressImage, CustomCallout, …)
@@ -38,7 +39,7 @@ export function BlockRenderer({ blocks, components = {} }: BlockRendererProps) {
         const Component = registry[block.__component];
         if (!Component) {
           if (process.env.NODE_ENV !== 'production') {
-            console.warn(`[press/web] no component registered for block "${block.__component}" — skipping`);
+            console.warn(`[press/web] no component registered for ${componentUrn(block.__component)} — skipping`);
           }
           return null;
         }
