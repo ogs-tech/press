@@ -32,7 +32,6 @@ describe('buildMetadata', () => {
   it('applies the title template to a page title (AC1)', () => {
     const m = buildMetadata(resolved, { title: 'E2E Home' });
     expect(m.title).toBe('E2E Home | Acme');
-    expect(m.openGraph?.title).toBe('E2E Home | Acme');
   });
 
   it('uses defaultTitle when there is no page (layout base)', () => {
@@ -40,32 +39,21 @@ describe('buildMetadata', () => {
     expect(m.title).toBe('Acme');
   });
 
-  it('falls back to defaultDescription when the page has none', () => {
-    const m = buildMetadata(resolved, { title: 'E2E Home' });
-    expect(m.description).toBe('An Acme content site.');
-  });
-
-  it('emits an absolute canonical and OG image', () => {
-    const m = buildMetadata(resolved, { title: 'E2E Home' });
-    expect(m.alternates?.canonical).toBe('https://acme.test');
-    expect(m.openGraph?.images).toEqual([{ url: 'https://acme.test/og.png' }]);
-  });
-
   it('derives the favicon icon from brand.favicon (AC2)', () => {
     const m = buildMetadata(resolved, null);
     expect(m.icons).toEqual({ icon: '/favicon.ico' });
   });
 
-  it('uses the page description when provided', () => {
-    const m = buildMetadata(resolved, { title: 'E2E Home', description: 'Custom desc' });
-    expect(m.description).toBe('Custom desc');
-    expect(m.openGraph?.description).toBe('Custom desc');
+  it('omits the favicon when brand.favicon is empty', () => {
+    const noFavicon: ResolvedPressConfig = { ...resolved, brand: { ...resolved.brand, favicon: '' } };
+    const m = buildMetadata(noFavicon, null);
+    expect(m.icons).toBeUndefined();
   });
 
-  it('omits description when the resolved default is empty', () => {
-    const noDesc: ResolvedPressConfig = { ...resolved, seo: { ...resolved.seo, defaultDescription: '' } };
-    const m = buildMetadata(noDesc, null);
+  it('emits no SEO/social metadata — deferred to Plugin/SEO', () => {
+    const m = buildMetadata(resolved, { title: 'E2E Home' });
     expect(m.description).toBeUndefined();
-    expect(m.openGraph?.description).toBeUndefined();
+    expect(m.openGraph).toBeUndefined();
+    expect(m.alternates).toBeUndefined();
   });
 });
