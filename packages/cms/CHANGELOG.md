@@ -1,4 +1,4 @@
-# @ogs-tech/press-web
+# @ogs-tech/press-cms
 
 ## 1.0.0
 
@@ -34,31 +34,6 @@
   plugin id are unchanged (the product name "press" is not a component category).
   The scaffolder ships the migrated `custom-organism.callout` example.
 
-- [#8](https://github.com/ogs-tech/press/pull/8) [`a6bdc84`](https://github.com/ogs-tech/press/commit/a6bdc84ca26eebe65a78ecfbdd7407e096ee839f) Thanks [@odenirdev](https://github.com/odenirdev)! - feat(web)!: canonical urn identity — `urn:{entity}:{id}` on Page and Site Settings
-
-  New web-only identity primitives in `packages/web/src/urn.ts`, exported from the
-  package root: the closed `Entity` union (`'page' | 'site-setting'`), the
-  template-literal `Urn<E>` (`urn:{entity}:{id}`), the `Canonical<E>` interface
-  (`{ urn: Urn<E> }`), and the pure `buildUrn(entity, id)` factory. The wire
-  contract, press-cms, and press-shared are untouched — a urn is never sent or
-  stored by the CMS.
-
-  `Page` now extends `Canonical<'page'>`: the new pure `mapPage` mapper (mirroring
-  the `mapSiteSettings` pure-mapper + thin-fetcher split) attaches
-  `urn:page:{documentId}` right after the fetch. `ResolvedPressConfig` extends
-  `Canonical<'site-setting'>`: `mapSiteSettings` attaches the synthetic constant
-  `urn:site-setting:default` (single type — one record, identity never
-  CMS-sourced, present even when the CMS is unreachable). `blockKey` now formats
-  its React key through the same primitive (`press.image:5` →
-  `urn:press.image:5`) — a computed identity, never stored on the block; blockKey
-  was never exported, so no public surface changes shape there.
-
-  BREAKING (press-web): `Page` and `ResolvedPressConfig` gain a REQUIRED `urn`
-  field. Runtime is additive — every object produced by `getPage`/`getSiteConfig`
-  carries it automatically — but adopter code that hand-constructs a literal of
-  either type (e.g. a test fixture or a mock) fails `tsc` until it adds `urn`
-  (`'urn:page:<documentId>'` / `'urn:site-setting:default'`).
-
 - [#8](https://github.com/ogs-tech/press/pull/8) [`a6bdc84`](https://github.com/ogs-tech/press/commit/a6bdc84ca26eebe65a78ecfbdd7407e096ee839f) Thanks [@odenirdev](https://github.com/odenirdev)! - feat!: block-composable site chrome (chrome.\*)
 
   The site header and footer become block-composed: the `site-setting` single type
@@ -81,6 +56,25 @@
   internally) and `ResolvedPressConfig.nav` is replaced by
   `ResolvedPressConfig.chrome` (`{ header, footer }` hydrated block arrays).
   Override the chrome like any block: `components={{ 'chrome.navbar': MyNavbar }}`.
+
+### Minor Changes
+
+- [#9](https://github.com/ogs-tech/press/pull/9) [`21c793b`](https://github.com/ogs-tech/press/commit/21c793b456331a7f6a1e3246ebc2d967416b5f3c) Thanks [@odenirdev](https://github.com/odenirdev)! - feat(cms): component-picker UX — per-block icons + human category labels
+
+  Every engine component JSON now sets `info.icon` (Strapi's fixed icon enum), so
+  the admin "Pick one component" dialog stops rendering the generic grid fallback
+  for all blocks: `press.paragraph` → `write`, `press.image` → `picture`,
+  `section.hero` → `landscape`, `chrome.navbar` → `layout`, and so on.
+
+  The plugin also ships its first admin bundle (`./strapi-admin` export, built by
+  the same `strapi-plugin build`). Its single job is `registerTrads`: the picker
+  resolves each category accordion title through react-intl using the RAW
+  category string as the message id, so the bundle registers unprefixed keys —
+  `press` → "Blocks", `section` → "Sections", `chrome` → "Site chrome",
+  `custom` → "Custom blocks" (en + pt/pt-BR) — labelling the picker without
+  touching component uids (a uid is wire/DB contract; labels are presentation).
+  Adopters keep the final word: `src/admin/app.tsx` `config.translations` takes
+  precedence over these engine defaults.
 
 - [#9](https://github.com/ogs-tech/press/pull/9) [`21c793b`](https://github.com/ogs-tech/press/commit/21c793b456331a7f6a1e3246ebc2d967416b5f3c) Thanks [@odenirdev](https://github.com/odenirdev)! - feat!: cookie-consent — the first engine plugin, introducing the `'plugin'` canonical
 
@@ -120,17 +114,22 @@ marketing`); editors toggle and re-word them, never rename keys.
   (bootstrap script + banner mount) and is re-materialized on the next
   `press dev`/`build`.
 
-### Minor Changes
+- [#9](https://github.com/ogs-tech/press/pull/9) [`21c793b`](https://github.com/ogs-tech/press/commit/21c793b456331a7f6a1e3246ebc2d967416b5f3c) Thanks [@odenirdev](https://github.com/odenirdev)! - feat(cms): custom block kinds — placement-scoped adopter categories
 
-- [#10](https://github.com/ogs-tech/press/pull/10) [`260d8ea`](https://github.com/ogs-tech/press/commit/260d8eacd4df2518b74133678d1c476d0aa637f4) Thanks [@odenirdev](https://github.com/odenirdev)! - feat(web): `component` canonical — `urn:component:{uid}` type-level identity
+  The adopter extension point now carries placement semantics per category
+  folder (`admitCustomBlocks`):
 
-  `Entity` gains a 4th member `'component'` (additive), plus a `componentUrn(uid)`
-  factory (exported from the package root) formatting `urn:component:{uid}` for the
-  palette registries (`press.*`/`section.*`/`chrome.*`/`custom.*`). This is a
-  TYPE-level identity — distinct from the STORED identities (page/site-setting/
-  plugin) and from `blockKey`'s COMPUTED per-instance key. No object implements
-  `Canonical<'component'>`; the first consumer is `BlockRenderer`'s
-  unknown-component dev warning, now citing the canonical `urn:component:…` form.
+  - `src/components/custom/` → every engine Dynamic Zone (page `body` +
+    site-setting `header`/`footer`) — the existing contract, unchanged;
+  - `src/components/custom-section/` → the page `body` only;
+  - `src/components/custom-chrome/` → the site-setting `header`/`footer` only,
+    never the page body.
+
+  Purely additive: existing `custom.*` blocks keep their behavior and uids. The
+  engine still never names individual adopter blocks — only the `custom*`
+  categories are the stable contract. Note: `custom-chrome.*` blocks do not
+  receive the brand/links hydration that `chrome.navbar` gets from
+  `mapSiteSettings`; they render from their stored attributes alone.
 
 - [`b11ced9`](https://github.com/ogs-tech/press/commit/b11ced9730896101871952e4627fcc2b3cb19fb8) Thanks [@odenirdev](https://github.com/odenirdev)! - feat: editable header navigation
 
@@ -148,6 +147,20 @@ marketing`); editors toggle and re-word them, never rename keys.
   which the one-level `populate=*` did not reach — so the SEO OG image
   (`defaultOgImage`) now resolves from the CMS instead of always being undefined.
 
+- [#9](https://github.com/ogs-tech/press/pull/9) [`21c793b`](https://github.com/ogs-tech/press/commit/21c793b456331a7f6a1e3246ebc2d967416b5f3c) Thanks [@odenirdev](https://github.com/odenirdev)! - feat(cms): seed a Privacy Policy page template once at bootstrap
+
+  `bootstrap()` now seeds a "Privacy Policy" page (slug `privacy-policy`) exactly
+  once, following the chrome-seed semantics: a `privacyPageSeeded` plugin-store
+  flag makes the pass literal-once, an adopter page already occupying the slug
+  wins (seed marks itself done without writing), and an editor-deleted page is
+  respected forever. The page is created as a DRAFT — the engine never publishes
+  content on its own.
+
+  The template is structure + placeholder guidance composed from existing
+  `press.*` atoms (intro, Data We Collect, Cookies, How We Use Your Data, Data
+  Sharing, Your Rights, Contact) — no legal boilerplate is embedded; the editor
+  writes and owns the actual policy text.
+
 - [#6](https://github.com/ogs-tech/press/pull/6) [`490bdc7`](https://github.com/ogs-tech/press/commit/490bdc7f63c9fe893c249e32be8f60fd13891061) Thanks [@odenirdev](https://github.com/odenirdev)! - feat: composite section blocks (section.\*)
 
   Adds an engine-owned palette of composite sections under a new `section.*`
@@ -161,25 +174,13 @@ marketing`); editors toggle and re-word them, never rename keys.
   `components={{ 'section.hero': MyHero }}`. Additive and non-breaking: `press.*` and
   `custom.*` are unchanged; adopters gain `section.*` on `press upgrade`.
 
-## 0.4.1
-
 ### Patch Changes
 
-- [`1051dcd`](https://github.com/ogs-tech/press/commit/1051dcd39fd0c19a6fabf2f5d6fe50bc93286422) Thanks [@odenirdev](https://github.com/odenirdev)! - Validate the automated OIDC release pipeline (npm trusted publisher) end-to-end — no functional change.
+- [#8](https://github.com/ogs-tech/press/pull/8) [`a6bdc84`](https://github.com/ogs-tech/press/commit/a6bdc84ca26eebe65a78ecfbdd7407e096ee839f) Thanks [@odenirdev](https://github.com/odenirdev)! - fix(cms): silence the schema-poll http log line in development
 
-## 0.4.0
-
-### Minor Changes
-
-- [`9e03291`](https://github.com/ogs-tech/press/commit/9e0329169b48b9ae97fd98f6781a693d9303e6d5) Thanks [@odenirdev](https://github.com/odenirdev)! - Relocate the press runtime into the engine and add `press upgrade`.
-
-  `@ogs-tech/press-web` now ships the `press` runtime bin with `dev` / `build` / `upgrade`
-  subcommands: the orchestration (`materialize` + `dev` + `build`) moved here from the CLI, and
-  the new `press upgrade [version]` rewrites the project's exact `@ogs-tech/press-*` pins — each to
-  its own latest published version, or to an explicit coordinated version — reinstalls, and
-  re-materializes the host. The adopter's Project zone is never touched.
-
-  Part of the command-surface revision that also renamed the scaffolder
-  `@ogs-tech/press-cli` → `@ogs-tech/create-press` (run-once, invoked via
-  `pnpm create @ogs-tech/press <name>`, and no longer a dependency of generated projects) and
-  purged `deploy` from the package surface.
+  `press dev` polls `GET /api/press/schema` every ~2s (the type-sync watcher),
+  and Strapi's `strapi::logger` middleware logs every request unconditionally —
+  flooding the dev log with one line per poll. The plugin now wraps
+  `strapi.log.http` during `register()` and drops messages for that one
+  engine-owned path, in development only: in production the watcher never runs,
+  and a stray hit on the schema endpoint stays visible.

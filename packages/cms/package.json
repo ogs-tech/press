@@ -1,12 +1,14 @@
 {
   "name": "@ogs-tech/press-cms",
-  "version": "0.3.2",
+  "version": "1.0.0",
   "description": "press engine — content-types and reference blocks",
   "keywords": [],
   "license": "MIT",
   "author": "Odenir Gomes",
   "type": "commonjs",
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ogs-tech/press.git",
