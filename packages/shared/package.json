@@ -1,6 +1,6 @@
 {
   "name": "@ogs-tech/press-shared",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "press — framework-agnostic contract types shared by the engine packages",
   "license": "MIT",
@@ -10,9 +10,14 @@
   "types": "./src/index.ts",
   "exports": {
     "./package.json": "./package.json",
-    ".": { "types": "./src/index.ts", "default": "./src/index.ts" }
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   },
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "scripts": {
     "build": "echo '@ogs-tech/press-shared ships TS source; nothing to build'",
     "typecheck": "tsc --noEmit"

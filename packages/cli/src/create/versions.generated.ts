@@ -2,9 +2,9 @@
 // Regenerate with: pnpm --filter @ogs-tech/create-press gen:versions
 // Source of truth: the engine packages' own package.json manifests.
 export const VERSIONS = {
-  pressCli: '0.1.0',
-  pressWeb: '0.4.1',
-  pressCms: '0.3.2',
+  pressCli: '0.1.1',
+  pressWeb: '1.0.0',
+  pressCms: '1.0.0',
   next: '^15.1.0',
   react: '^18.3.1',
   strapi: '5.48.0',

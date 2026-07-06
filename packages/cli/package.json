@@ -1,13 +1,21 @@
 {
   "name": "@ogs-tech/create-press",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scaffold a new press project (ultra-thin Project zone)",
   "license": "MIT",
   "author": "Odenir Gomes",
   "type": "commonjs",
-  "bin": { "create-press": "bin/create-press.js" },
-  "files": ["bin", "dist", "templates"],
-  "publishConfig": { "access": "public" },
+  "bin": {
+    "create-press": "bin/create-press.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "templates"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ogs-tech/press.git",
