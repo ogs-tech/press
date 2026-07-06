@@ -69,6 +69,17 @@ philosophy. BASE/PAGES becomes a pure foundation:
 - Keep **no** `generateStaticParams` and `dynamicParams` at its default (`true`) so pages
   render on-demand and the build never touches a live CMS (preserves the property in
   `src/commands/build.ts:10-18`).
+
+  > **Superseded during implementation (2026-07-06).** An empirical `next build`
+  > showed the optional catch-all `[[...slug]]` stays `ƒ (Dynamic)` with no
+  > `generateStaticParams` (a paramless optional catch-all has no paths to
+  > prerender in Next 15), so "rota não-dynamic" was NOT met. Decision reversed:
+  > the route now DOES declare `generateStaticParams`, listing published slugs
+  > from the CMS via `getPageSlugs`, and the build flips to `● (SSG)` + ISR. The
+  > CMS stays a build-time OPTIMIZATION, not a hard dependency — `getPageSlugs`
+  > fails to empty (CMS unreachable at build → `[]` → every page renders
+  > on-demand, `dynamicParams` still `true`). The `build.ts:10-18` property
+  > becomes "build calls the CMS opportunistically; unreachable → on-demand".
 - Optionally add `export const revalidate = 60` for an explicit segment default; decide
   during implementation whether the fetch-level `revalidate` alone reads clearly enough.
 - `/home → /` (`permanentRedirect`) and `notFound()` run inside the render and are
