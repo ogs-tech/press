@@ -13,8 +13,9 @@ const CMS_URL = 'http://localhost:1337';
  * built web output reflects press.config.ts (the Spec 2 SEO/identity surfaces in
  * the production render, not just dev). The catch-all route declares no
  * generateStaticParams, so Next never calls getPage at build time — no live cms
- * is required to build. At runtime the route fetches with cache:'no-store'
- * (dynamic RSC, never stale).
+ * is required to build. At runtime the route fetches ISR-cached (revalidate: 60):
+ * pages render on-demand on first hit and revalidate every 60s (not forced
+ * dynamic, not stale beyond the window).
  */
 export async function buildCommand(opts: BuildOptions): Promise<void> {
   const root = opts.cwd;

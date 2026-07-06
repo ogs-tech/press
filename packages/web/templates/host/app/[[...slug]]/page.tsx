@@ -3,6 +3,12 @@ import { BlockRenderer, buildMetadata, getPage, getSiteConfig } from '@ogs-tech/
 import { customBlocks } from '../../press.blocks';
 import { buildTime } from '../../press-config';
 
+// ISR: the route is statically generated on first hit and revalidated every 60s
+// (mirrors getPage/getSiteConfig). No generateStaticParams → the build never
+// calls a live CMS; dynamicParams stays at its default (true) so any slug renders
+// on-demand. /home → / and notFound() run inside the render, unchanged under ISR.
+export const revalidate = 60;
+
 interface PageProps {
   params: Promise<{ slug?: string[] }>;
 }
