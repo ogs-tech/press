@@ -1,5 +1,6 @@
 export { BlockRenderer } from './block-renderer';
 export { getPage } from './get-page';
+export { getPageSlugs, getStaticPageParams } from './get-page-slugs';
 export { getSiteConfig } from './get-site-config';
 export { atomBlocks } from './atom-blocks';
 export { renderBlocks } from './blocks/blocks-content';

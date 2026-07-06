@@ -11,11 +11,12 @@ const CMS_URL = 'http://localhost:1337';
  * Builds both halves into deployable artifacts (spec §5): materialize the host,
  * `strapi build` the cms host, then `next build` the materialized web host. The
  * built web output reflects press.config.ts (the Spec 2 SEO/identity surfaces in
- * the production render, not just dev). The catch-all route declares no
- * generateStaticParams, so Next never calls getPage at build time — no live cms
- * is required to build. At runtime the route fetches ISR-cached (revalidate: 60):
- * pages render on-demand on first hit and revalidate every 60s (not forced
- * dynamic, not stale beyond the window).
+ * the production render, not just dev). The catch-all route prerenders published
+ * pages at build via generateStaticParams (it lists published slugs from the
+ * CMS), so a reachable CMS lets the build emit static ISR pages; if the CMS is
+ * unreachable at build the list fails to empty and every page renders on-demand.
+ * Either way pages are ISR-cached (revalidate: 60): revalidated every 60s, not
+ * forced dynamic per request.
  */
 export async function buildCommand(opts: BuildOptions): Promise<void> {
   const root = opts.cwd;

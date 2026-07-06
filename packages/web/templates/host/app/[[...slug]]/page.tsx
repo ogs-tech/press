@@ -1,13 +1,25 @@
 import { notFound, permanentRedirect } from 'next/navigation';
-import { BlockRenderer, buildMetadata, getPage, getSiteConfig } from '@ogs-tech/press-web';
+import {
+  BlockRenderer,
+  buildMetadata,
+  getPage,
+  getSiteConfig,
+  getStaticPageParams,
+} from '@ogs-tech/press-web';
 import { customBlocks } from '../../press.blocks';
 import { buildTime } from '../../press-config';
 
-// ISR: the route is statically generated on first hit and revalidated every 60s
-// (mirrors getPage/getSiteConfig). No generateStaticParams → the build never
-// calls a live CMS; dynamicParams stays at its default (true) so any slug renders
-// on-demand. /home → / and notFound() run inside the render, unchanged under ISR.
+// ISR: published pages are prerendered at build — generateStaticParams lists
+// their slugs from the CMS — and revalidated every 60s (mirrors getPage/
+// getSiteConfig). dynamicParams stays at its default (true), so a slug added
+// after the build — or every slug when the CMS is unreachable at build (the
+// list fails to empty) — renders on-demand and caches. /home → / and notFound()
+// run inside the render, unchanged under ISR.
 export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return getStaticPageParams(buildTime.routes.home);
+}
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>;

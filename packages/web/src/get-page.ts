@@ -13,9 +13,10 @@ type RevalidateInit = RequestInit & { next?: { revalidate?: number } };
  * slug yields the engine's 404 → returns null, which the route turns into
  * notFound(). ISR-cached (`revalidate: 60`, mirroring getSiteConfig): a cached
  * fetch keeps the route eligible for static generation + ISR instead of forcing
- * it dynamic per request. The route declares no generateStaticParams, so the
- * build never touches a live CMS — pages render on-demand and cache.
- * Thin fetcher: identity attachment lives in mapPage (canonical-urn Spec §2).
+ * it dynamic per request. Published pages are prerendered at build via the
+ * route's generateStaticParams (getPageSlugs); a slug added later renders
+ * on-demand and caches. Thin fetcher: identity attachment lives in mapPage
+ * (canonical-urn Spec §2).
  */
 export async function getPage(slug: string): Promise<Page | null> {
   const init: RevalidateInit = { next: { revalidate: 60 } };
