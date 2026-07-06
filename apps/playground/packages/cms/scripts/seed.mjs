@@ -1,6 +1,6 @@
 // cms/scripts/seed.mjs — One-shot sample content for the cms host. Boots it
 // programmatically (CMS server must be STOPPED), fills the Site Settings single
-// type (identity/SEO + theme), uploads a few tiny PNGs, and creates a PUBLISHED
+// type (identity/SEO + theme + a demo navbar), uploads a few tiny PNGs, and creates a PUBLISHED
 // 'home' page that showcases the Atomic Design core palette (heading, paragraph,
 // list, quote, separator, image, button, spacer) plus the adopter's custom-organism.callout,
 // so the first `press dev` renders a branded, themed site.
@@ -53,6 +53,20 @@ const SITE_SETTINGS = {
     border: 'rgba(20,32,54,0.12)',
   },
   themeRadius: { xs: '6px', sm: '10px', md: '14px', lg: '20px' },
+  // Demo chrome: a navbar carrying two url-based preset-molecule.nav-item molecules, so a
+  // molecule renders live in the playground. The engine seeds an EMPTY navbar by default
+  // (DEFAULT_CHROME — an editor decides the links); this playground-only override
+  // populates it for the dogfood. url-based items resolve without a page relation
+  // (map-site-settings resolveNavItem), keeping the seed self-contained.
+  header: [
+    {
+      __component: 'preset-organism.navbar',
+      items: [
+        { label: 'Home', url: '/' },
+        { label: 'Docs', url: 'https://github.com/ogs-tech/press', newTab: true },
+      ],
+    },
+  ],
 };
 
 async function main() {

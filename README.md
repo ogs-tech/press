@@ -102,35 +102,41 @@ fetches them at **runtime** (ISR ~60s), so changes appear **without a redeploy**
 CMS is unreachable the site renders unbranded/default-themed rather than crashing — there
 is no `press.config` fallback for identity by design.
 
-**Custom blocks** — the engine ships a `press.*` core palette (paragraph, heading, list,
-quote, image, button, separator, spacer). To add your own, drop a Strapi component under
-`packages/cms/src/components/custom/`, a matching React component under
+**Custom blocks** — the engine ships a `preset-*` Atomic Design palette: atoms
+(`preset-atom.paragraph`, `heading`, `list`, `quote`, `image`, `button`, `separator`,
+`spacer`) and organisms (`preset-organism.hero`, `cta`, `navbar`, `footer`). To add your
+own, drop a Strapi component under `packages/cms/src/components/custom-<layer>/` (the
+folder names the atomic layer, e.g. `custom-organism/`), a matching React component under
 `packages/web/blocks/custom/`, and wire it in `packages/web/blocks/custom/index.ts`:
 
 ```ts
 export const customBlocks: Record<string, ComponentType<any>> = {
-  'custom.callout': Callout,
+  'custom-organism.callout': Callout,
 };
 ```
 
-Any `custom.*` component is auto-admitted into the page's Dynamic Zone, and the
-materialized host passes this map to its block renderer — so your blocks render
-server-side alongside the engine's built-in blocks.
+Every `custom-*` component is auto-admitted into **all** engine Dynamic Zones — the page
+`body` and the site-setting `header`/`footer` — so the editor decides placement in the
+picker (unlike the engine's own `preset-*` blocks, whose placement is curated per
+content-type). The materialized host passes this map to its block renderer, so your blocks
+render server-side alongside the engine's built-in blocks.
 
-**Overriding a reference block** — the `press.*` palette ships as defaults, not a
+**Overriding a reference block** — the `preset-*` palette ships as defaults, not a
 sealed set. The block renderer merges your map *over* the engine's
-(`{ ...referenceBlocks, ...customBlocks }`), so mapping the **same key** shadows a
-built-in with your own React component — markup and behavior become yours. This is
-**web-only**: the CMS still serves `press.button` and the editing experience is
-unchanged, so existing content keeps rendering.
+(`{ ...atomBlocks, ...organismBlocks, ...customBlocks }`), so mapping the **same key**
+shadows a built-in with your own React component — markup and behavior become yours. Any
+`preset-atom.*` or `preset-organism.*` key is overridable this way (e.g.
+`'preset-organism.hero': MyHero`). This is **web-only**: the CMS still serves
+`preset-atom.button` and the editing experience is unchanged, so existing content keeps
+rendering.
 
 ```tsx
 // packages/web/blocks/custom/Button.tsx — take the same props the engine block gets.
-import type { PressButton } from '@ogs-tech/press-web';
+import type { PresetAtomButton } from '@ogs-tech/press-web';
 
-export function Button({ label, href, variant }: PressButton) {
+export function Button({ label, href, variant }: PresetAtomButton) {
   // Keep `data-block` to inherit the default theme.css styling and only tweak markup;
-  // drop it to fully own the look (the engine's `[data-block="press.button"]` rule
+  // drop it to fully own the look (the engine's `[data-block="preset-atom.button"]` rule
   // then matches nothing and goes inert).
   return <a className="cta" href={href} data-variant={variant ?? 'primary'}>{label}</a>;
 }
@@ -139,19 +145,19 @@ export function Button({ label, href, variant }: PressButton) {
 ```ts
 // packages/web/blocks/custom/index.ts — map the SAME key to shadow the default.
 export const customBlocks: Record<string, ComponentType<any>> = {
-  'custom.callout': Callout,
-  'press.button': Button, // overrides the engine's press.button
+  'custom-organism.callout': Callout,
+  'preset-atom.button': Button, // overrides the engine's preset-atom.button
 };
 ```
 
 Your override is yours to maintain: `press upgrade` keeps updating the engine's
 *default* (which your map overrides) but never touches your component. If a future
-engine version changes a block's prop **shape**, the generated `Press*` type changes
+engine version changes a block's prop **shape**, the generated `Preset*` type changes
 and `tsc` flags your override at its call site — so drift fails loud rather than
 silently rendering wrong.
 
 **Reusing a reference block inside a custom block** — the inverse of overriding: instead
-of *replacing* a `press.*` block you *embed* one. Each reference block is exported
+of *replacing* a `preset-*` block you *embed* one. Each reference block is exported
 individually from `@ogs-tech/press-web` (`Heading`, `Paragraph`, `List`, `Quote`,
 `Image`, `Button`, `Separator`, `Spacer`), so a custom block can reuse the engine's
 server-rendered, theme-aware markup instead of reimplementing it. You feed each one from
@@ -160,27 +166,27 @@ your **own** schema fields — the presentation is reused, the data stays yours.
 ```tsx
 // packages/web/blocks/custom/Callout.tsx
 import { Heading, Paragraph, Button } from '@ogs-tech/press-web';
-import type { CustomCallout } from '<name>-shared/types';
+import type { CustomOrganismCallout } from '<name>-shared/types';
 
-export function Callout({ title, body, ctaLabel, ctaHref }: CustomCallout) {
+export function Callout({ title, body, ctaLabel, ctaHref }: CustomOrganismCallout) {
   return (
-    <aside data-block="custom.callout">
-      <Heading text={title} level="3" />  {/* press.heading → { text, level } */}
-      <Paragraph content={body} />         {/* press.paragraph → { content } */}
+    <aside data-block="custom-organism.callout">
+      <Heading text={title} level="3" />  {/* preset-atom.heading → { text, level } */}
+      <Paragraph content={body} />         {/* preset-atom.paragraph → { content } */}
       <Button label={ctaLabel} href={ctaHref} variant="primary" />
     </aside>
   );
 }
 ```
 
-The one gotcha is **prop shape** — the generated `Press*` types are the source of truth.
+The one gotcha is **prop shape** — the generated `Preset*` types are the source of truth.
 `Heading` wants `{ text, level }` and `Button` wants `{ label, href, variant }` (plain
 scalars), but `Paragraph`/`List`/`Quote` want `{ content }` — a Strapi **blocks** value,
 *not* a string. So to feed a `Paragraph`, the custom block's own schema needs a `blocks`
 attribute:
 
 ```jsonc
-// packages/cms/src/components/custom/callout.json
+// packages/cms/src/components/custom-organism/callout.json
 "attributes": {
   "title":    { "type": "string", "required": true },
   "body":     { "type": "blocks" },        // ← feeds <Paragraph content={body} />
@@ -189,12 +195,12 @@ attribute:
 }
 ```
 
-The embedded child carries its own `data-block` (e.g. `press.heading`), so it inherits
-the default theme.css styling for free; the wrapper's `data-block="custom.callout"` is
-your block's own hook. Reuse is **web-only and decided by you** — the editor fills your
-custom block's flat fields, not a nested press block; you choose the layout. (Letting the
-*editor* compose `press.*` blocks inside a custom component is a different, schema-level
-feature and not currently supported.)
+The embedded child carries its own `data-block` (e.g. `preset-atom.heading`), so it
+inherits the default theme.css styling for free; the wrapper's
+`data-block="custom-organism.callout"` is your block's own hook. Reuse is **web-only and
+decided by you** — the editor fills your custom block's flat fields, not a nested preset
+block; you choose the layout. (Letting the *editor* compose `preset-*` blocks inside a
+custom component is a different, schema-level feature and not currently supported.)
 
 ## Updating the engine
 
@@ -221,8 +227,9 @@ code.
 
 - `packages/cli` — `@ogs-tech/create-press`: the run-once scaffolder invoked via `pnpm create @ogs-tech/press`; not added as a project dependency.
 - `packages/cms` — the **engine** Strapi plugin (`@ogs-tech/press-cms`): ships the
-  `page` + `site-setting` content-types, injects the `press.*` reference palette into
-  the page Dynamic Zone, and serves the type-sync contract at `/api/press/schema`.
+  `page` + `site-setting` content-types, injects the `preset-*` Atomic Design palette
+  (atoms/molecules/organisms/config) into the engine Dynamic Zones, and serves the
+  type-sync contract at `/api/press/schema`.
 - `packages/web` — the **engine** web layer (`@ogs-tech/press-web`): the Next host
   template, block renderer, config helpers, and CMS→types sync.
 - `packages/shared` — `@ogs-tech/press-shared`: framework-agnostic contract types

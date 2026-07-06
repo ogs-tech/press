@@ -23,7 +23,7 @@ export interface ConsentState {
   decidedAt: string;
 }
 
-/** Raw `press.cookie-category` payload as populated by the site-setting controller. */
+/** Raw `preset-config.cookie-category` payload as populated by the site-setting controller. */
 export interface RawCookieCategory {
   enabled?: boolean;
   label?: string;
@@ -31,7 +31,7 @@ export interface RawCookieCategory {
 }
 
 /**
- * Raw `press.cookie-consent` payload as populated by the site-setting
+ * Raw `preset-config.cookie-consent` payload as populated by the site-setting
  * controller. EVERY field is optional: an unfilled component and an
  * unreachable CMS both map as if absent (the SiteSettingsData rule).
  */

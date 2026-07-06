@@ -23,7 +23,7 @@ export interface Attr {
   enum?: string[];
   multiple?: boolean;
   components?: string[];
-  /** For `type: 'component'`: the referenced component uid (e.g. `press.nav-item`). */
+  /** For `type: 'component'`: the referenced component uid (e.g. `preset-molecule.nav-item`). */
   component?: string;
   /** For `type: 'component'`: repeatable → array on the wire (Spec §2). */
   repeatable?: boolean;
