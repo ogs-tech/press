@@ -20,12 +20,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Guard the committed versions.generated.ts BEFORE `pnpm build` runs — the cli's
+      # build script is `gen:versions && tsc` (WRITE mode), which would regenerate the
+      # file in the runner's tree and mask a stale commit. Must stay above `pnpm build`.
+      - run: pnpm --filter @ogs-tech/create-press gen:versions --check
+
       - run: pnpm build
 
       - run: pnpm -r --if-present typecheck
 
       - run: pnpm -r test
-
-      - run: pnpm --filter @ogs-tech/press-cli gen:versions --check
 
       - run: pnpm pack:check

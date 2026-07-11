@@ -9,6 +9,23 @@ export interface RunOptions {
   env?: Record<string, string | undefined>;
 }
 
+/**
+ * A subprocess that exited non-zero, carrying the REAL exit code (and signal, if
+ * killed). bin/press.ts re-exits with this code so `press build` surfaces the
+ * failing tool's own code instead of a generic 1 — the same "truthful failure"
+ * guarantee dev.ts already gives via waitForReadyOrExit.
+ */
+export class SubprocessError extends Error {
+  constructor(
+    readonly command: string,
+    readonly code: number | null,
+    readonly signal: NodeJS.Signals | null = null,
+  ) {
+    super(`${command} exited ${code ?? `(signal ${signal})`}`);
+    this.name = 'SubprocessError';
+  }
+}
+
 /** Runs a command, inheriting stdio, and resolves on exit 0 (rejects otherwise). */
 export function run(cmd: string, args: string[], opts: RunOptions = {}): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -18,8 +35,10 @@ export function run(cmd: string, args: string[], opts: RunOptions = {}): Promise
       stdio: 'inherit',
     });
     child.on('error', reject);
-    child.on('exit', (code) =>
-      code === 0 ? resolve() : reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`)),
+    child.on('exit', (code, signal) =>
+      code === 0
+        ? resolve()
+        : reject(new SubprocessError(`${cmd} ${args.join(' ')}`, code, signal)),
     );
   });
 }
