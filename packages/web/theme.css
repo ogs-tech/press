@@ -282,14 +282,10 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
    (Spec §5.2): every value derives from var(--press-*), so the section is born
    branded with the adopter's Site Settings theme, no override required. */
 [data-block="preset-organism.hero"] {
-  display: grid;
-  gap: var(--press-space-5);
-  align-items: center;
-  margin: var(--press-space-7) 0;
+  margin-block: var(--press-space-7);
 }
-[data-block="preset-organism.hero"][data-align="center"] {
+[data-block="preset-organism.hero"][data-align="center"] [data-hero="content"] {
   text-align: center;
-  justify-items: center;
 }
 [data-block="preset-organism.hero"] h1 {
   margin: 0 0 var(--press-space-3);
