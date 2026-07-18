@@ -151,7 +151,8 @@ footer {
 
 /* Chrome footer (preset-organism.footer): the copyright line block. */
 [data-block="preset-organism.footer"] {
-  display: block;
+  color: var(--press-color-muted);
+  font-size: var(--press-text-sm);
 }
 
 /* Reference blocks: decomposed text palette (preset-atom.paragraph / heading / list /
