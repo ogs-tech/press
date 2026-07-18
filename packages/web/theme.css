@@ -435,3 +435,85 @@ html[data-press-consent="decided"] [data-press-plugin="cookie-consent"] {
 [data-press-plugin="cookie-consent"] button[data-variant="ghost"]:hover {
   color: var(--press-color-primary);
 }
+
+/* Layout primitives (Spec §5). Rules read the data-press-layout attribute and
+   per-instance CSS custom properties emitted by the React primitives. The
+   var() cascade is the responsive vehicle — no media query is emitted for
+   properties that don't need one, and every declared tier can inherit its
+   less-specific neighbour through the fallback chain. Breakpoint literals
+   here (768px / 1024px) MUST match BREAKPOINTS in src/layout/breakpoints.ts;
+   the src/layout/breakpoints.test.ts coordination test enforces this. */
+[data-press-layout="container"] {
+  margin-inline: auto;
+  max-width: var(--press-container-lg);
+}
+[data-press-layout="container"][data-max-width="prose"] { max-width: var(--press-container-prose); }
+[data-press-layout="container"][data-max-width="sm"]    { max-width: var(--press-container-sm); }
+[data-press-layout="container"][data-max-width="md"]    { max-width: var(--press-container-md); }
+[data-press-layout="container"][data-max-width="xl"]    { max-width: var(--press-container-xl); }
+[data-press-layout="container"][data-max-width="full"]  { max-width: none; }
+[data-press-layout="container"][data-padded]            { padding-inline: var(--press-container-padding-x); }
+
+[data-press-layout="grid"] {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--press-grid-gap-current);
+  align-items: stretch;
+}
+[data-press-layout="grid"][data-align-items="start"]  { align-items: start; }
+[data-press-layout="grid"][data-align-items="center"] { align-items: center; }
+[data-press-layout="grid"][data-align-items="end"]    { align-items: end; }
+@media (min-width: 768px) {
+  [data-press-layout="grid"] {
+    gap: var(--press-grid-gap-current-md, var(--press-grid-gap-current));
+  }
+}
+@media (min-width: 1024px) {
+  [data-press-layout="grid"] {
+    gap: var(--press-grid-gap-current-lg, var(--press-grid-gap-current-md, var(--press-grid-gap-current)));
+  }
+}
+
+[data-press-layout="column"] {
+  grid-column: span var(--press-col-span, 12);
+  grid-column-start: var(--press-col-start, auto);
+}
+@media (min-width: 768px) {
+  [data-press-layout="column"] {
+    grid-column: span var(--press-col-span-md, var(--press-col-span, 12));
+    grid-column-start: var(--press-col-start-md, var(--press-col-start, auto));
+  }
+}
+@media (min-width: 1024px) {
+  [data-press-layout="column"] {
+    grid-column: span var(--press-col-span-lg, var(--press-col-span-md, var(--press-col-span, 12)));
+    grid-column-start: var(--press-col-start-lg, var(--press-col-start-md, var(--press-col-start, auto)));
+  }
+}
+
+[data-press-layout="row"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--press-row-gap-current);
+  align-items: stretch;
+  justify-content: flex-start;
+}
+[data-press-layout="row"][data-wrap="false"]      { flex-wrap: nowrap; }
+[data-press-layout="row"][data-align="start"]     { align-items: flex-start; }
+[data-press-layout="row"][data-align="center"]    { align-items: center; }
+[data-press-layout="row"][data-align="end"]       { align-items: flex-end; }
+[data-press-layout="row"][data-align="baseline"]  { align-items: baseline; }
+[data-press-layout="row"][data-justify="center"]  { justify-content: center; }
+[data-press-layout="row"][data-justify="end"]     { justify-content: flex-end; }
+[data-press-layout="row"][data-justify="between"] { justify-content: space-between; }
+[data-press-layout="row"][data-justify="around"]  { justify-content: space-around; }
+@media (min-width: 768px) {
+  [data-press-layout="row"] {
+    gap: var(--press-row-gap-current-md, var(--press-row-gap-current));
+  }
+}
+@media (min-width: 1024px) {
+  [data-press-layout="row"] {
+    gap: var(--press-row-gap-current-lg, var(--press-row-gap-current-md, var(--press-row-gap-current)));
+  }
+}
