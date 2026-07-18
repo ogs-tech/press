@@ -53,6 +53,66 @@ Release (changesets): add a changeset under `.changeset/` for any engine change,
 
 ## Architecture — the moving parts
 
+### Layout primitives (`packages/web/src/layout/`)
+
+Engine-owned responsive layout is code, not content. Four React primitives —
+`Container`, `Grid`, `Row`, `Column` — live in `packages/web/src/layout/`,
+exported from `@ogs-tech/press-web`. Every primitive emits semantic HTML +
+`data-press-layout="<primitive>"` + per-instance CSS custom properties; visual
+rules read the vars via a `var(a, var(b, var(c, default)))` cascade in
+`theme.css` so three-tier responsive behavior (`base 0` / `md 768px` /
+`lg 1024px`) is expressed in CSS with zero runtime JS. The `Responsive<T>` prop
+shape (`T | { base: T; md?: T; lg?: T }`) is uniform across every responsive
+primitive prop. Container is the one non-responsive primitive — it picks a
+single tier from a fixed width scale (`prose | sm | md | lg | xl | full`).
+
+**Why two surfaces named `layout`.** (1) DEV-facing — the React primitives above,
+consumed by engine organisms, future page-set-plugin templates, and adopter
+custom blocks. (2) CMS-facing — the `preset-layout` Atomic Design category
+stays declared in `PRESET_LAYERS` and labelled in the admin picker but ships
+ZERO components today. The palette is reserved for future *nested-only* config
+components (pattern: `preset-molecule.nav-item`) that a future organism admits
+via a `component:` field. Layout is NEVER placed by the editor as a top-level
+block — the Strapi 5 constraint "a component cannot contain a `dynamiczone`"
+rules out polymorphic-child nesting inside a component.
+
+**Data-attr namespace is distinct from blocks.** Primitives use
+`data-press-layout="<primitive>"`, deliberately not `data-block="preset-*"`.
+Primitives never have a `__component`, never appear in `PageBody`, never flow
+through `BlockRenderer`.
+
+**Breakpoints are TS constants, not CSS vars.** `@media (min-width: var(--x))`
+is unsupported in production browsers, so `BREAKPOINTS` in
+`src/layout/breakpoints.ts` and the literal pixel values in `theme.css` media
+queries are the two sources — `src/layout/breakpoints.test.ts` reads
+`theme.css` and asserts both sides match, catching any drift.
+
+**Tokens live in `FIXED_TOKENS`, not adopter config.** Container widths,
+`paddingX`, and the three grid gap sizes are engine-fixed (same policy as
+`--press-space-*` / `--press-text-*`). Values are duplicated literals — not
+`var()`-referenced against `--press-space-*` — because FIXED_TOKENS is the
+source of truth and cross-referencing scales makes future edits fragile. Every
+new var goes through `buildThemeStyle`'s single `:root` injection point.
+
+**Shell is full-width; atoms preserve prose width via a selector.** `main` has
+no `max-width`; a single rule (`main [data-block^="preset-atom."],
+main [data-block^="custom-atom."] { max-width: var(--press-container-prose);
+… }`) restores ~72ch editorial reading width for every preset atom AND every
+custom atom — without touching a single atom `.tsx`. Organisms and non-atom
+customs are excluded on purpose: they own their own `<Container>`. Header and
+footer chrome shells keep only the border stroke + vertical padding; horizontal
+composition is the refactored organisms' job.
+
+**Mobile nav is the one client-side responsive component.** `chrome/mobile-nav.tsx`
+is a `'use client'` hamburger + drawer mounted inside `Navbar`, matched by CSS
+media queries to the desktop nav Row (`[data-navbar-desktop]` visible ≥768px;
+`[data-mobile-nav="toggle"]` visible <768px). Escape closes, body scroll locks
+while open, aria-expanded/aria-modal wired, focus moves to the first link on
+open and restores to the toggle on close. Deliberate exception to the
+"server-first, zero-runtime layout" default — a viewport-observer approach
+would drag the entire layout system into client-space; a fixed CSS breakpoint
++ small toggle state is the minimal viable contract.
+
 ### Materialization (`.press/web`)
 
 The Next host is **not** scaffolded. `packages/web/templates/host/` is copied to
@@ -96,8 +156,13 @@ PRODUCT/plugin id (`plugin::press-cms.*`, `/api/press/schema`), never as a categ
     one layer, unified from the old `section.*`/`chrome.*` palettes.
   - `preset-config.*` — seo, theme-colors, theme-radius, cookie-consent, cookie-category:
     non-block settings referenced by `component:` fields on Site Settings, never a DZ member.
-  - `preset-layout` + `preset-template` are RESERVED (labelled, no components yet):
-    layout ← the Grid System task; template ← page-set plugins.
+  - `preset-layout` is RESERVED (labelled, no components yet). The Grid System
+    task shipped the DEV-facing layout primitives under
+    `packages/web/src/layout/` (see "Layout primitives" above); the CMS-facing
+    category stays labelled and empty, seat for a future *nested-only* config
+    component (pattern: `preset-molecule.nav-item`) that a future organism admits
+    via a `component:` field.
+  - `preset-template` is RESERVED (labelled, no components yet) — page-set plugins.
 - **Preset PLACEMENT is declared statically, per content-type — NOT by the category.**
   The category carries the layer; where a preset block may go is listed in each
   `schema.json`: `preset-atom.*` in all three engine DZs (page `body`, site-setting
