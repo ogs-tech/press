@@ -106,9 +106,11 @@ composition is the refactored organisms' job.
 **Mobile nav is the one client-side responsive component.** `chrome/mobile-nav.tsx`
 is a `'use client'` hamburger + drawer mounted inside `Navbar`, matched by CSS
 media queries to the desktop nav Row (`[data-navbar-desktop]` visible ≥768px;
-`[data-mobile-nav="toggle"]` visible <768px). Escape closes, body scroll locks
-while open, aria-expanded/aria-modal wired, focus moves to the first link on
-open and restores to the toggle on close. Deliberate exception to the
+`[data-mobile-nav="toggle"]` visible <768px). Escape closes; a backdrop click
+closes only when the click target IS the backdrop (`target === currentTarget` —
+clicks inside the panel never close); body scroll locks while open;
+aria-expanded/aria-modal wired; focus moves to the first link on open and
+restores to the toggle on close. Deliberate exception to the
 "server-first, zero-runtime layout" default — a viewport-observer approach
 would drag the entire layout system into client-space; a fixed CSS breakpoint
 + small toggle state is the minimal viable contract.
