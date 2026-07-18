@@ -20,7 +20,7 @@ const DRAWER_ID = 'press-mobile-nav-drawer';
  * opposite).
  *
  * A11y: aria-expanded on the toggle mirrors state; drawer is
- * role="dialog" aria-modal="true" aria-labelledby with the toggle's label.
+ * role="dialog" aria-modal="true" aria-label="Site navigation".
  * Escape closes; body scroll is locked while open; on open, focus moves to
  * the first link; on close, focus restores to the toggle.
  *
@@ -77,7 +77,13 @@ export function MobileNav({ links, cta }: MobileNavProps) {
           role="dialog"
           aria-modal="true"
           aria-label="Site navigation"
-          onClick={close}
+          onClick={(e) => {
+            // Close only on a true backdrop click — the target IS the
+            // drawer root itself, not a bubbled click from inner content.
+            // Inner clicks are link navigations or no-ops; they must not
+            // close the drawer (contract: backdrop-only close).
+            if (e.target === e.currentTarget) close();
+          }}
         >
           <nav data-mobile-nav="drawer-inner" aria-label="Primary mobile">
             {links.map((link, i) => (
