@@ -2,6 +2,7 @@ import type { ResolvedChromeNavbar } from '../config/types';
 import { Container } from '../layout/container';
 import { Row } from '../layout/row';
 import { NavLinks } from './nav-links';
+import { MobileNav } from './mobile-nav';
 
 /**
  * Chrome organism `preset-organism.navbar` (Spec §1, §8.3): brand + nav links
@@ -29,7 +30,7 @@ export function Navbar({ brand, links, cta }: ResolvedChromeNavbar) {
           {brand?.logo ? <img src={brand.logo} alt="" /> : null}
           <span>{brand?.name}</span>
         </a>
-        <Row align="center" gap="lg">
+        <Row align="center" gap="lg" data-navbar-desktop>
           <NavLinks links={links ?? []} />
           {hasCta ? (
             <a data-navbar="cta" data-variant={cta?.variant ?? 'primary'} href={cta?.href}>
@@ -37,6 +38,7 @@ export function Navbar({ brand, links, cta }: ResolvedChromeNavbar) {
             </a>
           ) : null}
         </Row>
+        <MobileNav links={links ?? []} cta={cta} />
       </Row>
     </Container>
   );
