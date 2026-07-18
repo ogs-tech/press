@@ -49,12 +49,6 @@ header {
 /* Chrome navbar (preset-organism.navbar): brand + editable links + optional CTA in one
    engine-owned bar — internal layout is renderer-owned so editors cannot break
    the chrome (Spec §Decisions 6). */
-[data-block="preset-organism.navbar"] {
-  display: flex;
-  align-items: center;
-  gap: var(--press-space-3);
-  flex: 1;
-}
 [data-block="preset-organism.navbar"] [data-navbar="brand"] {
   display: inline-flex;
   align-items: center;
@@ -92,13 +86,6 @@ header {
    NavLinks next to the brand link. Pushed to the right of the logo; wraps
    gracefully on narrow viewports (a JS hamburger is out of scope). Active link
    uses aria-current. */
-nav[data-press-nav="header"] {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--press-space-4);
-  margin-left: auto;
-}
 nav[data-press-nav="header"] a {
   display: inline-flex;
   align-items: center;
@@ -117,20 +104,6 @@ nav[data-press-nav="header"] a[aria-current="page"] {
 nav[data-press-nav="header"] [data-press-nav-ext] {
   font-size: 0.85em;
   opacity: 0.7;
-}
-
-@media (max-width: 640px) {
-  header {
-    flex-wrap: wrap;
-  }
-  [data-block="preset-organism.navbar"] {
-    flex-wrap: wrap;
-  }
-  nav[data-press-nav="header"] {
-    margin-left: 0;
-    width: 100%;
-    gap: var(--press-space-3);
-  }
 }
 
 main {
