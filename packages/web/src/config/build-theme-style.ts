@@ -50,6 +50,13 @@ export function buildThemeStyle(resolved: ResolvedPressConfig): string {
     lines.push(`  --press-radius-${key}: ${radius[key]};`);
   }
   lines.push(`  --press-radius-pill: ${FIXED_TOKENS.radiusPill};`);
+  for (const [key, value] of Object.entries(FIXED_TOKENS.container.widths)) {
+    lines.push(`  --press-container-${key}: ${value};`);
+  }
+  lines.push(`  --press-container-padding-x: ${FIXED_TOKENS.container.paddingX};`);
+  for (const [key, value] of Object.entries(FIXED_TOKENS.gridGap)) {
+    lines.push(`  --press-grid-gap-${key}: ${value};`);
+  }
 
   for (const [key, token] of FONT_TOKENS) {
     const value = fonts[key];
