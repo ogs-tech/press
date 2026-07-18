@@ -9,6 +9,7 @@ export interface ColumnProps {
   start?: Responsive<Span>;
   as?: FlowElement;
   children: ReactNode;
+  [dataOrAria: `data-${string}` | `aria-${string}`]: unknown;
 }
 
 /**
@@ -23,7 +24,7 @@ export interface ColumnProps {
  * only when `start` is declared, so an undeclared start cleanly resolves to
  * `auto` via the CSS var() fallback (Spec §5.4).
  */
-export function Column({ span, start, as = 'div', children }: ColumnProps) {
+export function Column({ span, start, as = 'div', children, ...rest }: ColumnProps) {
   const spanTiers = normalizeResponsive<Span>(span, 12);
   const style: CSSProperties & Record<string, string> = {
     ['--press-col-span' as any]: String(spanTiers.base),
@@ -38,5 +39,5 @@ export function Column({ span, start, as = 'div', children }: ColumnProps) {
     if (startTiers.lg !== undefined) style['--press-col-start-lg' as any] = String(startTiers.lg);
   }
 
-  return createElement(as, { 'data-press-layout': 'column', style }, children);
+  return createElement(as, { ...rest, 'data-press-layout': 'column', style }, children);
 }

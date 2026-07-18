@@ -13,6 +13,7 @@ export interface RowProps {
   wrap?: boolean;
   as?: FlowElement;
   children: ReactNode;
+  [dataOrAria: `data-${string}` | `aria-${string}`]: unknown;
 }
 
 /**
@@ -45,6 +46,7 @@ export function Row({
   wrap = true,
   as = 'div',
   children,
+  ...rest
 }: RowProps) {
   const normalized = normalizeResponsive<RowGap>(gap, 'md');
   const style: CSSProperties & Record<string, string> = {
@@ -55,6 +57,7 @@ export function Row({
   return createElement(
     as,
     {
+      ...rest,
       'data-press-layout': 'row',
       'data-align': align === 'stretch' ? undefined : align,
       'data-justify': justify === 'start' ? undefined : justify,

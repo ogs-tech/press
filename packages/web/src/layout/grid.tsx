@@ -10,6 +10,7 @@ export interface GridProps {
   alignItems?: GridAlignItems;
   as?: FlowElement;
   children: ReactNode;
+  [dataOrAria: `data-${string}` | `aria-${string}`]: unknown;
 }
 
 /**
@@ -31,7 +32,7 @@ function gapExpr(gap: GridGap): string {
  * inline; theme.css consumes them through `var(a, var(b, var(c, default)))`
  * so a missing `md` cleanly inherits `base` (Spec §6.3).
  */
-export function Grid({ gap, alignItems = 'stretch', as = 'div', children }: GridProps) {
+export function Grid({ gap, alignItems = 'stretch', as = 'div', children, ...rest }: GridProps) {
   const normalized = normalizeResponsive<GridGap>(gap, 'md');
   const style: CSSProperties & Record<string, string> = {
     ['--press-grid-gap-current' as any]: gapExpr(normalized.base),
@@ -41,6 +42,7 @@ export function Grid({ gap, alignItems = 'stretch', as = 'div', children }: Grid
   return createElement(
     as,
     {
+      ...rest,
       'data-press-layout': 'grid',
       'data-align-items': alignItems === 'stretch' ? undefined : alignItems,
       style,

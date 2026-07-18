@@ -21,7 +21,8 @@ describe('NavLinks', () => {
       { label: 'About', href: '/about', external: false, newTab: false },
       { label: 'Home', href: '/', external: false, newTab: false },
     ]);
-    expect(html).toContain('<nav');
+    expect(html).toContain('data-press-layout="row"');
+    expect(html).toContain('data-press-nav="header"');
     expect(html).toContain('href="/about"');
     expect(html).toContain('>About');
     expect(html).toContain('href="/"');
