@@ -489,3 +489,81 @@ html[data-press-consent="decided"] [data-press-plugin="cookie-consent"] {
     gap: var(--press-row-gap-current-lg, var(--press-row-gap-current-md, var(--press-row-gap-current)));
   }
 }
+
+/* Mobile navbar — hamburger toggle + drawer (plan Task 13). The toggle is
+   hidden above `md`; the desktop `[data-navbar-desktop]` Row is hidden
+   below it. Matched pair — exactly one surface is visible at any viewport.
+   Breakpoint LITERAL 768px MUST match BREAKPOINTS.md — guarded by
+   src/layout/breakpoints.test.ts. */
+[data-mobile-nav="toggle"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--press-color-border);
+  border-radius: var(--press-radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+[data-mobile-nav="toggle-icon"] {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--press-color-ink);
+}
+[data-mobile-nav="toggle-icon"]::before,
+[data-mobile-nav="toggle-icon"]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--press-color-ink);
+}
+[data-mobile-nav="toggle-icon"]::before { top: -6px; }
+[data-mobile-nav="toggle-icon"]::after  { top:  6px; }
+
+[data-mobile-nav="drawer"] {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: color-mix(in srgb, var(--press-color-ink) 55%, transparent);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: var(--press-space-4);
+}
+[data-mobile-nav="drawer-inner"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--press-space-3);
+  min-width: min(320px, 80vw);
+  padding: var(--press-space-6) var(--press-space-5);
+  background: var(--press-color-surface);
+  border: 1px solid var(--press-color-border);
+  border-radius: var(--press-radius-md);
+}
+[data-mobile-nav="drawer-inner"] a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--press-space-1);
+  padding: var(--press-space-3) 0;
+  color: var(--press-color-ink);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--press-text-lg);
+}
+[data-mobile-nav="drawer-inner"] a[data-navbar="cta"] {
+  margin-top: var(--press-space-3);
+}
+
+@media (min-width: 768px) {
+  [data-mobile-nav="toggle"] { display: none; }
+  [data-mobile-nav="drawer"] { display: none; }
+}
+@media (max-width: 767.98px) {
+  [data-navbar-desktop] { display: none; }
+}

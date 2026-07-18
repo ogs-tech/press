@@ -17,17 +17,25 @@ describe('breakpoint coordination between TS constants and theme.css (Spec §6.1
     expect(css).toMatch(new RegExp(`@media \\(min-width: ${BREAKPOINTS.lg}px\\)`));
   });
 
-  it('every layout-primitive @media in theme.css uses exactly the md or lg literal', () => {
-    // Extract only the layout section (between "Layout primitives" comment and
-    // end of file) so unrelated queries elsewhere in theme.css (none today,
-    // but future-proof) don't perturb the check.
+  it('every @media in the layout-primitives OR mobile-nav sections uses exactly the md or lg literal', () => {
+    // Layout primitives live from "Layout primitives" to end of file, plus
+    // the mobile-nav block appended in plan Task 13. Both share the same
+    // BREAKPOINTS.md / BREAKPOINTS.lg literals. `max-width: 767.98px` (= md - 0.02)
+    // is allowed because it is the semantic complement to `min-width: 768px`
+    // — a mobile-nav CSS idiom that keeps both queries mutually exclusive
+    // across zoom levels.
     const layoutSectionStart = css.indexOf('/* Layout primitives');
     expect(layoutSectionStart).toBeGreaterThanOrEqual(0);
     const layoutSection = css.slice(layoutSectionStart);
-    const literals = [...layoutSection.matchAll(/@media \(min-width: (\d+)px\)/g)].map((m) => Number(m[1]));
+    const literals = [...layoutSection.matchAll(/@media \([^)]+\)/g)].map((m) => m[0]);
     expect(literals.length).toBeGreaterThan(0);
-    for (const value of literals) {
-      expect([BREAKPOINTS.md, BREAKPOINTS.lg]).toContain(value);
+    const allowed = new Set([
+      `@media (min-width: ${BREAKPOINTS.md}px)`,
+      `@media (min-width: ${BREAKPOINTS.lg}px)`,
+      `@media (max-width: ${BREAKPOINTS.md - 0.02}px)`,
+    ]);
+    for (const q of literals) {
+      expect(allowed).toContain(q);
     }
   });
 });

@@ -45,6 +45,7 @@ describe('Navbar renderer', () => {
     expect(html).toContain('data-press-nav="header"');
     expect(html).toContain('href="/about"');
     expect(html).toContain('>About');
+    expect(html).toContain('data-navbar-desktop');
   });
 
   it('renders the CTA only when BOTH label and href are present (no dead links)', () => {
