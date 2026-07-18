@@ -78,6 +78,15 @@ describe('<MobileNav>', () => {
     expect(d!.textContent).toContain('About');
   });
 
+  it('moves focus to the first drawer link on open', () => {
+    render(
+      <MobileNav links={[link('About', '/about'), link('Docs', '/docs')]} />,
+    );
+    act(() => toggle().click());
+    const firstLink = drawer()!.querySelector('a');
+    expect(document.activeElement).toBe(firstLink);
+  });
+
   it('renders every link inside the drawer', () => {
     render(
       <MobileNav
@@ -124,6 +133,9 @@ describe('<MobileNav>', () => {
     });
     expect(drawer()).toBeNull();
     expect(toggle().getAttribute('aria-expanded')).toBe('false');
+    // Focus restore runs in the open-effect's cleanup, which fires as part
+    // of the state update above — safe to assert right after act().
+    expect(document.activeElement).toBe(toggle());
   });
 
   it('locks body scroll while open and restores on close', () => {
@@ -140,11 +152,25 @@ describe('<MobileNav>', () => {
     act(() => toggle().click());
     const d = drawer()!;
     act(() => {
-      // Click event bubbling from the drawer root closes; a click on inner
-      // <a> or button would either navigate (link) or be swallowed by content.
+      // The handler guards on event.target === event.currentTarget, so a
+      // click dispatched directly on the drawer root (the backdrop) closes
+      // it — this event's target IS the drawer element.
       d.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(drawer()).toBeNull();
+  });
+
+  it('does not close on a click inside the drawer panel (inner content is not the backdrop)', () => {
+    render(<MobileNav links={[link('About', '/about')]} />);
+    act(() => toggle().click());
+    const inner = drawer()!.querySelector('[data-mobile-nav="drawer-inner"]') as HTMLElement;
+    act(() => {
+      // Bubbles up to the drawer root's onClick, but event.target is the
+      // inner nav, not the drawer itself, so the backdrop guard skips close.
+      inner.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(drawer()).not.toBeNull();
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
   });
 
   it('renders nothing when the link list is empty and no cta is provided', () => {
