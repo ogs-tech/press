@@ -322,13 +322,15 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
 /* Engine section: preset-organism.cta — a call-to-action banner; 1px stroke over shadow,
    token-driven fill on the button. Pure token consumer (Spec §5.2). */
 [data-block="preset-organism.cta"] {
-  margin: var(--press-space-7) 0;
+  margin-block: var(--press-space-7);
+}
+[data-block="preset-organism.cta"] [data-cta="frame"] {
   padding: var(--press-space-6) var(--press-space-5);
   border: 1px solid var(--press-color-border);
   border-radius: var(--press-radius-md);
   background: var(--press-color-surface);
 }
-[data-block="preset-organism.cta"][data-align="center"] {
+[data-block="preset-organism.cta"][data-align="center"] [data-cta="frame"] {
   text-align: center;
 }
 [data-block="preset-organism.cta"] h2 {
