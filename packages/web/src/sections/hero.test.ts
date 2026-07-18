@@ -11,8 +11,17 @@ const render = (props: Record<string, unknown>): string =>
 const img = (url: string, alternativeText?: string | null): PressMedia => ({ url, alternativeText });
 
 describe('Hero renderer', () => {
-  it('wraps output in a data-block="preset-organism.hero" section', () => {
-    expect(render({ title: 'Ship faster' })).toContain('<section data-block="preset-organism.hero"');
+  it('renders nothing when title is missing (tolerant draft, Spec §8)', () => {
+    expect(render({ eyebrow: 'orphan' })).toBe('');
+  });
+
+  it('wraps output in a <section> that carries both the Container attrs and data-block (Spec §8.1)', () => {
+    const html = render({ title: 'Ship faster' });
+    expect(html.startsWith('<section')).toBe(true);
+    expect(html).toContain('data-press-layout="container"');
+    expect(html).toContain('data-max-width="lg"');
+    expect(html).toContain('data-padded');
+    expect(html).toContain('data-block="preset-organism.hero"');
   });
 
   it('renders the title as an h1', () => {
@@ -21,6 +30,7 @@ describe('Hero renderer', () => {
 
   it('renders the optional eyebrow and subtitle when present', () => {
     const out = render({ eyebrow: 'New', title: 'Ship faster', subtitle: 'The engine' });
+    expect(out).toContain('data-hero="eyebrow"');
     expect(out).toContain('New');
     expect(out).toContain('The engine');
   });
@@ -30,22 +40,33 @@ describe('Hero renderer', () => {
     expect(render({ title: 'T', align: 'center' })).toContain('data-align="center"');
   });
 
-  it('resolves the hero image absolute against CMS_URL', () => {
-    expect(render({ title: 'T', image: img('/uploads/h.png') }))
-      .toContain('src="http://localhost:1337/uploads/h.png"');
+  it('renders an inner <Grid> with a text column that spans 7 on md when an image is present (Spec §8.1)', () => {
+    const html = render({ title: 'T', image: img('/uploads/h.png') });
+    expect(html).toContain('data-press-layout="grid"');
+    expect(html).toContain('--press-col-span:12');
+    expect(html).toContain('--press-col-span-md:7');
   });
 
-  it('omits the image when absent', () => {
+  it('makes the text column span 12 at every tier when no image is present', () => {
+    const html = render({ title: 'T' });
+    expect(html).toContain('--press-col-span:12');
+    expect(html).not.toContain('--press-col-span-md:7');
+  });
+
+  it('resolves the hero image absolute against CMS_URL inside an image column', () => {
+    const html = render({ title: 'T', image: img('/uploads/h.png') });
+    expect(html).toContain('src="http://localhost:1337/uploads/h.png"');
+    expect(html).toContain('--press-col-span-md:5');
+  });
+
+  it('omits the image column when no image is present', () => {
     expect(render({ title: 'T' })).not.toContain('<img');
+    expect(render({ title: 'T' })).not.toContain('--press-col-span-md:5');
   });
 
   it('renders the CTA only when BOTH ctaLabel and ctaHref are present (Spec §8)', () => {
     expect(render({ title: 'T', ctaLabel: 'Go', ctaHref: '/go' })).toContain('href="/go"');
     expect(render({ title: 'T', ctaLabel: 'Go' })).not.toContain('data-hero="cta"');
     expect(render({ title: 'T', ctaHref: '/go' })).not.toContain('data-hero="cta"');
-  });
-
-  it('renders nothing when title is missing (tolerant draft, Spec §8)', () => {
-    expect(render({ eyebrow: 'orphan' })).toBe('');
   });
 });
