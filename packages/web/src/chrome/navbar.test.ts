@@ -13,11 +13,20 @@ const render = (props: Record<string, unknown>): string =>
   renderToStaticMarkup(createElement(Navbar as any, { __component: 'preset-organism.navbar', id: 1, ...props }));
 
 describe('Navbar renderer', () => {
-  it('wraps output in a data-block="preset-organism.navbar" element', () => {
-    expect(render({ brand: { name: 'Acme' }, links: [] })).toContain('data-block="preset-organism.navbar"');
+  it('wraps output in a Container that carries data-block="preset-organism.navbar" (Spec §8.3)', () => {
+    const html = render({ brand: { name: 'Acme' }, links: [] });
+    expect(html).toContain('data-press-layout="container"');
+    expect(html).toContain('data-max-width="full"');
+    expect(html).toContain('data-block="preset-organism.navbar"');
   });
 
-  it('renders the hydrated brand as a home link with logo + name (Spec §1: brand never stored on the block)', () => {
+  it('renders an outer Row with justify="between" separating brand and the right group', () => {
+    const html = render({ brand: { name: 'Acme' }, links: [] });
+    expect(html).toContain('data-press-layout="row"');
+    expect(html).toContain('data-justify="between"');
+  });
+
+  it('renders the hydrated brand as a home link with logo + name', () => {
     const html = render({ brand: { name: 'Acme', logo: 'http://cms.test/logo.png' }, links: [] });
     expect(html).toMatch(/<a[^>]*data-navbar="brand"[^>]*href="\/"/);
     expect(html).toContain('src="http://cms.test/logo.png"');
@@ -28,14 +37,15 @@ describe('Navbar renderer', () => {
     expect(render({ brand: { name: 'Acme' }, links: [] })).not.toContain('<img');
   });
 
-  it('renders the resolved links through the internal NavLinks', () => {
+  it('renders the resolved links through the internal NavLinks (Row-based)', () => {
     const html = render({
       brand: { name: 'Acme' },
       links: [{ label: 'About', href: '/about', external: false, newTab: false }],
     });
-    expect(html).toContain('<nav');
+    expect(html).toContain('data-press-nav="header"');
     expect(html).toContain('href="/about"');
     expect(html).toContain('>About');
+    expect(html).toContain('data-navbar-desktop');
   });
 
   it('renders the CTA only when BOTH label and href are present (no dead links)', () => {
@@ -58,8 +68,6 @@ describe('Navbar renderer', () => {
   });
 
   it('tolerates an un-hydrated block (no brand/links) without crashing', () => {
-    // Direct BlockRenderer use outside mapSiteSettings must degrade, not throw —
-    // mirroring the tolerant admission principle.
     expect(() => render({})).not.toThrow();
     expect(render({})).toContain('data-block="preset-organism.navbar"');
   });

@@ -30,11 +30,22 @@ export const DEFAULT_THEME: {
  * Engine-FIXED scales (Spec §4 "derived (fixed)") — NOT adopter-overridable.
  * Emitted as constants by `buildThemeStyle` so all token values still enter
  * through the single `:root` injection point (Spec §0).
+ *
+ * `container` and `gridGap` are added for the layout primitives (Spec §6.2).
+ * Values are duplicated literals (not `var()`-referenced against
+ * `--press-space-*`) because FIXED_TOKENS is the source of truth and
+ * cross-referencing token scales makes future edits fragile — the
+ * `= space-N literal` comments are the coordination hints.
  */
 export const FIXED_TOKENS: {
   space: readonly string[]; // index 0 → --press-space-1
   text: Record<string, string>;
   radiusPill: string;
+  container: {
+    widths: Record<'prose' | 'sm' | 'md' | 'lg' | 'xl', string>;
+    paddingX: string;
+  };
+  gridGap: Record<'sm' | 'md' | 'lg', string>;
 } = {
   space: ['4px', '8px', '12px', '16px', '24px', '32px', '48px', '64px', '96px'],
   text: {
@@ -47,4 +58,13 @@ export const FIXED_TOKENS: {
     h1: '40px',
   },
   radiusPill: '999px',
+  container: {
+    // `prose` is rem-anchored (≈72ch at the 16px body size) ON PURPOSE: a ch
+    // value would resolve against each CONSUMING element's font, giving a
+    // 28px heading a ~2× wider "prose" column than a 16px paragraph — the
+    // single editorial column must be identical for every atom.
+    widths: { prose: '42rem', sm: '640px', md: '768px', lg: '1024px', xl: '1280px' },
+    paddingX: '24px', // = space-5 literal
+  },
+  gridGap: { sm: '12px', md: '24px', lg: '48px' }, // = space-3/5/7 literals
 };

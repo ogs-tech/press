@@ -2,23 +2,24 @@
 
 import { usePathname } from 'next/navigation';
 import type { ResolvedNavLink } from '../config/types';
+import { Row } from '../layout/row';
 
 /**
- * NavLinks — the navbar's internal link list (Spec §3: the old SiteNav becomes
- * the internal nav of the navbar renderer). A client component ONLY because it
- * reads usePathname() to mark the active link; the data is already fully
- * resolved by mapSiteSettings, so this renders plain <a> links. Empty list →
- * renders nothing.
+ * NavLinks — the navbar's internal link list (Spec §3). Refactored to a
+ * `<Row as="nav">` (Spec §8.3): the row's flex + gap + wrap defaults give
+ * the horizontal layout that the old handwritten `nav[data-press-nav="header"]
+ * { display: flex; … }` CSS provided. `data-press-nav="header"` is preserved
+ * as the identifying hook every existing rule (hover, aria-current) reads.
  *
- * - Active link: exact href === pathname → aria-current="page" (also the CSS hook).
- * - newTab (editor opt-in): target="_blank" + rel="noopener noreferrer".
- * - external (http(s) URL): trailing ↗ affordance, independent of newTab.
+ * A client component ONLY because it reads usePathname() to mark the active
+ * link; the data is already fully resolved by mapSiteSettings. Empty list →
+ * renders nothing.
  */
 export function NavLinks({ links }: { links: ResolvedNavLink[] }) {
   const pathname = usePathname();
   if (links.length === 0) return null;
   return (
-    <nav data-press-nav="header" aria-label="Primary">
+    <Row as="nav" align="center" gap="md" data-press-nav="header" aria-label="Primary">
       {links.map((link, i) => {
         const active = link.href === pathname;
         return (
@@ -39,6 +40,6 @@ export function NavLinks({ links }: { links: ResolvedNavLink[] }) {
           </a>
         );
       })}
-    </nav>
+    </Row>
   );
 }

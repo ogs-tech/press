@@ -70,4 +70,24 @@ describe('buildThemeStyle', () => {
     expect(css).not.toContain('data-theme');
     expect(css).not.toContain('default');
   });
+
+  it('emits the container width tokens from FIXED_TOKENS.container.widths (Spec §6.2)', () => {
+    const css = buildThemeStyle(baseResolved);
+    expect(css).toContain('--press-container-prose: 42rem;');
+    expect(css).toContain('--press-container-sm: 640px;');
+    expect(css).toContain('--press-container-md: 768px;');
+    expect(css).toContain('--press-container-lg: 1024px;');
+    expect(css).toContain('--press-container-xl: 1280px;');
+  });
+
+  it('emits --press-container-padding-x from FIXED_TOKENS.container.paddingX (Spec §6.2)', () => {
+    expect(buildThemeStyle(baseResolved)).toContain('--press-container-padding-x: 24px;');
+  });
+
+  it('emits the grid gap tokens from FIXED_TOKENS.gridGap (Spec §6.2)', () => {
+    const css = buildThemeStyle(baseResolved);
+    expect(css).toContain('--press-grid-gap-sm: 12px;');
+    expect(css).toContain('--press-grid-gap-md: 24px;');
+    expect(css).toContain('--press-grid-gap-lg: 48px;');
+  });
 });

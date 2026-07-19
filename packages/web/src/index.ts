@@ -73,3 +73,20 @@ export type {
   ResolvedChromeNavbar,
   ResolvedChromeFooter,
 } from './config/types';
+export { Container, Grid, Row, Column, BREAKPOINTS } from './layout';
+export type {
+  Breakpoint,
+  Responsive,
+  ContainerProps,
+  ContainerMaxWidth,
+  FlowElement,
+  GridProps,
+  GridGap,
+  GridAlignItems,
+  RowProps,
+  RowGap,
+  RowAlign,
+  RowJustify,
+  ColumnProps,
+  Span,
+} from './layout';
