@@ -65,6 +65,14 @@ rules read the vars via a `var(a, var(b, var(c, default)))` cascade in
 shape (`T | { base: T; md?: T; lg?: T }`) is uniform across every responsive
 primitive prop. Container is the one non-responsive primitive — it picks a
 single tier from a fixed width scale (`prose | sm | md | lg | xl | full`).
+Two CSS subtleties are load-bearing: (1) Column's span rides on
+`grid-column-END` — the `grid-column: span N` shorthand stores the span in the
+START longhand, so a later `grid-column-start: auto` (the undeclared-`start`
+case) would erase it and collapse every column to one track. (2) A 12-track
+grid always carries 11 interior column-gaps, so a Grid's minimum width is
+`11 × gap` even when every column spans 12 — a flat `gap="lg"` (48px) means a
+528px floor that overflows phones; organisms declare a tier-scaled gap
+(`{ base: 'md', lg: 'lg' }`, the Hero pattern) instead.
 
 **Why two surfaces named `layout`.** (1) DEV-facing — the React primitives above,
 consumed by engine organisms, future page-set-plugin templates, and adopter
@@ -98,17 +106,30 @@ new var goes through `buildThemeStyle`'s single `:root` injection point.
 no `max-width`; a single rule (`main [data-block^="preset-atom."],
 main [data-block^="custom-atom."] { max-width: var(--press-container-prose);
 … }`) restores ~72ch editorial reading width for every preset atom AND every
-custom atom — without touching a single atom `.tsx`. Organisms and non-atom
-customs are excluded on purpose: they own their own `<Container>`. Header and
-footer chrome shells keep only the border stroke + vertical padding; horizontal
-composition is the refactored organisms' job.
+custom atom — without touching a single atom `.tsx`. The `prose` token is
+**rem-anchored** (`42rem` ≈ 72ch at the 16px body size) on purpose: a `ch`
+value resolves against each consuming element's font, which would give a 28px
+heading a ~2× wider "prose" column than a paragraph — the editorial column
+must be identical for every atom. The column is **left-aligned to the lg
+container rail**, not viewport-centered: its margin-start mirrors the
+`<Container maxWidth="lg">` centering math + gutter, so atoms share one left
+axis with hero/cta/callout at every viewport (a centered narrow column next to
+lg organisms produced a zig-zag of left edges). Organisms and non-atom customs are excluded
+on purpose: they own their own `<Container>` (the scaffold's example `Callout`
+demonstrates the pattern). Header and footer chrome shells keep only the
+border stroke + vertical padding; horizontal composition is the refactored
+organisms' job — and BOTH chrome organisms (Navbar, Footer) use
+`maxWidth="full"`: chrome is edge-to-edge, content Containers are the
+constrained ones.
 
 **Mobile nav is the one client-side responsive component.** `chrome/mobile-nav.tsx`
 is a `'use client'` hamburger + drawer mounted inside `Navbar`, matched by CSS
 media queries to the desktop nav Row (`[data-navbar-desktop]` visible ≥768px;
 `[data-mobile-nav="toggle"]` visible <768px). Escape closes; a backdrop click
 closes only when the click target IS the backdrop (`target === currentTarget` —
-clicks inside the panel never close); body scroll locks while open;
+clicks inside the panel never close); body scroll locks while open — which is
+why the drawer panel itself scrolls (`max-height` + `overflow-y: auto` +
+`overscroll-behavior: contain`), or a long menu's tail would be unreachable;
 aria-expanded/aria-modal wired; focus moves to the first link on open and
 restores to the toggle on close. Deliberate exception to the
 "server-first, zero-runtime layout" default — a viewport-observer approach
@@ -190,7 +211,9 @@ PRODUCT/plugin id (`plugin::press-cms.*`, `/api/press/schema`), never as a categ
   serializer follows these nested refs; the generator emits nested-only components without
   `__component` and adds `HeaderBlocks`/`FooterBlocks` unions. `bootstrap()` seeds
   `header: [preset-organism.navbar]`, `footer: [preset-organism.footer]` exactly once
-  (plugin-store flag) — an editor-emptied zone is respected.
+  (plugin-store flag) — an editor-emptied zone is respected. The bootstrap navbar is
+  BARE (no items/cta); the CLI's `seed.mjs` fills it with demo navigation (Home,
+  external GitHub, "Get started" CTA) in the same idempotent pass that fills identity.
 - **Picker presentation (admin bundle):** every engine component JSON sets `info.icon`
   (Strapi's fixed icon enum); the plugin's `./strapi-admin` bundle (`cms/admin/src/index.ts`)
   exists solely to `registerTrads` the category labels — the picker resolves accordion
@@ -200,11 +223,12 @@ PRODUCT/plugin id (`plugin::press-cms.*`, `/api/press/schema`), never as a categ
   completeness; `preset-layout`/`preset-template` are labelled ahead of their components.
   Labels are presentation-only; uids never change for display. Adopter `src/admin/app.tsx`
   translations override the engine's.
-- **Page templates:** `bootstrap()` also seeds a "Privacy Policy" page (slug
-  `privacy-policy`) exactly once (`privacyPageSeeded` flag,
-  `lib/seed-page-privacy-policy.ts`) — a DRAFT composed of `preset-atom.*` atoms with
-  placeholder guidance, never auto-published; an adopter page already on the slug
-  or an editor-deleted page is respected forever.
+- **Page templates:** the once-shipped "Privacy Policy" bootstrap seed was RETIRED;
+  what remains is `lib/seed-page.ts` — a generic, idempotent `seedPage(strapi, opts)`
+  primitive (flag-first, slug-collision-respecting, DRAFT-only) that is deliberately
+  exported-but-unused, awaiting future page-seeding consumers (Plugin/Legal,
+  archetype templates). `bootstrap()` seeds NO page today; the only page an adopter
+  starts with is the CLI seed's published `home`.
 - On the web side, `BlockRenderer` merges the engine registries with the adopter map by
   `__component`: `{ ...atomBlocks, ...organismBlocks, ...components }` — engine
   `preset-atom.*` atoms (`src/atom-blocks.ts`), engine `preset-organism.*` organisms

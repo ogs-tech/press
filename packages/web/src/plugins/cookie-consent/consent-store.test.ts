@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   buildConsentBootstrapScript,
@@ -90,5 +93,19 @@ describe('buildConsentBootstrapScript — the pre-paint hide (Spec §5)', () => 
     // break the page before React loads.
     expect(script).toMatch(/^\(function\(\)\{try\{/);
     expect(script).toContain('catch(e){}');
+  });
+
+  it('the host template <html> suppresses hydration warnings for the stamped attribute', () => {
+    // The bootstrap script mutates <html> BEFORE React hydrates, so the
+    // server-rendered element never carries data-press-consent — without
+    // suppressHydrationWarning React 19 reports a hydration mismatch for
+    // every visitor who already decided. The prop only silences attribute
+    // diffs on that one element, so child content mismatches still surface.
+    const layoutPath = join(
+      dirname(fileURLToPath(import.meta.url)),
+      '..', '..', '..', 'templates', 'host', 'app', 'layout.tsx',
+    );
+    const layout = readFileSync(layoutPath, 'utf8');
+    expect(layout).toMatch(/<html[^>]*suppressHydrationWarning/);
   });
 });

@@ -73,7 +73,7 @@ describe('buildThemeStyle', () => {
 
   it('emits the container width tokens from FIXED_TOKENS.container.widths (Spec §6.2)', () => {
     const css = buildThemeStyle(baseResolved);
-    expect(css).toContain('--press-container-prose: 72ch;');
+    expect(css).toContain('--press-container-prose: 42rem;');
     expect(css).toContain('--press-container-sm: 640px;');
     expect(css).toContain('--press-container-md: 768px;');
     expect(css).toContain('--press-container-lg: 1024px;');

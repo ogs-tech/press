@@ -59,7 +59,11 @@ export const FIXED_TOKENS: {
   },
   radiusPill: '999px',
   container: {
-    widths: { prose: '72ch', sm: '640px', md: '768px', lg: '1024px', xl: '1280px' },
+    // `prose` is rem-anchored (≈72ch at the 16px body size) ON PURPOSE: a ch
+    // value would resolve against each CONSUMING element's font, giving a
+    // 28px heading a ~2× wider "prose" column than a 16px paragraph — the
+    // single editorial column must be identical for every atom.
+    widths: { prose: '42rem', sm: '640px', md: '768px', lg: '1024px', xl: '1280px' },
     paddingX: '24px', // = space-5 literal
   },
   gridGap: { sm: '12px', md: '24px', lg: '48px' }, // = space-3/5/7 literals

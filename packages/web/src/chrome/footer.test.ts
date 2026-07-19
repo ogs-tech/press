@@ -12,6 +12,10 @@ describe('Footer renderer', () => {
     expect(html).toContain('data-block="preset-organism.footer"');
   });
 
+  it('spans full width like the Navbar — chrome is edge-to-edge, content is contained', () => {
+    expect(render({ text: 'hi', brand: { name: 'Acme' } })).toContain('data-max-width="full"');
+  });
+
   it('renders the copyright inside a <small>', () => {
     const html = render({ text: '© Acme Corp — all rights reserved', brand: { name: 'Acme' } });
     expect(html).toContain('<small>');
