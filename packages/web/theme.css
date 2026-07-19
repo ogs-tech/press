@@ -59,30 +59,15 @@ header {
   height: 28px;
   width: auto;
 }
-/* Navbar CTA: same token treatment as preset-atom.button (fill / outline). */
-[data-block="preset-organism.navbar"] [data-navbar="cta"] {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--press-space-2) var(--press-space-4);
-  border-radius: var(--press-radius-sm);
-  font-weight: 600;
-  text-decoration: none;
-  line-height: 1;
-}
-[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="primary"] {
-  background: var(--press-color-primary);
-  color: var(--press-color-on-primary);
-}
-[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"] {
-  background: transparent;
-  color: var(--press-color-primary);
-  border: 1px solid var(--press-color-border);
-}
+/* Navbar CTA: styled by the shared button family (see "Button family" below);
+   only its chrome-density padding override lives there too. */
 
 /* Header navigation (site chrome): editable menu rendered by the navbar's internal
-   NavLinks next to the brand link. Pushed to the right of the logo; wraps
-   gracefully on narrow viewports (a JS hamburger is out of scope). Active link
-   uses aria-current. */
+   NavLinks next to the brand link. Desktop surface only — below `md` the
+   [data-navbar-desktop] Row is hidden and the MobileNav hamburger drawer takes
+   over (matched pair, see the mobile navbar rules at the end of this file).
+   Overflowing links wrap onto extra lines via the Row's default wrap. Active
+   link uses aria-current. */
 nav[data-press-nav="header"] a {
   display: inline-flex;
   align-items: center;
@@ -108,16 +93,21 @@ main {
   padding-block: var(--press-space-7);
 }
 
-/* Prose atoms in the page body still read at ~72ch — the shell dropped its
-   own max-width, so this selector restores editorial width for every preset
+/* Prose atoms in the page body still read at ~72ch (42rem, rem-anchored so
+   headings and body atoms share ONE column) — the shell dropped its own
+   max-width, so this selector restores editorial width for every preset
    atom (and every custom atom by convention) rendered inside main (Spec §7.2).
-   Organisms and non-atom customs are deliberately excluded — they own their
-   own Container. */
+   The column is LEFT-ALIGNED to the same rail a `<Container maxWidth="lg">`
+   content edge sits on (the margin-start formula mirrors the Container's
+   centering math + gutter) — NOT viewport-centered: a centered narrow column
+   next to lg-container organisms (hero/cta) produced a zig-zag of left edges;
+   one shared rail reads as a single axis at every viewport. Organisms and
+   non-atom customs are deliberately excluded — they own their own Container. */
 main [data-block^="preset-atom."],
 main [data-block^="custom-atom."] {
   max-width: var(--press-container-prose);
-  margin-inline: auto;
-  padding-inline: var(--press-container-padding-x);
+  margin-inline-start: calc(max(100% - var(--press-container-lg), 0px) / 2 + var(--press-container-padding-x));
+  margin-inline-end: var(--press-container-padding-x);
 }
 
 footer {
@@ -193,6 +183,11 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
   color: var(--press-color-muted);
   font-style: normal;
 }
+/* The em-dash anchors the attribution to the quotation above it — the cite
+   sits OUTSIDE the blockquote's left border, so without a mark it floats. */
+[data-block="preset-atom.quote"] cite::before {
+  content: '\2014\00a0';
+}
 
 /* Reference block: preset-atom.image — a single server-rendered image (Spec §5.2/§7). */
 [data-block="preset-atom.image"] {
@@ -215,23 +210,76 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
 [data-block="preset-atom.button"] {
   margin: var(--press-space-5) 0;
 }
-[data-block="preset-atom.button"] a {
+
+/* Button family — ONE visual contract for every button-shaped link the engine
+   renders: the button atom, the navbar CTA (desktop bar + mobile drawer), the
+   hero CTA, and the cta-banner button. The always-present transparent border
+   keeps the filled and outlined voices the same height. The secondary border
+   rides on currentColor — it self-themes with ANY adopter palette (a neutral
+   --press-color-border stroke read as unfinished next to primary-colored
+   text). Hover/active derive from the variant's own colors via color-mix —
+   primary darkens TOWARD INK, not black, so the pressed state stays in the
+   brand's temperature — and no state gains elevation (strokes over shadows,
+   Spec §4). */
+[data-block="preset-atom.button"] a,
+[data-block="preset-organism.navbar"] [data-navbar="cta"],
+[data-block="preset-organism.hero"] [data-hero="cta"],
+[data-block="preset-organism.cta"] [data-cta="button"] {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: var(--press-space-3) var(--press-space-5);
+  border: 1px solid transparent;
   border-radius: var(--press-radius-sm);
   font-weight: 600;
   text-decoration: none;
   line-height: 1;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
-[data-block="preset-atom.button"] a[data-variant="primary"] {
+/* Chrome density: the navbar CTA is one size down (order matters — this
+   override must follow the family base, equal specificity). */
+[data-block="preset-organism.navbar"] [data-navbar="cta"] {
+  padding: var(--press-space-2) var(--press-space-4);
+}
+[data-block="preset-atom.button"] a[data-variant="primary"],
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="primary"],
+[data-block="preset-organism.hero"] [data-hero="cta"],
+[data-block="preset-organism.cta"] [data-cta="button"] {
   background: var(--press-color-primary);
   color: var(--press-color-on-primary);
 }
-[data-block="preset-atom.button"] a[data-variant="secondary"] {
+[data-block="preset-atom.button"] a[data-variant="primary"]:hover,
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="primary"]:hover,
+[data-block="preset-organism.hero"] [data-hero="cta"]:hover,
+[data-block="preset-organism.cta"] [data-cta="button"]:hover {
+  background: color-mix(in srgb, var(--press-color-primary) 85%, var(--press-color-ink));
+}
+[data-block="preset-atom.button"] a[data-variant="primary"]:active,
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="primary"]:active,
+[data-block="preset-organism.hero"] [data-hero="cta"]:active,
+[data-block="preset-organism.cta"] [data-cta="button"]:active {
+  background: color-mix(in srgb, var(--press-color-primary) 72%, var(--press-color-ink));
+}
+[data-block="preset-atom.button"] a[data-variant="secondary"],
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"] {
   background: transparent;
   color: var(--press-color-primary);
-  border: 1px solid var(--press-color-border);
+  border-color: currentColor;
+}
+[data-block="preset-atom.button"] a[data-variant="secondary"]:hover,
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"]:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+[data-block="preset-atom.button"] a[data-variant="secondary"]:active,
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"]:active {
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+[data-block="preset-atom.button"] a:focus-visible,
+[data-block="preset-organism.navbar"] [data-navbar="cta"]:focus-visible,
+[data-block="preset-organism.hero"] [data-hero="cta"]:focus-visible,
+[data-block="preset-organism.cta"] [data-cta="button"]:focus-visible {
+  outline: 2px solid var(--press-color-primary);
+  outline-offset: 2px;
 }
 
 /* Reference block: preset-atom.separator — a horizontal divider; `data-variant` swaps a
@@ -279,16 +327,7 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
   font-size: var(--press-text-lg);
   color: var(--press-color-muted);
 }
-[data-block="preset-organism.hero"] [data-hero="cta"] {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--press-space-3) var(--press-space-5);
-  border-radius: var(--press-radius-sm);
-  background: var(--press-color-primary);
-  color: var(--press-color-on-primary);
-  font-weight: 600;
-  text-decoration: none;
-}
+/* [data-hero="cta"] is styled by the shared button family (always primary). */
 [data-block="preset-organism.hero"] img {
   display: block;
   width: 100%;
@@ -317,16 +356,7 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
   margin: 0 0 var(--press-space-4);
   color: var(--press-color-muted);
 }
-[data-block="preset-organism.cta"] [data-cta="button"] {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--press-space-3) var(--press-space-5);
-  border-radius: var(--press-radius-sm);
-  background: var(--press-color-primary);
-  color: var(--press-color-on-primary);
-  font-weight: 600;
-  text-decoration: none;
-}
+/* [data-cta="button"] is styled by the shared button family (always primary). */
 
 /* Engine plugin: cookie-consent — the consent banner (cookie-consent Spec §5).
    Fixed bottom bar, 1px stroke over shadow, pure token consumer. The html
@@ -400,15 +430,26 @@ html[data-press-consent="decided"] [data-press-plugin="cookie-consent"] {
   background: var(--press-color-primary);
   color: var(--press-color-on-primary);
 }
+[data-press-plugin="cookie-consent"] button[data-variant="primary"]:hover {
+  background: color-mix(in srgb, var(--press-color-primary) 85%, var(--press-color-ink));
+}
+/* Same currentColor-outline voice as the shared button family. */
 [data-press-plugin="cookie-consent"] button[data-variant="secondary"] {
   color: var(--press-color-primary);
-  border-color: var(--press-color-border);
+  border-color: currentColor;
+}
+[data-press-plugin="cookie-consent"] button[data-variant="secondary"]:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 [data-press-plugin="cookie-consent"] button[data-variant="ghost"] {
   color: var(--press-color-muted);
 }
 [data-press-plugin="cookie-consent"] button[data-variant="ghost"]:hover {
   color: var(--press-color-primary);
+}
+[data-press-plugin="cookie-consent"] button:focus-visible {
+  outline: 2px solid var(--press-color-primary);
+  outline-offset: 2px;
 }
 
 /* Layout primitives (Spec §5). Rules read the data-press-layout attribute and
@@ -449,20 +490,25 @@ html[data-press-consent="decided"] [data-press-plugin="cookie-consent"] {
   }
 }
 
+/* The span rides on grid-column-END on purpose: the `grid-column: span N`
+   shorthand stores the span in the START longhand, so a later
+   `grid-column-start: auto` (the undeclared-start case) would erase it and
+   collapse every column to one track. `start: auto; end: span N` auto-places
+   the column spanning N; a declared start pins the line and keeps the span. */
 [data-press-layout="column"] {
-  grid-column: span var(--press-col-span, 12);
   grid-column-start: var(--press-col-start, auto);
+  grid-column-end: span var(--press-col-span, 12);
 }
 @media (min-width: 768px) {
   [data-press-layout="column"] {
-    grid-column: span var(--press-col-span-md, var(--press-col-span, 12));
     grid-column-start: var(--press-col-start-md, var(--press-col-start, auto));
+    grid-column-end: span var(--press-col-span-md, var(--press-col-span, 12));
   }
 }
 @media (min-width: 1024px) {
   [data-press-layout="column"] {
-    grid-column: span var(--press-col-span-lg, var(--press-col-span-md, var(--press-col-span, 12)));
     grid-column-start: var(--press-col-start-lg, var(--press-col-start-md, var(--press-col-start, auto)));
+    grid-column-end: span var(--press-col-span-lg, var(--press-col-span-md, var(--press-col-span, 12)));
   }
 }
 
@@ -544,6 +590,13 @@ html[data-press-consent="decided"] [data-press-plugin="cookie-consent"] {
   flex-direction: column;
   gap: var(--press-space-3);
   min-width: min(320px, 80vw);
+  /* Body scroll is locked while the drawer is open (MobileNav), so the panel
+     must scroll ITSELF when N links exceed the viewport — otherwise the tail
+     of a long menu is unreachable. overscroll-behavior stops the panel's
+     scroll from chaining into the (locked) page behind the backdrop. */
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--press-space-6) var(--press-space-5);
   background: var(--press-color-surface);
   border: 1px solid var(--press-color-border);

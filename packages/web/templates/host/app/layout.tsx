@@ -30,8 +30,11 @@ export async function generateMetadata() {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const site = await getSiteConfig(buildTime);
+  // suppressHydrationWarning: the consent bootstrap script in <head> mutates
+  // <html> (data-press-consent) before React hydrates; the prop silences only
+  // THIS element's attribute diff — child mismatches still surface.
   return (
-    <html lang={site.site.locale} data-theme={buildTime.theme.name} className={fontVars}>
+    <html lang={site.site.locale} data-theme={buildTime.theme.name} className={fontVars} suppressHydrationWarning>
       <head>
         {/* The single injection point for token values (CMS-sourced or DEFAULT_THEME). */}
         <style dangerouslySetInnerHTML={{ __html: buildThemeStyle(site) }} />

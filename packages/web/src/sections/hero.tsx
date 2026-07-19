@@ -37,7 +37,11 @@ export function Hero({
       data-block="preset-organism.hero"
       data-align={align ?? 'left'}
     >
-      <Grid gap="lg" alignItems="center">
+      {/* Gap is tier-scaled: a 12-track grid always carries 11 interior
+          column-gaps, so a flat "lg" (48px) forces a 528px minimum width and
+          overflows phone viewports even when every column spans 12. "md" at
+          base keeps the floor at 264px; "lg" returns on desktop. */}
+      <Grid gap={{ base: 'md', lg: 'lg' }} alignItems="center">
         <Column span={{ base: 12, md: hasImage ? 7 : 12 }}>
           <div data-hero="content">
             {eyebrow ? <p data-hero="eyebrow">{eyebrow}</p> : null}
