@@ -3,6 +3,11 @@
   "info": { "displayName": "Paragraph", "icon": "write", "description": "A prose paragraph shipped by the press engine" },
   "options": {},
   "attributes": {
-    "content": { "type": "blocks", "required": true }
+    "content": { "type": "text", "required": true }
+  },
+  "config": {
+    "metadatas": {
+      "content": { "edit": { "label": "Content", "description": "Plain text. A blank line starts a new paragraph." } }
+    }
   }
 }

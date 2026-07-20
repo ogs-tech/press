@@ -7,8 +7,7 @@
     "title": { "type": "string", "required": true },
     "subtitle": { "type": "text" },
     "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "ctaLabel": { "type": "string" },
-    "ctaHref": { "type": "string" },
+    "cta": { "type": "component", "repeatable": false, "component": "preset-molecule.link" },
     "align": { "type": "enumeration", "enum": ["left", "center"], "default": "left" }
   }
 }

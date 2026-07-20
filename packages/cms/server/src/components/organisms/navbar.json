@@ -7,7 +7,7 @@
   },
   "options": {},
   "attributes": {
-    "items": { "type": "component", "repeatable": true, "component": "preset-molecule.nav-item" },
+    "items": { "type": "component", "repeatable": true, "component": "preset-molecule.link" },
     "cta": { "type": "component", "repeatable": false, "component": "preset-atom.button" }
   },
   "config": {

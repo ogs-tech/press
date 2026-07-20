@@ -183,8 +183,8 @@ describe('injectComponents', () => {
     const expected = [
       'preset-atom.paragraph', 'preset-atom.heading', 'preset-atom.list', 'preset-atom.quote',
       'preset-atom.image', 'preset-atom.button', 'preset-atom.separator', 'preset-atom.spacer',
-      'preset-molecule.nav-item', 'preset-molecule.column',
-      'preset-organism.hero', 'preset-organism.cta', 'preset-organism.columns',
+      'preset-molecule.link',
+      'preset-organism.hero', 'preset-organism.cta',
       'preset-organism.navbar', 'preset-organism.footer',
       'preset-config.seo', 'preset-config.theme-colors', 'preset-config.theme-radius',
       'preset-config.cookie-category', 'preset-config.cookie-consent',
@@ -211,10 +211,10 @@ describe('injectComponents', () => {
     expect(components.get('preset-config.seo')?.modelType).toBe('component'); // others still injected
   });
 
-  it('injects preset-molecule.nav-item but never admits it into the page Dynamic Zone', () => {
-    // nav-item is a molecule nested inside the navbar. Injecting it registers the
-    // component, but it must NOT leak into the page block palette — only custom-*
-    // is admitted into the page body Dynamic Zone.
+  it('injects preset-molecule.link but never admits it into the page Dynamic Zone', () => {
+    // link is a molecule nested inside button/hero/cta/navbar. Injecting it
+    // registers the component, but it must NOT leak into the page block palette —
+    // only custom-* is admitted into the page body Dynamic Zone.
     const components = new Map<string, any>();
     const page = pageWithBody(['preset-atom.paragraph']);
     const contentTypes = new Map<string, any>([
@@ -231,9 +231,9 @@ describe('injectComponents', () => {
     components.set('custom-organism.callout', { uid: 'custom-organism.callout' }); // a real custom block
     admitCustomBlocks({ strapi });
 
-    expect(components.get('preset-molecule.nav-item')?.modelType).toBe('component'); // injected
-    expect(page.attributes.body.components).toContain('custom-organism.callout');    // custom admitted
-    expect(page.attributes.body.components).not.toContain('preset-molecule.nav-item'); // never admitted
+    expect(components.get('preset-molecule.link')?.modelType).toBe('component'); // injected
+    expect(page.attributes.body.components).toContain('custom-organism.callout'); // custom admitted
+    expect(page.attributes.body.components).not.toContain('preset-molecule.link'); // never admitted
   });
 
   it('injects the organism sections (hero/cta) under category "preset-organism" with a derived globalId', () => {
@@ -249,41 +249,21 @@ describe('injectComponents', () => {
     expect(components.get('preset-organism.cta')?.globalId).toBe('ComponentPresetOrganismCta');
   });
 
-  it('injects preset-organism.columns with its nested preset-molecule.column (never a DZ member)', () => {
-    // Same nesting contract as navbar/nav-item: the organism is a DZ block, the
-    // molecule exists only inside it. `columns` nests the repeatable molecule;
-    // the molecule reuses preset-atom.button (the navbar.cta pattern).
-    const components = new Map<string, any>();
-    const page = pageWithBody(['preset-atom.paragraph']);
-    const contentTypes = new Map<string, any>([
-      [PAGE_UID, page],
-      [SITE_SETTING_UID, siteSettingWithChrome()],
-    ]);
-    const strapi = {
-      get: (key: string) =>
-        key === 'components' ? components : key === 'content-types' ? contentTypes : undefined,
-      log: { warn() {}, info() {}, debug() {}, error() {} },
-    } as any;
-
+  it('injects preset-molecule.link under category "preset-molecule" with the shared link shape', () => {
+    // link is the engine's one link concept, nested inside preset-atom.button,
+    // preset-organism.hero/.cta, and preset-organism.navbar.items[] — never a DZ
+    // member itself.
+    const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
-    admitCustomBlocks({ strapi });
 
-    expect(components.get('preset-organism.columns')?.category).toBe('preset-organism');
-    expect(components.get('preset-organism.columns')?.globalId).toBe('ComponentPresetOrganismColumns');
-    expect(components.get('preset-organism.columns')?.attributes).toMatchObject({
-      ratio: { type: 'enumeration', enum: ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'], default: '50-50' },
-      gap: { type: 'enumeration', enum: ['compact', 'normal', 'spacious'], default: 'normal' },
-      verticalAlign: { type: 'enumeration', enum: ['top', 'center', 'bottom'], default: 'top' },
-      columns: { type: 'component', repeatable: true, component: 'preset-molecule.column' },
+    expect(components.get('preset-molecule.link')?.category).toBe('preset-molecule');
+    expect(components.get('preset-molecule.link')?.globalId).toBe('ComponentPresetMoleculeLink');
+    expect(components.get('preset-molecule.link')?.attributes).toMatchObject({
+      label: { type: 'string' },
+      page: { type: 'relation', relation: 'oneToOne', target: 'plugin::press-cms.page' },
+      url: { type: 'string' },
+      newTab: { type: 'boolean', default: false },
     });
-    expect(components.get('preset-molecule.column')?.category).toBe('preset-molecule');
-    expect(components.get('preset-molecule.column')?.attributes).toMatchObject({
-      content: { type: 'blocks' },
-      image: { type: 'media', multiple: false, allowedTypes: ['images'] },
-      button: { type: 'component', repeatable: false, component: 'preset-atom.button' },
-    });
-    // Nested-only: the molecule never leaks into any Dynamic Zone.
-    expect(page.attributes.body.components).not.toContain('preset-molecule.column');
   });
 
   it('injects the organism chrome (navbar/footer) under category "preset-organism" with a derived globalId', () => {
@@ -295,9 +275,10 @@ describe('injectComponents', () => {
     expect(components.get('preset-organism.navbar')?.modelType).toBe('component');
     expect(components.get('preset-organism.navbar')?.category).toBe('preset-organism');
     expect(components.get('preset-organism.navbar')?.globalId).toBe('ComponentPresetOrganismNavbar');
-    // Composite shape: nested nav items + optional CTA, no brand fields.
+    // Composite shape: nested nav items (the shared link descriptor) + optional
+    // CTA (a button, already a labeled link + variant), no brand fields.
     expect(components.get('preset-organism.navbar')?.attributes).toMatchObject({
-      items: { type: 'component', repeatable: true, component: 'preset-molecule.nav-item' },
+      items: { type: 'component', repeatable: true, component: 'preset-molecule.link' },
       cta: { type: 'component', repeatable: false, component: 'preset-atom.button' },
     });
 
