@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_preset_layout_columns",
+  "info": {
+    "displayName": "Column",
+    "icon": "stack",
+    "description": "A tree column: the recursion point — nests blocks and further rows"
+  },
+  "options": {},
+  "attributes": {
+    "container": { "type": "component", "repeatable": false, "component": "preset-layout.container" }
+  },
+  "config": {
+    "metadatas": {
+      "container": { "edit": { "label": "Container" } }
+    }
+  }
+}

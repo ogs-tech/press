@@ -12,6 +12,9 @@ import heroSchema from '../components/organisms/hero.json';
 import ctaSchema from '../components/organisms/cta.json';
 import navbarSchema from '../components/organisms/navbar.json';
 import footerSchema from '../components/organisms/footer.json';
+import layoutContainerSchema from '../components/layout/container.json';
+import layoutRowSchema from '../components/layout/row.json';
+import layoutColumnSchema from '../components/layout/column.json';
 import seoSchema from '../components/config/seo.json';
 import themeColorsSchema from '../components/config/theme-colors.json';
 import themeRadiusSchema from '../components/config/theme-radius.json';
@@ -26,10 +29,12 @@ import { toGlobalId } from './global-id';
  * Declaring the layers here is the single source of truth for the palette's shape
  * — categories are never spelled as ad-hoc string literals scattered across files.
  *
- * `layout` and `template` are RESERVED — no components ship in this task:
- *   - `layout`   ← delivered by the Grid System task (container/grid/row/column).
+ * `template` is RESERVED — no components ship in this task:
  *   - `template` ← installed by plugins (e.g. Site/Plugin for Company).
- * They are declared so the model is complete and picker labels are ready.
+ * It is declared so the model is complete and picker labels are ready.
+ * `layout` is no longer reserved: `preset-layout.container/row/column` are the
+ * composition-tree node descriptors (Spec §4) the admin builder drives its
+ * layout-node forms from.
  */
 export const PRESET_LAYERS = ['atom', 'molecule', 'organism', 'config', 'layout', 'template'] as const;
 export type PresetLayer = (typeof PRESET_LAYERS)[number];
@@ -88,6 +93,13 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   { layer: 'organism', name: 'cta', schema: ctaSchema as Record<string, unknown> },
   { layer: 'organism', name: 'navbar', schema: navbarSchema as Record<string, unknown> },
   { layer: 'organism', name: 'footer', schema: footerSchema as Record<string, unknown> },
+  // Layout — the tree-node descriptors (Spec §4): pure schema for the builder's
+  // layout-node forms. `preset-layout.container` is the shared ContainerAttrs
+  // surface, referenced by row/column via `component:` fields (the link/nav-item
+  // nesting pattern) so the "Container" form section is defined exactly once.
+  { layer: 'layout', name: 'container', schema: layoutContainerSchema as Record<string, unknown> },
+  { layer: 'layout', name: 'row', schema: layoutRowSchema as Record<string, unknown> },
+  { layer: 'layout', name: 'column', schema: layoutColumnSchema as Record<string, unknown> },
   // Config — non-block settings referenced by the Site Settings single type (seo /
   // theme behave like a settings form; cookie-consent is plugin #1's editable
   // surface). Injected like the rest but never admitted into a Dynamic Zone.
