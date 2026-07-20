@@ -1,11 +1,16 @@
 {
   "name": "@ogs-tech/press-shared",
   "version": "0.1.0",
-  "private": true,
-  "description": "press — framework-agnostic contract types shared by the engine packages",
+  "description": "press — wire contract types and pure wire validators shared by the engine packages",
   "license": "MIT",
   "author": "Odenir Gomes",
   "type": "module",
+  "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ogs-tech/press.git",
+    "directory": "packages/shared"
+  },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -15,9 +20,11 @@
   "files": ["src"],
   "scripts": {
     "build": "echo '@ogs-tech/press-shared ships TS source; nothing to build'",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.0"
   }
 }
