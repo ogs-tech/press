@@ -6,23 +6,16 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 /**
  * The engine owns the wire shape: the controller computes the populate
  * server-side and `ctx.query` is never honored. `populate: '*'` is SHALLOW — it
- * would leave `preset-organism.navbar's items.page` (and `seo.image`) unpopulated, so every internal
- * nav link silently falls back to its raw `url` and an internal page link 404s.
- * These tests pin the deep-populate contract the web resolver (mapSiteSettings)
- * depends on.
+ * would leave `seo.image` unpopulated. `header`/`footer` are gone (Spec §4: the
+ * composition-builder JSON custom field replaces the chrome Dynamic Zones); these
+ * tests pin the remaining deep-populate contract the web resolver
+ * (mapSiteSettings) depends on.
  */
 describe('site-setting controller', () => {
   function run(record: unknown = { name: 'Acme' }) {
     const findFirst = vi.fn().mockResolvedValue(record);
     const documents = vi.fn(() => ({ findFirst }));
-    const contentType = vi.fn(() => ({
-      uid: SITE_SETTING_UID,
-      attributes: {
-        header: { type: 'dynamiczone', components: ['preset-organism.navbar', 'preset-atom.paragraph', 'custom-organism.callout'] },
-        footer: { type: 'dynamiczone', components: ['preset-organism.footer', 'custom-organism.callout'] },
-      },
-    }));
-    const strapi = { documents, contentType } as any;
+    const strapi = { documents } as any;
     const ctx: any = {};
     return { strapi, ctx, documents, findFirst };
   }
@@ -34,30 +27,15 @@ describe('site-setting controller', () => {
     expect(ctx.body).toEqual({ data: { name: 'Acme' } });
   });
 
-  it('populates both chrome DZs with a per-component `on` map read from the live content-type', async () => {
+  it('no longer populates the removed header/footer dynamic zones (BREAKING, Spec §4)', async () => {
     const { strapi, ctx, findFirst } = run();
     await siteSetting({ strapi }).find(ctx);
     const { populate } = findFirst.mock.calls[0][0];
-    // custom-* flows through with the same shallow '*' as body blocks.
-    expect(populate.header.on['preset-atom.paragraph']).toEqual({ populate: '*' });
-    expect(populate.header.on['custom-organism.callout']).toEqual({ populate: '*' });
-    expect(populate.footer.on['preset-organism.footer']).toEqual({ populate: '*' });
-  });
-
-  it('deep-populates preset-organism.navbar (items.page slug + cta) so internal nav links resolve to their slug', async () => {
-    const { strapi, ctx, findFirst } = run();
-    await siteSetting({ strapi }).find(ctx);
-    const { populate } = findFirst.mock.calls[0][0];
-    expect(populate.header.on['preset-organism.navbar']).toEqual({
-      populate: { items: { populate: { page: { fields: ['slug'] } } }, cta: true },
-    });
-  });
-
-  it('no longer populates the removed headerNav (BREAKING, Spec §Migration)', async () => {
-    const { strapi, ctx, findFirst } = run();
-    await siteSetting({ strapi }).find(ctx);
-    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.header).toBeUndefined();
+    expect(populate.footer).toBeUndefined();
     expect(populate.headerNav).toBeUndefined();
+    // pageDefaults is a JSON custom field scalar — no populate key at all.
+    expect(populate.pageDefaults).toBeUndefined();
   });
 
   it('deep-populates seo.image — media nested in a component is not reached by populate:*', async () => {

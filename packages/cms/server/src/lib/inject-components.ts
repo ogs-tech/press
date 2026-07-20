@@ -39,8 +39,9 @@ export type PresetLayer = (typeof PRESET_LAYERS)[number];
  * `config`. An adopter drops a component under `src/components/custom-${layer}/`;
  * Strapi derives the `custom-${layer}` category from that folder name. Unlike
  * preset, placement is NOT a category concern on the custom side — every custom
- * block is admitted into every engine Dynamic Zone (see admitCustomBlocks); the
- * editor decides placement in the picker.
+ * block is discovered straight from the components registry (`custom-*` category
+ * prefix, see `isCustomBlockUid`) by the builder palette and `serialize-schema`;
+ * the editor decides placement in the composition tree.
  */
 export const CUSTOM_LAYERS = ['atom', 'molecule', 'organism', 'layout', 'template'] as const;
 export type CustomLayer = (typeof CUSTOM_LAYERS)[number];
@@ -56,7 +57,10 @@ export type CustomLayer = (typeof CUSTOM_LAYERS)[number];
  * Boot order (see @strapi/core/dist/Strapi.js `load`):
  *   1. providers.register  -> loadApplicationContext (app components AND plugin
  *      content-types loaded in parallel; module.load() registers CTs before register)
- *   2. plugins REGISTER     -> THIS hook (inject the preset-* palette, then admit custom-*)
+ *   2. plugins REGISTER     -> THIS hook (inject the preset-* palette). Custom blocks
+ *      are never "admitted" anywhere — the builder palette and `serialize-schema`
+ *      discover them straight from the components registry (the `custom-*` category
+ *      prefix stays the whole extension-point contract).
  *   3. bootstrap            -> transformContentTypesToModels([...contentTypes, ...components])
  *
  * The injected object mirrors the exact shape produced by Strapi's own loader
@@ -130,79 +134,5 @@ export const injectComponents = ({ strapi }: { strapi: Core.Strapi }): void => {
   }
 };
 
-/**
- * The engine Dynamic Zones that admit adopter blocks: the page `body` and the two
- * site-setting chrome zones. Every adopter component (category `custom-*`) is
- * admitted into ALL of them — placement is not a category concern on the custom
- * side (custom is organized by atomic LAYER; the editor decides placement in the
- * picker). The engine never restricts adopter blocks; it only curates the
- * placement of its OWN preset blocks, statically, in each content-type schema.json.
- */
-const ENGINE_DZ_TARGETS: Array<{ uid: string; attribute: string }> = [
-  { uid: 'plugin::press-cms.page', attribute: 'body' },
-  { uid: 'plugin::press-cms.site-setting', attribute: 'header' },
-  { uid: 'plugin::press-cms.site-setting', attribute: 'footer' },
-];
-
 /** An adopter block: any registered component under a `custom` / `custom-${layer}` category. */
-const isCustomBlockUid = (uid: string): boolean => uid.startsWith('custom.') || uid.startsWith('custom-');
-
-/**
- * Admits adopter components into EVERY engine Dynamic Zone.
- *
- * Contract: the folder an adopter drops a component under
- * (<host>/src/components/custom-${layer}/) declares its atomic LAYER — used for
- * palette grouping and generated type names — while the block itself is usable in
- * any zone. The engine NEVER names specific adopter blocks; the `custom*` category
- * prefix is the whole extension-point contract.
- *
- * Timing: loadApplicationContext runs loadPlugins + loadComponents in parallel
- * (Promise.all). module.load() registers plugin content-types synchronously when
- * the plugin module is added, so both engine content-types ARE present in the
- * content-types registry by the time plugin register() fires.
- */
-export const admitCustomBlocks = ({ strapi }: { strapi: Core.Strapi }): void => {
-  const componentRegistry = strapi.get('components');
-  const customUids = [...componentRegistry.keys()].filter(isCustomBlockUid);
-
-  for (const { uid, attribute } of ENGINE_DZ_TARGETS) {
-    const contentType = strapi.get('content-types').get(uid);
-
-    // Invariant: the engine ships both content-types, so they MUST be registered
-    // by the time this register hook fires. If one isn't, custom block admission
-    // cannot happen and the engine would boot half-broken (blocks silently absent
-    // from the DZ → incomplete types → unknown components). Fail loud, abort boot.
-    if (!contentType) {
-      throw new Error(
-        `[press-cms] invariant violated: '${uid}' is absent from the content-types ` +
-          'registry at register time — custom blocks cannot be admitted, aborting boot. ' +
-          'Likely an engine content-type load failure or a Strapi version mismatch.',
-      );
-    }
-
-    const dzAttr = (contentType.attributes as Record<string, { type: string; components?: string[] }>)?.[attribute];
-
-    if (!dzAttr || dzAttr.type !== 'dynamiczone' || !Array.isArray(dzAttr.components)) {
-      throw new Error(
-        `[press-cms] invariant violated: '${uid}' has no '${attribute}' dynamic zone ` +
-          '(or it has an unexpected shape) at register time. The engine Dynamic Zones are the ' +
-          'extension point for custom blocks — aborting boot. Likely a changed schema or a ' +
-          'Strapi version mismatch.',
-      );
-    }
-
-    const admitted: string[] = [];
-    for (const customUid of customUids) {
-      if (!dzAttr.components.includes(customUid)) {
-        dzAttr.components.push(customUid);
-        admitted.push(customUid);
-      }
-    }
-
-    if (admitted.length > 0) {
-      strapi.log.info(`[press-cms] admitted custom blocks into ${uid}#${attribute}: ${admitted.join(', ')}`);
-    } else {
-      strapi.log.debug(`[press-cms] no custom blocks to admit into ${uid}#${attribute}`);
-    }
-  }
-};
+export const isCustomBlockUid = (uid: string): boolean => uid.startsWith('custom.') || uid.startsWith('custom-');
