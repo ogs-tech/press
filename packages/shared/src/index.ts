@@ -31,6 +31,11 @@ export interface Attr {
 }
 
 export interface PressSchema {
+  /** The composition-tree contract version served by this cms (absent on pre-tree engines). */
+  tree?: { version: number };
   contentTypes: Record<string, { uid: string; info: unknown; attributes: Record<string, Attr> }>;
   components: Record<string, { uid: string; attributes: Record<string, Attr> }>;
 }
+
+export * from './tree';
+export * from './validate-tree';
