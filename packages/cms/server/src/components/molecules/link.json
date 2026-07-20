@@ -1,13 +1,13 @@
 {
-  "collectionName": "components_preset_molecule_nav_items",
+  "collectionName": "components_preset_molecule_links",
   "info": {
-    "displayName": "Nav Item",
+    "displayName": "Link",
     "icon": "link",
-    "description": "A single navigation entry: an internal page link or an external URL"
+    "description": "The engine's one link concept: an internal page reference (survives renames) or a URL, with a label"
   },
   "options": {},
   "attributes": {
-    "label": { "type": "string", "required": true },
+    "label": { "type": "string" },
     "page": { "type": "relation", "relation": "oneToOne", "target": "plugin::press-cms.page" },
     "url": { "type": "string" },
     "newTab": { "type": "boolean", "default": false }

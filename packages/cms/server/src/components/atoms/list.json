@@ -3,6 +3,13 @@
   "info": { "displayName": "List", "icon": "bulletList", "description": "An ordered or unordered list shipped by the press engine" },
   "options": {},
   "attributes": {
-    "content": { "type": "blocks", "required": true }
+    "content": { "type": "text", "required": true },
+    "format": { "type": "enumeration", "enum": ["unordered", "ordered"], "default": "unordered" }
+  },
+  "config": {
+    "metadatas": {
+      "content": { "edit": { "label": "Items", "description": "One item per line." } },
+      "format": { "edit": { "label": "Format" } }
+    }
   }
 }
