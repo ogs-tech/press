@@ -288,3 +288,70 @@ describe('generateTypes with chrome organisms (site-setting DZs)', () => {
     expect(legacy).toContain('export type PageBody');
   });
 });
+
+describe('generateTypes with the two-level columns chain (preset-organism.columns)', () => {
+  // The navbar coverage above pins ONE level of nesting; the columns chain is the
+  // first TWO-level one (DZ member → repeatable molecule → nested atom). Pins that
+  // the generator needs zero code change for it (Spec §2 / §7).
+  const schema = {
+    contentTypes: {
+      'plugin::press-cms.page': {
+        uid: 'plugin::press-cms.page',
+        info: { singularName: 'page' },
+        attributes: {
+          title: { type: 'string', required: true },
+          body: { type: 'dynamiczone', components: ['preset-organism.columns'] },
+        },
+      },
+    },
+    components: {
+      'preset-organism.columns': {
+        uid: 'preset-organism.columns',
+        attributes: {
+          ratio: { type: 'enumeration', enum: ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'], default: '50-50' },
+          gap: { type: 'enumeration', enum: ['compact', 'normal', 'spacious'], default: 'normal' },
+          verticalAlign: { type: 'enumeration', enum: ['top', 'center', 'bottom'], default: 'top' },
+          columns: { type: 'component', repeatable: true, component: 'preset-molecule.column' },
+        },
+      },
+      'preset-molecule.column': {
+        uid: 'preset-molecule.column',
+        attributes: {
+          content: { type: 'blocks' },
+          image: { type: 'media', multiple: false, allowedTypes: ['images'] },
+          button: { type: 'component', repeatable: false, component: 'preset-atom.button' },
+        },
+      },
+      'preset-atom.button': {
+        uid: 'preset-atom.button',
+        attributes: {
+          label: { type: 'string', required: true },
+          href: { type: 'string', required: true },
+          variant: { type: 'enumeration', enum: ['primary', 'secondary'], default: 'primary', required: true },
+        },
+      },
+    },
+  };
+
+  const out = generateTypes(schema);
+
+  it('emits the organism with the closed layout enums and the repeatable nested column array', () => {
+    expect(out).toContain("__component: 'preset-organism.columns'");
+    expect(out).toContain("ratio?: '50-50' | '33-67' | '67-33' | '33-33-33' | '25-25-25-25';");
+    expect(out).toContain("gap?: 'compact' | 'normal' | 'spacious';");
+    expect(out).toContain("verticalAlign?: 'top' | 'center' | 'bottom';");
+    expect(out).toContain('columns?: PresetMoleculeColumn[];');
+  });
+
+  it('emits the nested-only column without __component, typing media and the nested button ref', () => {
+    expect(out).toContain('export interface PresetMoleculeColumn {');
+    expect(out).not.toContain("__component: 'preset-molecule.column'");
+    expect(out).toContain('content?: unknown;');      // blocks → unknown fallback (documented)
+    expect(out).toContain('image?: PressMedia;');     // media survives at nesting depth 2
+    expect(out).toContain('button?: PresetAtomButton;');
+  });
+
+  it('keeps the DZ member alone in PageBody — nested components never enter the union', () => {
+    expect(out).toContain('export type PageBody = (PresetOrganismColumns)[];');
+  });
+});

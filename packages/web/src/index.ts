@@ -14,6 +14,7 @@ export { Separator } from './blocks/separator';
 export { Spacer } from './blocks/spacer';
 export { Hero } from './sections/hero';
 export { Cta } from './sections/cta';
+export { Columns } from './sections/columns';
 export { Navbar } from './chrome/navbar';
 export { Footer } from './chrome/footer';
 export { organismBlocks } from './organism-blocks';
@@ -62,6 +63,8 @@ export type {
   PresetAtomSpacer,
   PresetOrganismHero,
   PresetOrganismCta,
+  PresetOrganismColumns,
+  PresetMoleculeColumn,
 } from './types/base';
 export type {
   PressConfig,

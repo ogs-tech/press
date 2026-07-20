@@ -255,3 +255,83 @@ describe('serializeSchema — chrome dynamic zones', () => {
     expect(() => serializeSchema(strapi)).toThrow(/plugin::press-cms\.site-setting.*not registered/);
   });
 });
+
+describe('serializeSchema — two-level nesting (preset-organism.columns)', () => {
+  // The navbar coverage above proves ONE level of nested refs; the columns chain
+  // is the first TWO-level chain (DZ member → repeatable molecule → nested atom).
+  // This pins the BFS as genuinely transitive, not accidentally depth-1.
+  const columnsStrapi = () => {
+    const components = new Map<string, any>([
+      ['preset-organism.columns', {
+        uid: 'preset-organism.columns',
+        attributes: {
+          ratio: { type: 'enumeration', enum: ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'], default: '50-50' },
+          gap: { type: 'enumeration', enum: ['compact', 'normal', 'spacious'], default: 'normal' },
+          verticalAlign: { type: 'enumeration', enum: ['top', 'center', 'bottom'], default: 'top' },
+          columns: { type: 'component', repeatable: true, component: 'preset-molecule.column' },
+        },
+      }],
+      ['preset-molecule.column', {
+        uid: 'preset-molecule.column',
+        attributes: {
+          content: { type: 'blocks' },
+          image: { type: 'media', multiple: false, allowedTypes: ['images'] },
+          button: { type: 'component', repeatable: false, component: 'preset-atom.button' },
+        },
+      }],
+      ['preset-atom.button', {
+        uid: 'preset-atom.button',
+        attributes: {
+          label: { type: 'string', required: true },
+          href: { type: 'string', required: true },
+          variant: { type: 'enumeration', enum: ['primary', 'secondary'], default: 'primary', required: true },
+        },
+      }],
+    ]);
+    const contentTypes: Record<string, any> = {
+      'plugin::press-cms.page': {
+        uid: 'plugin::press-cms.page',
+        info: {},
+        attributes: { body: { type: 'dynamiczone', components: ['preset-organism.columns'] } },
+      },
+      'plugin::press-cms.site-setting': {
+        uid: 'plugin::press-cms.site-setting',
+        info: {},
+        attributes: {
+          header: { type: 'dynamiczone', components: [] },
+          footer: { type: 'dynamiczone', components: [] },
+        },
+      },
+    };
+    return {
+      contentType: (uid: string) => contentTypes[uid],
+      get: (key: string) => (key === 'components' ? components : undefined),
+    } as any;
+  };
+
+  it('follows the chain columns → column → button: all three enter the map from one DZ admission', () => {
+    const out = serializeSchema(columnsStrapi());
+    expect(Object.keys(out.components).sort()).toEqual([
+      'preset-atom.button', 'preset-molecule.column', 'preset-organism.columns',
+    ]);
+    // The layout enums survive verbatim (KEEP: type/enum/default).
+    expect(out.components['preset-organism.columns'].attributes.ratio).toEqual({
+      type: 'enumeration', enum: ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'], default: '50-50',
+    });
+    // The nested refs keep component/repeatable so the generator can type them.
+    expect(out.components['preset-organism.columns'].attributes.columns).toEqual({
+      type: 'component', repeatable: true, component: 'preset-molecule.column',
+    });
+    expect(out.components['preset-molecule.column'].attributes.button).toEqual({
+      type: 'component', repeatable: false, component: 'preset-atom.button',
+    });
+    // min/max are authoring guards, never part of the wire contract (KEEP excludes them).
+    expect(out.components['preset-organism.columns'].attributes.columns).not.toHaveProperty('min');
+  });
+
+  it('fail-fast reaches depth 2: a missing second-level ref (the button) throws', () => {
+    const strapi = columnsStrapi();
+    (strapi.get('components') as Map<string, any>).delete('preset-atom.button');
+    expect(() => serializeSchema(strapi)).toThrow(/preset-atom\.button.*absent from the components registry/);
+  });
+});

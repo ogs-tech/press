@@ -9,10 +9,23 @@
  * The component list is passed in (read by the caller from the page content-type
  * at request time) so the engine stays generic: it never hardcodes `custom-*`
  * block names — only what the registry currently admits.
+ *
+ * EXCEPT `preset-organism.columns`: its per-column `image` media and nested
+ * `button` component sit TWO levels below the DZ member (organism → repeatable
+ * `columns` → media/component), one past what `'*'` reaches — the same shape
+ * that forces the navbar's deep populate in buildChromeDzPopulate. Without
+ * this, a column's image/button silently comes back empty on the wire (the
+ * admin still shows them). `content` is a `blocks` JSON scalar — no populate key.
  */
-export const buildBodyPopulate = (components: string[]): { body: { on: Record<string, { populate: '*' }> } } => ({
+export const buildBodyPopulate = (components: string[]): { body: { on: Record<string, unknown> } } => ({
   body: {
-    on: Object.fromEntries(components.map((uid) => [uid, { populate: '*' as const }])),
+    on: Object.fromEntries(
+      components.map((uid) =>
+        uid === 'preset-organism.columns'
+          ? [uid, { populate: { columns: { populate: { image: true, button: true } } } }]
+          : [uid, { populate: '*' as const }],
+      ),
+    ),
   },
 });
 

@@ -133,6 +133,30 @@ export interface PresetOrganismCta {
 }
 
 /**
+ * Molecule `preset-molecule.column` — nested-only inside preset-organism.columns
+ * (mirrors cms molecules/column.json). Never a DZ member; the wire omits
+ * `__component` on nested component instances (the navbar `cta` situation), but
+ * the shared PresetAtomButton shape is kept for consistency with the generated
+ * types — the renderer reads only label/href/variant.
+ */
+export interface PresetMoleculeColumn {
+  id: number;
+  content?: BlocksContent;
+  image?: PressMedia;
+  button?: PresetAtomButton;
+}
+
+/** Organism `preset-organism.columns` — engine-owned (mirrors cms organisms/columns.json). */
+export interface PresetOrganismColumns {
+  __component: 'preset-organism.columns';
+  id: number;
+  ratio?: '50-50' | '33-67' | '67-33' | '33-33-33' | '25-25-25-25';
+  gap?: 'compact' | 'normal' | 'spacious';
+  verticalAlign?: 'top' | 'center' | 'bottom';
+  columns?: PresetMoleculeColumn[];
+}
+
+/**
  * Structural shape every dynamic-zone entry satisfies. The renderer only reads
  * `__component`/`id` and spreads the rest, so the generic envelope is enough for
  * engine code; the adopter's generated types refine this per block.
