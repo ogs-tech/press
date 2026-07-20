@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import { hydratePageDoc, hydratePageDocs } from '../lib/serve-hydrated';
 
 const PAGE_UID = 'plugin::press-cms.page';
 
@@ -11,7 +12,7 @@ const PAGE_UID = 'plugin::press-cms.page';
 const page = ({ strapi }: { strapi: Core.Strapi }) => ({
   async find(ctx: any) {
     const data = await strapi.documents(PAGE_UID as any).findMany({ status: 'published' });
-    ctx.body = { data };
+    ctx.body = { data: await hydratePageDocs(strapi, data as any[]) };
   },
 
   async findOne(ctx: any) {
@@ -22,7 +23,7 @@ const page = ({ strapi }: { strapi: Core.Strapi }) => ({
       limit: 1,
     });
     if (!doc) return ctx.notFound();
-    ctx.body = { data: doc };
+    ctx.body = { data: await hydratePageDoc(strapi, doc as any) };
   },
 });
 
