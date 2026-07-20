@@ -183,8 +183,9 @@ describe('injectComponents', () => {
     const expected = [
       'preset-atom.paragraph', 'preset-atom.heading', 'preset-atom.list', 'preset-atom.quote',
       'preset-atom.image', 'preset-atom.button', 'preset-atom.separator', 'preset-atom.spacer',
-      'preset-molecule.nav-item',
-      'preset-organism.hero', 'preset-organism.cta', 'preset-organism.navbar', 'preset-organism.footer',
+      'preset-molecule.nav-item', 'preset-molecule.column',
+      'preset-organism.hero', 'preset-organism.cta', 'preset-organism.columns',
+      'preset-organism.navbar', 'preset-organism.footer',
       'preset-config.seo', 'preset-config.theme-colors', 'preset-config.theme-radius',
       'preset-config.cookie-category', 'preset-config.cookie-consent',
     ];
@@ -248,6 +249,43 @@ describe('injectComponents', () => {
     expect(components.get('preset-organism.cta')?.globalId).toBe('ComponentPresetOrganismCta');
   });
 
+  it('injects preset-organism.columns with its nested preset-molecule.column (never a DZ member)', () => {
+    // Same nesting contract as navbar/nav-item: the organism is a DZ block, the
+    // molecule exists only inside it. `columns` nests the repeatable molecule;
+    // the molecule reuses preset-atom.button (the navbar.cta pattern).
+    const components = new Map<string, any>();
+    const page = pageWithBody(['preset-atom.paragraph']);
+    const contentTypes = new Map<string, any>([
+      [PAGE_UID, page],
+      [SITE_SETTING_UID, siteSettingWithChrome()],
+    ]);
+    const strapi = {
+      get: (key: string) =>
+        key === 'components' ? components : key === 'content-types' ? contentTypes : undefined,
+      log: { warn() {}, info() {}, debug() {}, error() {} },
+    } as any;
+
+    injectComponents({ strapi });
+    admitCustomBlocks({ strapi });
+
+    expect(components.get('preset-organism.columns')?.category).toBe('preset-organism');
+    expect(components.get('preset-organism.columns')?.globalId).toBe('ComponentPresetOrganismColumns');
+    expect(components.get('preset-organism.columns')?.attributes).toMatchObject({
+      ratio: { type: 'enumeration', enum: ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'], default: '50-50' },
+      gap: { type: 'enumeration', enum: ['compact', 'normal', 'spacious'], default: 'normal' },
+      verticalAlign: { type: 'enumeration', enum: ['top', 'center', 'bottom'], default: 'top' },
+      columns: { type: 'component', repeatable: true, component: 'preset-molecule.column' },
+    });
+    expect(components.get('preset-molecule.column')?.category).toBe('preset-molecule');
+    expect(components.get('preset-molecule.column')?.attributes).toMatchObject({
+      content: { type: 'blocks' },
+      image: { type: 'media', multiple: false, allowedTypes: ['images'] },
+      button: { type: 'component', repeatable: false, component: 'preset-atom.button' },
+    });
+    // Nested-only: the molecule never leaks into any Dynamic Zone.
+    expect(page.attributes.body.components).not.toContain('preset-molecule.column');
+  });
+
   it('injects the organism chrome (navbar/footer) under category "preset-organism" with a derived globalId', () => {
     // navbar/footer are organisms too (unified from the old chrome.* palette); the
     // placement split lives in schema.json, not the category.
@@ -277,6 +315,7 @@ describe('page body dynamic zone (static organism admission)', () => {
     const components = pageSchema.attributes.body.components as string[];
     expect(components).toContain('preset-organism.hero');
     expect(components).toContain('preset-organism.cta');
+    expect(components).toContain('preset-organism.columns');
     // The atoms remain admitted, unchanged.
     expect(components).toContain('preset-atom.paragraph');
     expect(components).toContain('preset-atom.image');
@@ -341,6 +380,7 @@ describe('site-setting chrome dynamic zones (static admission)', () => {
       expect(components).toContain('preset-atom.button');
       expect(components).not.toContain('preset-organism.hero');
       expect(components).not.toContain('preset-organism.cta');
+      expect(components).not.toContain('preset-organism.columns');
     }
   });
 

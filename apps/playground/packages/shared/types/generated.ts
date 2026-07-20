@@ -85,6 +85,15 @@ export interface PresetOrganismCta {
   align?: 'left' | 'center';
 }
 
+export interface PresetOrganismColumns {
+  __component: 'preset-organism.columns';
+  id: number;
+  ratio?: '50-50' | '33-67' | '67-33' | '33-33-33' | '25-25-25-25';
+  gap?: 'compact' | 'normal' | 'spacious';
+  verticalAlign?: 'top' | 'center' | 'bottom';
+  columns?: PresetMoleculeColumn[];
+}
+
 export interface CustomOrganismCallout {
   __component: 'custom-organism.callout';
   id: number;
@@ -105,6 +114,13 @@ export interface PresetOrganismFooter {
   text?: string;
 }
 
+export interface PresetMoleculeColumn {
+  id: number;
+  content?: unknown;
+  image?: PressMedia;
+  button?: PresetAtomButton;
+}
+
 export interface PresetMoleculeNavItem {
   id: number;
   label: string;
@@ -112,7 +128,7 @@ export interface PresetMoleculeNavItem {
   newTab?: boolean;
 }
 
-export type PageBody = (PresetAtomParagraph | PresetAtomHeading | PresetAtomList | PresetAtomQuote | PresetAtomImage | PresetAtomButton | PresetAtomSeparator | PresetAtomSpacer | PresetOrganismHero | PresetOrganismCta | CustomOrganismCallout)[];
+export type PageBody = (PresetAtomParagraph | PresetAtomHeading | PresetAtomList | PresetAtomQuote | PresetAtomImage | PresetAtomButton | PresetAtomSeparator | PresetAtomSpacer | PresetOrganismHero | PresetOrganismCta | PresetOrganismColumns | CustomOrganismCallout)[];
 
 export type HeaderBlocks = (PresetOrganismNavbar | PresetOrganismFooter | PresetAtomParagraph | PresetAtomHeading | PresetAtomList | PresetAtomQuote | PresetAtomImage | PresetAtomButton | PresetAtomSeparator | PresetAtomSpacer | CustomOrganismCallout)[];
 

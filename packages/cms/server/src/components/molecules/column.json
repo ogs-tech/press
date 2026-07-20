@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_preset_molecule_columns",
+  "info": {
+    "displayName": "Column",
+    "icon": "stack",
+    "description": "One column of a Columns section: rich text, an optional image, and an optional button"
+  },
+  "options": {},
+  "attributes": {
+    "content": { "type": "blocks" },
+    "image": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "button": { "type": "component", "repeatable": false, "component": "preset-atom.button" }
+  },
+  "config": {
+    "metadatas": {
+      "content": { "edit": { "label": "Content" } },
+      "image": { "edit": { "label": "Image", "description": "Optional image rendered above the button." } },
+      "button": { "edit": { "label": "Button", "description": "Optional call-to-action rendered at the end of the column." } }
+    }
+  }
+}

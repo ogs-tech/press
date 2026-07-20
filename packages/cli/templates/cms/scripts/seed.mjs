@@ -222,6 +222,51 @@ async function main() {
             ],
             citation: 'The press engine',
           },
+          // The editor-composed columns organism: thirds on desktop, stacked on
+          // phones — demonstrates the closed ratio/gap/verticalAlign enums and a
+          // per-column nested button (the navbar.cta pattern).
+          {
+            __component: 'preset-organism.columns',
+            ratio: '33-33-33',
+            gap: 'normal',
+            verticalAlign: 'top',
+            columns: [
+              {
+                content: [
+                  {
+                    type: 'paragraph',
+                    children: [
+                      { type: 'text', text: 'Server-rendered', bold: true },
+                      { type: 'text', text: ' — every column ships as HTML, zero client JS.' },
+                    ],
+                  },
+                ],
+              },
+              {
+                content: [
+                  {
+                    type: 'paragraph',
+                    children: [
+                      { type: 'text', text: 'Editor-composed', bold: true },
+                      { type: 'text', text: ' — 2–4 columns arranged in the admin, no code.' },
+                    ],
+                  },
+                ],
+              },
+              {
+                content: [
+                  {
+                    type: 'paragraph',
+                    children: [
+                      { type: 'text', text: 'Themed automatically', bold: true },
+                      { type: 'text', text: ' — pure token consumers, born branded.' },
+                    ],
+                  },
+                ],
+                button: { label: 'See the engine', href: REPO_URL, variant: 'secondary' },
+              },
+            ],
+          },
           { __component: 'preset-atom.separator', variant: 'line' },
           { __component: 'preset-atom.button', label: 'Star on GitHub', href: REPO_URL, variant: 'secondary' },
           // md, not lg: the cta banner below already carries its own section

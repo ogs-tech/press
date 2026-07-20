@@ -13,6 +13,21 @@ describe('buildBodyPopulate', () => {
     });
   });
 
+  it('deep-populates preset-organism.columns, whose column image/button sit two levels down', () => {
+    // `populate: '*'` is SHALLOW: it reaches the repeatable `columns` component
+    // itself but NOT the media/component refs inside each column — the exact
+    // navbar situation in buildChromeDzPopulate. Without this, a column's
+    // image/button is silently absent from the wire while the admin shows it.
+    expect(buildBodyPopulate(['preset-organism.columns', 'preset-organism.hero'])).toEqual({
+      body: {
+        on: {
+          'preset-organism.columns': { populate: { columns: { populate: { image: true, button: true } } } },
+          'preset-organism.hero': { populate: '*' },
+        },
+      },
+    });
+  });
+
   it('produces an empty `on` map when the dynamic zone has no components', () => {
     expect(buildBodyPopulate([])).toEqual({ body: { on: {} } });
   });

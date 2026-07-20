@@ -8,8 +8,10 @@ import buttonSchema from '../components/atoms/button.json';
 import separatorSchema from '../components/atoms/separator.json';
 import spacerSchema from '../components/atoms/spacer.json';
 import navItemSchema from '../components/molecules/nav-item.json';
+import columnSchema from '../components/molecules/column.json';
 import heroSchema from '../components/organisms/hero.json';
 import ctaSchema from '../components/organisms/cta.json';
+import columnsSchema from '../components/organisms/columns.json';
 import navbarSchema from '../components/organisms/navbar.json';
 import footerSchema from '../components/organisms/footer.json';
 import seoSchema from '../components/config/seo.json';
@@ -75,6 +77,7 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   { layer: 'atom', name: 'spacer', schema: spacerSchema as Record<string, unknown> },
   // Molecules — small composed units nested inside organisms (e.g. a navbar's links).
   { layer: 'molecule', name: 'nav-item', schema: navItemSchema as Record<string, unknown> },
+  { layer: 'molecule', name: 'column', schema: columnSchema as Record<string, unknown> },
   // Organisms — composed sections for the page body (hero/cta) and the site chrome
   // (navbar/footer). One unified layer (the old section.*/chrome.* palettes); the
   // placement split (body vs header/footer) is declared per content-type
@@ -82,6 +85,7 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   // so editors cannot break the chrome.
   { layer: 'organism', name: 'hero', schema: heroSchema as Record<string, unknown> },
   { layer: 'organism', name: 'cta', schema: ctaSchema as Record<string, unknown> },
+  { layer: 'organism', name: 'columns', schema: columnsSchema as Record<string, unknown> },
   { layer: 'organism', name: 'navbar', schema: navbarSchema as Record<string, unknown> },
   { layer: 'organism', name: 'footer', schema: footerSchema as Record<string, unknown> },
   // Config — non-block settings referenced by the Site Settings single type (seo /

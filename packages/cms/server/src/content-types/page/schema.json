@@ -26,7 +26,8 @@
         "preset-atom.separator",
         "preset-atom.spacer",
         "preset-organism.hero",
-        "preset-organism.cta"
+        "preset-organism.cta",
+        "preset-organism.columns"
       ]
     }
   }

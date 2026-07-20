@@ -175,8 +175,19 @@ PRODUCT/plugin id (`plugin::press-cms.*`, `/api/press/schema`), never as a categ
   for the layer set; each entry registers under `preset-${layer}`:
   - `preset-atom.*` — paragraph, heading, list, quote, image, button, separator, spacer.
   - `preset-molecule.nav-item` — nested inside the navbar; never a DZ member.
-  - `preset-organism.*` — hero, cta (page body) **and** navbar, footer (site chrome):
-    one layer, unified from the old `section.*`/`chrome.*` palettes.
+  - `preset-molecule.column` — nested inside `preset-organism.columns` (rich text +
+    optional image + optional nested `preset-atom.button`, the navbar-cta pattern);
+    never a DZ member.
+  - `preset-organism.*` — hero, cta, columns (page body) **and** navbar, footer
+    (site chrome): one layer, unified from the old `section.*`/`chrome.*` palettes.
+    `columns` is the editor-composed 2–4 column layout block: its controls are flat
+    CLOSED enums (`ratio`/`gap`/`verticalAlign`, the `hero.align` precedent — raw
+    `Span`/`GridGap` scales are never exposed to the CMS); the renderer maps them to
+    the layout primitives. Its per-column `image`/`button` sit TWO levels below the
+    DZ member, past what `populate: '*'` reaches — `buildBodyPopulate`
+    (`lib/dz-populate.ts`) deep-populates that chain explicitly (the navbar-populate
+    situation, body-side); without it they silently vanish from the wire while the
+    admin still shows them.
   - `preset-config.*` — seo, theme-colors, theme-radius, cookie-consent, cookie-category:
     non-block settings referenced by `component:` fields on Site Settings, never a DZ member.
   - `preset-layout` is RESERVED (labelled, no components yet). The Grid System
@@ -189,7 +200,7 @@ PRODUCT/plugin id (`plugin::press-cms.*`, `/api/press/schema`), never as a categ
 - **Preset PLACEMENT is declared statically, per content-type — NOT by the category.**
   The category carries the layer; where a preset block may go is listed in each
   `schema.json`: `preset-atom.*` in all three engine DZs (page `body`, site-setting
-  `header`/`footer`); `preset-organism.hero`/`.cta` in the page `body` only;
+  `header`/`footer`); `preset-organism.hero`/`.cta`/`.columns` in the page `body` only;
   `preset-organism.navbar`/`.footer` in `header`/`footer` only. This is why organisms
   span placements (a hero is body-only, a navbar is chrome-only) while sharing one
   category — placement lives in the schema, not the uid. Because the engine names its
