@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import { hydrateSiteSetting } from '../lib/serve-hydrated';
 
 const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 
@@ -36,7 +37,7 @@ const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
       const data = await strapi
         .documents(SITE_SETTING_UID as any)
         .findFirst({ populate: settingsPopulate() as any });
-      ctx.body = { data };
+      ctx.body = { data: await hydrateSiteSetting(strapi, data as any) };
     },
   };
 };
