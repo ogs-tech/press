@@ -15,20 +15,8 @@
     "title": { "type": "string", "required": true },
     "slug": { "type": "uid", "targetField": "title" },
     "body": {
-      "type": "dynamiczone",
-      "components": [
-        "preset-atom.paragraph",
-        "preset-atom.heading",
-        "preset-atom.list",
-        "preset-atom.quote",
-        "preset-atom.image",
-        "preset-atom.button",
-        "preset-atom.separator",
-        "preset-atom.spacer",
-        "preset-organism.hero",
-        "preset-organism.cta",
-        "preset-organism.columns"
-      ]
+      "type": "customField",
+      "customField": "plugin::press-cms.builder"
     }
   }
 }

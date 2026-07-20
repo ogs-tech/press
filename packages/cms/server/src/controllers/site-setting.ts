@@ -1,5 +1,4 @@
 import type { Core } from '@strapi/strapi';
-import { buildChromeDzPopulate } from '../lib/dz-populate';
 
 const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 
@@ -10,42 +9,33 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
  *
  * The engine owns the populate (Spec §5.1 of the site-settings spec): `ctx.query`
  * is NOT honored (public `auth: false` route). `populate: '*'` is SHALLOW, so
- * `seo.image` and the chrome DZs' nested content (`preset-organism.navbar`
- * items.page + cta) are deep-populated explicitly. The chrome DZ component lists
- * are read from the live content-type at request time — like the page controller
- * — so admitted custom-* blocks populate too.
+ * `seo.image` is deep-populated explicitly. `pageDefaults` is a JSON custom field
+ * (Spec §4) — a scalar on the wire, no populate key needed.
  */
 const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
-  const chromePopulate = () => {
-    const ct = strapi.contentType(SITE_SETTING_UID as any) as any;
-    const header: string[] = ct?.attributes?.header?.components ?? [];
-    const footer: string[] = ct?.attributes?.footer?.components ?? [];
-    return {
-      logo: true,
-      favicon: true,
-      seo: { populate: { image: true } },
-      themeColors: true,
-      themeRadius: true,
-      // Nested category components + the privacy page's slug sit one level below
-      // what a shallow populate reaches — same reason as seo.image above.
-      cookieConsent: {
-        populate: {
-          necessary: true,
-          analytics: true,
-          marketing: true,
-          privacyPage: { fields: ['slug'] },
-        },
+  const settingsPopulate = () => ({
+    logo: true,
+    favicon: true,
+    seo: { populate: { image: true } },
+    themeColors: true,
+    themeRadius: true,
+    // Nested category components + the privacy page's slug sit one level below
+    // what a shallow populate reaches — same reason as seo.image above.
+    cookieConsent: {
+      populate: {
+        necessary: true,
+        analytics: true,
+        marketing: true,
+        privacyPage: { fields: ['slug'] },
       },
-      header: buildChromeDzPopulate(header),
-      footer: buildChromeDzPopulate(footer),
-    };
-  };
+    },
+  });
 
   return {
     async find(ctx: any) {
       const data = await strapi
         .documents(SITE_SETTING_UID as any)
-        .findFirst({ populate: chromePopulate() as any });
+        .findFirst({ populate: settingsPopulate() as any });
       ctx.body = { data };
     },
   };

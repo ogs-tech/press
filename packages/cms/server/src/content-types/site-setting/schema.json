@@ -19,35 +19,10 @@
     "themeColors": { "type": "component", "repeatable": false, "component": "preset-config.theme-colors" },
     "themeRadius": { "type": "component", "repeatable": false, "component": "preset-config.theme-radius" },
     "cookieConsent": { "type": "component", "repeatable": false, "component": "preset-config.cookie-consent" },
-    "header": {
-      "type": "dynamiczone",
-      "components": [
-        "preset-organism.navbar",
-        "preset-organism.footer",
-        "preset-atom.paragraph",
-        "preset-atom.heading",
-        "preset-atom.list",
-        "preset-atom.quote",
-        "preset-atom.image",
-        "preset-atom.button",
-        "preset-atom.separator",
-        "preset-atom.spacer"
-      ]
-    },
-    "footer": {
-      "type": "dynamiczone",
-      "components": [
-        "preset-organism.navbar",
-        "preset-organism.footer",
-        "preset-atom.paragraph",
-        "preset-atom.heading",
-        "preset-atom.list",
-        "preset-atom.quote",
-        "preset-atom.image",
-        "preset-atom.button",
-        "preset-atom.separator",
-        "preset-atom.spacer"
-      ]
+    "pageDefaults": {
+      "type": "customField",
+      "customField": "plugin::press-cms.builder",
+      "options": { "mode": "slots" }
     }
   },
   "config": {
@@ -61,8 +36,7 @@
       "themeColors": { "edit": { "label": "Theme Colors" } },
       "themeRadius": { "edit": { "label": "Theme Radius" } },
       "cookieConsent": { "edit": { "label": "Cookie Consent", "description": "Cookie banner shown to visitors. Category keys (necessary/analytics/marketing) are engine-fixed; toggles and copy are yours." } },
-      "header": { "edit": { "label": "Header", "description": "Block-composed site header. The Navbar block renders brand + links + CTA." } },
-      "footer": { "edit": { "label": "Footer", "description": "Block-composed site footer." } }
+      "pageDefaults": { "edit": { "label": "Page defaults", "description": "The default header and footer every page inherits. Pages can override or drop them per-slot." } }
     }
   }
 }
