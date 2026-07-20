@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_preset_layout_containers",
+  "info": {
+    "displayName": "Container",
+    "icon": "expand",
+    "description": "The shared curated attribute surface (width / gap / vertical alignment) carried by every children-bearing tree node"
+  },
+  "options": {},
+  "attributes": {
+    "width": { "type": "enumeration", "enum": ["prose", "lg", "full"] },
+    "gap": { "type": "enumeration", "enum": ["compact", "normal", "spacious"] },
+    "verticalAlign": { "type": "enumeration", "enum": ["top", "center", "bottom"] }
+  },
+  "config": {
+    "metadatas": {
+      "width": { "edit": { "label": "Width", "description": "Top-level rows only; ignored when nested." } },
+      "gap": { "edit": { "label": "Gap", "description": "Row: space between columns. Column/page: vertical rhythm." } },
+      "verticalAlign": { "edit": { "label": "Vertical alignment", "description": "Row: aligns cells. Column: places content within the cell." } }
+    }
+  }
+}
