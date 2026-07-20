@@ -22,6 +22,7 @@ describe('injectComponents', () => {
       'preset-molecule.link',
       'preset-organism.hero', 'preset-organism.cta',
       'preset-organism.navbar', 'preset-organism.footer',
+      'preset-layout.container', 'preset-layout.row', 'preset-layout.column',
       'preset-config.seo', 'preset-config.theme-colors', 'preset-config.theme-radius',
       'preset-config.cookie-category', 'preset-config.cookie-consent',
     ];
@@ -97,6 +98,34 @@ describe('injectComponents', () => {
     expect(components.get('preset-organism.footer')?.category).toBe('preset-organism');
     expect(components.get('preset-organism.footer')?.globalId).toBe('ComponentPresetOrganismFooter');
     expect(components.get('preset-organism.footer')?.attributes).toMatchObject({ text: { type: 'string' } });
+  });
+
+  it('injects the preset-layout tree-node descriptors (container/row) with the real JSON enum values', () => {
+    // preset-layout.container is the shared curated attribute surface (width/gap/
+    // verticalAlign) referenced by row/column via `component:` fields; row's ratio
+    // is the closed column-split enum. These are JSON-sourced (no TS shape check),
+    // so a typo like "spacius" would otherwise pass every other check.
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+
+    expect(components.get('preset-layout.container')?.modelType).toBe('component');
+    expect(components.get('preset-layout.container')?.category).toBe('preset-layout');
+    expect(components.get('preset-layout.container')?.attributes).toMatchObject({
+      width: { type: 'enumeration', enum: ['prose', 'lg', 'full'] },
+      gap: { type: 'enumeration', enum: ['compact', 'normal', 'spacious'] },
+      verticalAlign: { type: 'enumeration', enum: ['top', 'center', 'bottom'] },
+    });
+
+    expect(components.get('preset-layout.row')?.modelType).toBe('component');
+    expect(components.get('preset-layout.row')?.category).toBe('preset-layout');
+    expect(components.get('preset-layout.row')?.attributes).toMatchObject({
+      ratio: {
+        type: 'enumeration',
+        enum: ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'],
+        default: '50-50',
+      },
+      container: { type: 'component', repeatable: false, component: 'preset-layout.container' },
+    });
   });
 });
 
