@@ -23,6 +23,7 @@
     "commander": "^13.0.0"
   },
   "devDependencies": {
+    "@ogs-tech/press-shared": "workspace:*",
     "@types/node": "^20",
     "tsx": "^4.19.0",
     "typescript": "^5",
