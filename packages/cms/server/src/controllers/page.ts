@@ -23,7 +23,7 @@ const page = ({ strapi }: { strapi: Core.Strapi }) => ({
       limit: 1,
     });
     if (!doc) return ctx.notFound();
-    ctx.body = { data: await hydratePageDoc(strapi, doc as any) };
+    ctx.body = { data: await hydratePageDoc(strapi, doc) };
   },
 });
 
