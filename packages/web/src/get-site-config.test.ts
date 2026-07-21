@@ -56,30 +56,23 @@ describe('getSiteConfig', () => {
     expect(r.brand.name).toBe('');
   });
 
-  it('maps a body with chrome data end-to-end', async () => {
+  it('maps a body with pageDefaults through end-to-end (raw — hydration happens at resolveTree)', async () => {
+    const navbarNode = {
+      id: 'nav', type: 'block', component: 'preset-organism.navbar',
+      data: { items: [{ label: 'About', page: { slug: 'about' }, newTab: false }] },
+    };
+    const footerNode = { id: 'f', type: 'block', component: 'preset-organism.footer', data: {} };
     stubFetch(async () => ({
       ok: true,
       json: async () => ({
         data: {
           name: 'Acme',
-          header: [{
-            __component: 'preset-organism.navbar',
-            id: 1,
-            items: [
-              { label: 'About', page: { slug: 'about' }, newTab: false },
-              { label: 'Docs', url: 'https://docs.test', newTab: true },
-            ],
-          }],
-          footer: [{ __component: 'preset-organism.footer', id: 2 }],
+          pageDefaults: { header: [navbarNode], footer: [footerNode] },
         },
       }),
     }));
     const r = await getSiteConfig(buildTime);
-    expect((r.chrome.header[0] as any).brand).toEqual({ name: 'Acme', logo: undefined });
-    expect((r.chrome.header[0] as any).links).toEqual([
-      { label: 'About', href: '/about', external: false, newTab: false },
-      { label: 'Docs', href: 'https://docs.test', external: true, newTab: true },
-    ]);
-    expect((r.chrome.footer[0] as any).brand).toEqual({ name: 'Acme' });
+    expect(r.pageDefaults.header).toEqual([navbarNode]);
+    expect(r.pageDefaults.footer).toEqual([footerNode]);
   });
 });

@@ -1,10 +1,5 @@
-import type {
-  BuildTimeConfig,
-  ChromeBlock,
-  ResolvedNavLink,
-  ResolvedPressConfig,
-  SiteSettingsData,
-} from './config/types';
+import { validateNodeArray, type Node } from '@ogs-tech/press-shared';
+import type { BuildTimeConfig, ResolvedPressConfig, SiteSettingsData } from './config/types';
 import { DEFAULT_THEME } from './config/default-theme';
 import { mapCookieConsent } from './plugins/cookie-consent/map-cookie-consent';
 import { buildUrn } from './urn';
@@ -19,62 +14,17 @@ function mediaUrl(media: { url?: string } | null | undefined): string | undefine
   return url.startsWith('http') ? url : `${CMS_URL}${url}`;
 }
 
-/** A raw `preset-organism.navbar` nav item as populated by the site-setting controller. */
-interface RawNavItem {
-  label?: string;
-  page?: { slug?: string } | null;
-  url?: string;
-  newTab?: boolean;
-}
-
-/**
- * Resolves a CMS nav item into a final link (Spec §3). Precedence: `page` wins
- * over `url`. An internal page collapses to '/' when its slug is the home slug
- * (reusing the same routes.home anchor as the /home → / redirect —
- * CMS-independent). An item with neither page nor url is dropped (returns null).
- * The external flag is true only for http(s) URLs.
- */
-function resolveNavItem(item: RawNavItem, homeSlug: string): ResolvedNavLink | null {
-  const label = item.label ?? '';
-  const newTab = item.newTab ?? false;
-  const slug = item.page?.slug;
-  if (slug) {
-    return { label, href: slug === homeSlug ? '/' : `/${slug}`, external: false, newTab };
-  }
-  if (item.url) {
-    return { label, href: item.url, external: item.url.startsWith('http'), newTab };
-  }
-  return null;
-}
-
-/**
- * Hydrates one chrome dynamic zone (Spec §3): `preset-organism.navbar` gains the
- * resolved brand + links (page > url precedence, home slug → '/', external flag)
- * and `preset-organism.footer` gains the brand for its copyright fallback —
- * identity is never stored on a block (Spec §1). Every other block passes through
- * untouched so BlockRenderer stays intentionally dumb.
- */
-function hydrateChromeBlocks(
-  blocks: ChromeBlock[] | null | undefined,
-  brand: ResolvedPressConfig['brand'],
-  homeSlug: string,
-): ChromeBlock[] {
-  return (blocks ?? []).map((block) => {
-    if (block.__component === 'preset-organism.navbar') {
-      const items = (block.items as RawNavItem[] | null | undefined) ?? [];
-      return {
-        ...block,
-        brand: { name: brand.name, logo: brand.logo },
-        links: items
-          .map((item) => resolveNavItem(item, homeSlug))
-          .filter((link): link is ResolvedNavLink => link !== null),
-      };
+/** One pageDefaults slot: fail-to-empty on invalid nodes (Spec §6.3), dev-only warning. */
+function mapSlot(input: unknown, slot: string): Node[] {
+  if (input === undefined || input === null) return [];
+  const { value, errors } = validateNodeArray(input);
+  if (!value) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[press/web] invalid pageDefaults.${slot} — rendering empty`, errors);
     }
-    if (block.__component === 'preset-organism.footer') {
-      return { ...block, brand: { name: brand.name } };
-    }
-    return block;
-  });
+    return [];
+  }
+  return value;
 }
 
 /**
@@ -85,7 +35,8 @@ function hydrateChromeBlocks(
  * field" unambiguously means empty (AC2/AC3). Theme colours/radii resolve over
  * DEFAULT_THEME per key — the engine's shipped base, never empty (AC4). Build-time
  * anchors (routes, theme.name, theme.fonts) come from `buildTime` (AC8). The
- * chrome DZs are hydrated here (Spec §3) so the renderers stay dumb.
+ * pageDefaults slots are validated (fail-to-empty, Spec §6.3) but stored RAW —
+ * engine-block hydration happens exactly once, in `resolveTree`.
  */
 export function mapSiteSettings(
   buildTime: BuildTimeConfig,
@@ -122,9 +73,9 @@ export function mapSiteSettings(
       fonts: buildTime.theme.fonts,
       radius: { ...DEFAULT_THEME.radius, ...(c.themeRadius ?? {}) },
     },
-    chrome: {
-      header: hydrateChromeBlocks(c.header, brand, buildTime.routes.home),
-      footer: hydrateChromeBlocks(c.footer, brand, buildTime.routes.home),
+    pageDefaults: {
+      header: mapSlot(c.pageDefaults?.header, 'header'),
+      footer: mapSlot(c.pageDefaults?.footer, 'footer'),
     },
     plugins: {
       // Fails OPEN (cookie-consent Spec §3) — unlike identity/SEO, an

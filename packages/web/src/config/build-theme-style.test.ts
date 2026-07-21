@@ -16,7 +16,7 @@ const baseResolved: ResolvedPressConfig = {
     fonts: {},
     radius: { ...DEFAULT_THEME.radius },
   },
-  chrome: { header: [], footer: [] },
+  pageDefaults: { header: [], footer: [] },
   plugins: { cookieConsent: mapCookieConsent(null, 'home') },
 };
 
