@@ -4,7 +4,7 @@ import type { PresetAtomHeading } from '../types/base';
 import { Heading } from './heading';
 
 const render = (level: PresetAtomHeading['level'], text: string): string =>
-  renderToStaticMarkup(Heading({ __component: 'preset-atom.heading', id: 1, level, text }));
+  renderToStaticMarkup(Heading({ level, text } as PresetAtomHeading));
 
 describe('Heading renderer', () => {
   it('renders an <h{level}> carrying the data-block hook and text', () => {
@@ -18,7 +18,7 @@ describe('Heading renderer', () => {
   });
 
   it('falls back to h2 when level is missing (tolerant)', () => {
-    expect(renderToStaticMarkup(Heading({ __component: 'preset-atom.heading', id: 1, text: 'Untitled' } as any)))
+    expect(renderToStaticMarkup(Heading({ text: 'Untitled' } as any)))
       .toContain('<h2 data-block="preset-atom.heading">Untitled</h2>');
   });
 });

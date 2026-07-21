@@ -3,7 +3,6 @@ export { getPage } from './get-page';
 export { getPageSlugs, getStaticPageParams } from './get-page-slugs';
 export { getSiteConfig } from './get-site-config';
 export { atomBlocks } from './atom-blocks';
-export { renderBlocks } from './blocks/blocks-content';
 export { Paragraph } from './blocks/paragraph';
 export { Heading } from './blocks/heading';
 export { List } from './blocks/list';
@@ -49,10 +48,6 @@ export type {
   Page,
   PageBody,
   PressMedia,
-  Block,
-  BlocksContent,
-  BlocksNode,
-  BlocksText,
   PresetAtomParagraph,
   PresetAtomHeading,
   PresetAtomList,
@@ -63,8 +58,6 @@ export type {
   PresetAtomSpacer,
   PresetOrganismHero,
   PresetOrganismCta,
-  PresetOrganismColumns,
-  PresetMoleculeColumn,
 } from './types/base';
 export type {
   PressConfig,

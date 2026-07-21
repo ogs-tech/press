@@ -1,25 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { BlocksContent } from '../types/base';
+import { createElement } from 'react';
 import { Quote } from './quote';
 
-const render = (props: { content: BlocksContent; citation?: string }): string =>
-  renderToStaticMarkup(Quote({ __component: 'preset-atom.quote', id: 1, ...props }));
-
-const content: BlocksContent = [{ type: 'paragraph', children: [{ type: 'text', text: 'To be, or not to be.' }] }];
-
-describe('Quote renderer', () => {
-  it('wraps the prose in a <blockquote> inside the data-block section', () => {
-    const html = render({ content });
-    expect(html).toContain('<section data-block="preset-atom.quote">');
-    expect(html).toContain('<blockquote><p>To be, or not to be.</p></blockquote>');
+describe('Quote', () => {
+  it('renders paragraphs inside blockquote with optional cite', () => {
+    const html = renderToStaticMarkup(createElement(Quote, { content: 'Wise words.', citation: 'Someone' }));
+    expect(html).toContain('data-block="preset-atom.quote"');
+    expect(html).toContain('<blockquote>');
+    expect(html).toContain('Wise words.');
+    expect(html).toContain('<cite>Someone</cite>');
   });
 
-  it('renders the optional citation as <cite> when provided', () => {
-    expect(render({ content, citation: 'W. Shakespeare' })).toContain('<cite>W. Shakespeare</cite>');
-  });
-
-  it('omits <cite> when citation is absent', () => {
-    expect(render({ content })).not.toContain('<cite>');
+  it('renders nothing when empty and omits cite when absent', () => {
+    expect(renderToStaticMarkup(createElement(Quote, { content: '' }))).toBe('');
+    expect(renderToStaticMarkup(createElement(Quote, { content: 'x' }))).not.toContain('<cite>');
   });
 });

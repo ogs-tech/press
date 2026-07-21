@@ -1,16 +1,13 @@
 import type { PresetAtomButton } from '../types/base';
+import { coerceLink } from '../link';
+import { PressLink } from '../press-link';
 
-/**
- * Atom `preset-atom.button` — a call-to-action link styled as a button. The
- * `variant` drives theming via a `data-variant` hook in theme.css (primary fills
- * with the brand colour, secondary is an outline). Plain <a>, no JS.
- */
-export function Button({ label, href, variant }: PresetAtomButton) {
+/** Atom `preset-atom.button` — a call-to-action anchor resolved through the one link concept. */
+export function Button({ link, variant }: PresetAtomButton) {
+  if (!coerceLink(link)) return null;
   return (
     <div data-block="preset-atom.button">
-      <a href={href} data-variant={variant ?? 'primary'}>
-        {label}
-      </a>
+      <PressLink link={link} data-variant={variant ?? 'primary'} />
     </div>
   );
 }
