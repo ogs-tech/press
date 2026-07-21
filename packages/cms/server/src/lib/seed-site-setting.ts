@@ -1,50 +1,50 @@
+import { randomUUID } from 'node:crypto';
 import type { Core } from '@strapi/strapi';
 import { pluginStore } from './plugin-store';
 
 /** UID of the engine's Site Settings single type (plugin name `press-cms`). */
 export const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 
-/** Default chrome composition (Spec §4): a navbar (empty items) + a footer (empty text). */
-export const DEFAULT_CHROME = {
-  header: [{ __component: 'preset-organism.navbar' }],
-  footer: [{ __component: 'preset-organism.footer' }],
-};
-
-const CHROME_SEED_KEY = 'chromeSeeded';
+const PAGE_DEFAULTS_SEED_KEY = 'pageDefaultsSeeded';
 
 /**
- * Seeds the Site Settings single type (Spec §4/§5 of the site-settings spec):
- *
- * 1. Fresh DB → exactly one record, created WITH the default chrome composition.
- *    Identity/SEO stay empty on purpose: no defaults duplicated in the CMS.
- * 2. Existing record (upgrade path: the chrome DZs just appeared via schema
- *    sync) → a single seeding pass fills each still-empty DZ.
- *
- * "Runs once; never overwrites" (Spec §4) is made literal with a plugin-store
- * flag: Strapi cannot distinguish a never-touched DZ from an editor-emptied one
- * (both read back as []), so after the one seeding pass the DZs are never
- * written again — an editor-emptied [] is respected forever.
+ * Default chrome (Spec §4): a bare navbar and a bare footer BlockNode per slot.
+ * BARE on purpose (no items/cta/text) — the CLI's seed.mjs fills demo content;
+ * "no defaults duplicated in the CMS". Fresh ids per call: node ids are
+ * builder-scoped React keys, never identity.
+ */
+export const buildDefaultPageDefaults = () => ({
+  header: [{ id: randomUUID(), type: 'block', component: 'preset-organism.navbar', data: {} }],
+  footer: [{ id: randomUUID(), type: 'block', component: 'preset-organism.footer', data: {} }],
+});
+
+/**
+ * Seeds Site Settings pageDefaults exactly once (plugin-store flag): Strapi
+ * cannot distinguish a never-touched slot from an editor-emptied one (both read
+ * back as []), so after the one seeding pass the slots are never written again.
  */
 export async function seedSiteSetting(strapi: Core.Strapi): Promise<void> {
   const docs = strapi.documents(SITE_SETTING_UID);
   const store = pluginStore(strapi);
 
-  // DZ content is invisible without populate — findFirst({}) would report the
-  // zones as undefined and the seed could clobber real content.
-  const existing = (await docs.findFirst({ populate: { header: true, footer: true } as any })) as any;
+  // pageDefaults is a JSON scalar — visible without populate.
+  const existing = (await docs.findFirst()) as any;
 
   if (!existing) {
-    await docs.create({ data: { ...DEFAULT_CHROME } as any });
-  } else if (!(await store.get({ key: CHROME_SEED_KEY }))) {
-    const data: Record<string, unknown> = {};
-    if (!existing.header?.length) data.header = DEFAULT_CHROME.header;
-    if (!existing.footer?.length) data.footer = DEFAULT_CHROME.footer;
-    if (Object.keys(data).length > 0) {
-      await docs.update({ documentId: existing.documentId, data: data as any });
+    await docs.create({ data: { pageDefaults: buildDefaultPageDefaults() } as any });
+  } else if (!(await store.get({ key: PAGE_DEFAULTS_SEED_KEY }))) {
+    const pd = (existing.pageDefaults ?? {}) as { header?: unknown[]; footer?: unknown[] };
+    const defaults = buildDefaultPageDefaults();
+    const next: Record<string, unknown> = { ...pd };
+    let changed = false;
+    if (!Array.isArray(pd.header) || pd.header.length === 0) { next.header = defaults.header; changed = true; }
+    if (!Array.isArray(pd.footer) || pd.footer.length === 0) { next.footer = defaults.footer; changed = true; }
+    if (changed) {
+      await docs.update({ documentId: existing.documentId, data: { pageDefaults: next } as any });
     }
   } else {
-    return; // seeded before — never touch the chrome again
+    return; // seeded before — never touch the defaults again
   }
 
-  await store.set({ key: CHROME_SEED_KEY, value: true });
+  await store.set({ key: PAGE_DEFAULTS_SEED_KEY, value: true });
 }

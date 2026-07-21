@@ -1,24 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_CHROME, seedSiteSetting, SITE_SETTING_UID } from './seed-site-setting';
+import { seedSiteSetting, SITE_SETTING_UID } from './seed-site-setting';
 
-/**
- * Minimal Document-Service + plugin-store fake: a mutable record, recording
- * create/update, and a Map-backed store for the run-once chrome flag.
- */
+/** Minimal Document-Service + plugin-store fake (pre-tree harness, populate pin dropped). */
 function fakeStrapi(record: any = null, flags: Record<string, unknown> = {}) {
-  const creates: Array<{ data: unknown }> = [];
-  const updates: Array<{ documentId: string; data: unknown }> = [];
+  const creates: Array<{ data: any }> = [];
+  const updates: Array<{ documentId: string; data: any }> = [];
   let current = record;
   const store = new Map<string, unknown>(Object.entries(flags));
   const strapi = {
     documents: (uid: string) => {
-      expect(uid).toBe(SITE_SETTING_UID); // helper must target the single-type UID
+      expect(uid).toBe(SITE_SETTING_UID);
       return {
-        findFirst: async (params: any) => {
-          // The chrome DZs are invisible without populate — pin that the seed asks.
-          expect(params?.populate).toMatchObject({ header: true, footer: true });
-          return current;
-        },
+        findFirst: async () => current,
         create: async (params: { data: any }) => {
           creates.push(params);
           current = { documentId: 'doc-1', ...params.data };
@@ -43,33 +36,45 @@ function fakeStrapi(record: any = null, flags: Record<string, unknown> = {}) {
   return { strapi, creates, updates, store };
 }
 
-describe('seedSiteSetting — chrome composition (Spec §4)', () => {
-  it('creates the record WITH the default chrome on a fresh DB and marks the seed done', async () => {
+const expectBareChrome = (pd: any) => {
+  expect(pd.header).toHaveLength(1);
+  expect(pd.header[0]).toMatchObject({ type: 'block', component: 'preset-organism.navbar', data: {} });
+  expect(typeof pd.header[0].id).toBe('string');
+  expect(pd.footer[0]).toMatchObject({ type: 'block', component: 'preset-organism.footer', data: {} });
+};
+
+describe('seedSiteSetting — pageDefaults (composition-builder Spec §4)', () => {
+  it('creates the record WITH bare pageDefaults on a fresh DB and marks the seed done', async () => {
     const { strapi, creates, updates, store } = fakeStrapi(null);
     await seedSiteSetting(strapi);
-    expect(creates).toEqual([{ data: DEFAULT_CHROME }]);
+    expect(creates).toHaveLength(1);
+    expectBareChrome(creates[0].data.pageDefaults);
     expect(updates).toEqual([]);
-    expect(store.get('chromeSeeded')).toBe(true);
+    expect(store.get('pageDefaultsSeeded')).toBe(true);
   });
 
-  it('fills still-empty DZs on an existing record (upgrade path) exactly once', async () => {
-    const { strapi, updates, store } = fakeStrapi({ documentId: 'doc-1', header: [], footer: [] });
+  it('fills still-empty slots on an existing record exactly once', async () => {
+    const { strapi, updates, store } = fakeStrapi({ documentId: 'doc-1', pageDefaults: { header: [], footer: [] } });
     await seedSiteSetting(strapi);
-    expect(updates).toEqual([{ documentId: 'doc-1', data: DEFAULT_CHROME }]);
-    expect(store.get('chromeSeeded')).toBe(true);
+    expect(updates).toHaveLength(1);
+    expectBareChrome(updates[0].data.pageDefaults);
+    expect(store.get('pageDefaultsSeeded')).toBe(true);
   });
 
-  it('never overwrites a composed DZ — only the empty sibling is seeded', async () => {
-    const composed = [{ __component: 'preset-organism.navbar', id: 7, items: [{ label: 'Docs' }] }];
-    const { strapi, updates } = fakeStrapi({ documentId: 'doc-1', header: composed, footer: [] });
+  it('never overwrites a composed slot — only the empty sibling is seeded', async () => {
+    const composed = [{ id: 'n1', type: 'block', component: 'preset-organism.navbar', data: { items: [{ label: 'Docs' }] } }];
+    const { strapi, updates } = fakeStrapi({ documentId: 'doc-1', pageDefaults: { header: composed, footer: [] } });
     await seedSiteSetting(strapi);
-    expect(updates).toEqual([{ documentId: 'doc-1', data: { footer: DEFAULT_CHROME.footer } }]);
+    expect(updates).toHaveLength(1);
+    const pd = updates[0].data.pageDefaults as any;
+    expect(pd.header).toEqual(composed);
+    expect(pd.footer[0]).toMatchObject({ component: 'preset-organism.footer' });
   });
 
-  it('respects an editor-emptied [] once the seed has run (flag set → no writes)', async () => {
+  it('respects an editor-emptied slot once the seed has run (flag set → no writes)', async () => {
     const { strapi, creates, updates } = fakeStrapi(
-      { documentId: 'doc-1', header: [], footer: [] },
-      { chromeSeeded: true },
+      { documentId: 'doc-1', pageDefaults: { header: [], footer: [] } },
+      { pageDefaultsSeeded: true },
     );
     await seedSiteSetting(strapi);
     expect(creates).toEqual([]);
@@ -78,7 +83,6 @@ describe('seedSiteSetting — chrome composition (Spec §4)', () => {
 
   it('is idempotent across repeated runs — one create, no later writes', async () => {
     const { strapi, creates, updates } = fakeStrapi(null);
-    await seedSiteSetting(strapi);
     await seedSiteSetting(strapi);
     await seedSiteSetting(strapi);
     expect(creates).toHaveLength(1);
