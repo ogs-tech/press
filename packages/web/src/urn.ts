@@ -22,9 +22,11 @@
  *     ARE the canonical base; any uid in them has this identity for free via
  *     `componentUrn`.
  *  3. COMPUTED (`Urn<string>`, NOT an `Entity`): formatted ad hoc for a value
- *     with no durable identity of its own — `blockKey` qualifies a DZ row's
- *     ephemeral numeric id with its `__component` (`urn:preset-atom.image:5`).
- *     Deliberately never promoted into this union: a DZ row id isn't durable.
+ *     with no durable identity of its own. Retired with the DZ-era block-key
+ *     helper — `PressTree` nodes now carry a builder-minted `id: string`
+ *     (Spec §3), so a node IS its own React key and no computed identity is
+ *     needed. Kept as a class here for the historical shape of this union;
+ *     nothing in the codebase formats one today.
  *
  * Extend this union — never widen a call site to plain `string` — when a new
  * entity earns a stored/type-level urn (e.g. media). Mirrors ThemeName's
@@ -34,10 +36,10 @@ export type Entity = 'page' | 'site-setting' | 'plugin' | 'component';
 
 /**
  * A `urn:{entity}:{id}` identity string. Generic over any string — NOT bounded
- * to Entity — so the same primitive also formats COMPUTED identities (block-key
- * uses the block's `__component` as the entity segment) without admitting them
- * into the closed Entity union. The template literal already rejects an
- * arbitrary string at compile time; no nominal brand (and its `as Urn` noise).
+ * to Entity — so the same primitive can also format a COMPUTED identity
+ * (identity class 3 above) without admitting it into the closed Entity union.
+ * The template literal already rejects an arbitrary string at compile time;
+ * no nominal brand (and its `as Urn` noise).
  */
 export type Urn<E extends string = string> = `urn:${E}:${string}`;
 
@@ -63,10 +65,9 @@ export function buildUrn<E extends string>(entity: E, id: string | number): Urn<
  * Canonical identity of a component TYPE (identity class 2 above): the palette
  * registration keyed by its uid — `preset-atom.image`, `preset-organism.hero`,
  * `preset-organism.navbar`, an adopter's `custom-*`. Thin wrapper over `buildUrn`
- * so there is exactly one
- * formatting implementation. Contrast `blockKey`, which formats the COMPUTED
- * per-instance identity (`urn:{uid}:{id}`) — same primitive, different axis:
- * here the uid IS the id segment, there it is the entity segment.
+ * so there is exactly one formatting implementation — the uid IS the id
+ * segment here, distinct from a COMPUTED per-instance identity (class 3
+ * above), where it would be the entity segment instead.
  */
 export function componentUrn(uid: string): Urn<'component'> {
   return buildUrn('component', uid);

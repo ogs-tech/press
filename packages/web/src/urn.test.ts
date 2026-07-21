@@ -26,7 +26,7 @@ describe('componentUrn', () => {
     expect(componentUrn('custom-organism.callout')).toBe('urn:component:custom-organism.callout');
   });
 
-  it('is a distinct axis from blockKey: the uid is the id segment here, the entity segment there', () => {
+  it('is a distinct axis from a computed per-instance identity: the uid is the id segment here, the entity segment there', () => {
     // component TYPE identity vs computed per-instance identity
     expect(componentUrn('preset-atom.image')).not.toBe(buildUrn('preset-atom.image', 5));
     expect(componentUrn('preset-atom.image')).toBe('urn:component:preset-atom.image');
