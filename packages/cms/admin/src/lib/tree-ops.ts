@@ -1,0 +1,164 @@
+/**
+ * Pure, immutable operations on a composition forest (a slot's Node[]). The
+ * builder UI calls ONLY these — the structural invariants (Spec §4: Column only
+ * under Row, Row children are Columns only, 1–4 columns) are enforced here by
+ * construction, which is what makes the lifecycle validator "unreachable" from
+ * the admin. No React, no Strapi: unit-tested without a DOM.
+ */
+import type { BlockNode, ColumnNode, Node, Ratio, RowNode } from '@ogs-tech/press-shared';
+
+export type Forest = Node[];
+export type NodePath = number[];
+
+export const RATIO_SLOTS: Record<Ratio, number> = {
+  '50-50': 2,
+  '33-67': 2,
+  '67-33': 2,
+  '33-33-33': 3,
+  '25-25-25-25': 4,
+};
+
+export const MAX_COLUMNS = 4;
+
+const uuid = (): string => globalThis.crypto.randomUUID();
+
+export const newBlockNode = (component: string): BlockNode => ({ id: uuid(), type: 'block', component, data: {} });
+
+export const newColumnNode = (): ColumnNode => ({ id: uuid(), type: 'column', children: [] });
+
+export const newRowNode = (ratio: Ratio): RowNode => ({
+  id: uuid(),
+  type: 'row',
+  ratio,
+  children: Array.from({ length: RATIO_SLOTS[ratio] }, () => newColumnNode()),
+});
+
+const childrenOf = (node: Node): Node[] =>
+  node.type === 'block' ? [] : (node.children as Node[]);
+
+export function getNode(forest: Forest, path: NodePath): Node | null {
+  let list: Node[] = forest;
+  let node: Node | null = null;
+  for (const index of path) {
+    node = list[index] ?? null;
+    if (!node) return null;
+    list = childrenOf(node);
+  }
+  return node;
+}
+
+/** Rebuilds the spine along `path`, applying `update` to the addressed sibling list. */
+function updateList(forest: Forest, parentPath: NodePath | null, update: (siblings: Node[], parent: Node | null) => Node[]): Forest {
+  if (parentPath === null || parentPath.length === 0) {
+    if (parentPath === null) return update([...forest], null);
+  }
+  const walk = (list: Node[], path: NodePath): Node[] => {
+    if (path.length === 0) return update([...list], null);
+    const [head, ...rest] = path;
+    return list.map((node, i) => {
+      if (i !== head) return node;
+      if (node.type === 'block') throw new Error('[press-cms] a block node has no children');
+      if (rest.length === 0) {
+        return { ...node, children: update([...(node.children as Node[])], node) } as Node;
+      }
+      return { ...node, children: walk(node.children as Node[], rest) } as Node;
+    });
+  };
+  return walk(forest, parentPath ?? []);
+}
+
+function assertLegalChild(parent: Node | null, child: Node): void {
+  if (parent === null || parent.type === 'column') {
+    if (child.type === 'column') throw new Error('[press-cms] a column is only legal directly under a row');
+    return;
+  }
+  if (parent.type === 'row') {
+    if (child.type !== 'column') throw new Error('[press-cms] row children must be columns');
+    return;
+  }
+  throw new Error('[press-cms] a block node cannot take children');
+}
+
+export function insertNode(forest: Forest, parentPath: NodePath | null, index: number, node: Node): Forest {
+  const parent = parentPath === null ? null : getNode(forest, parentPath);
+  if (parentPath !== null && !parent) throw new Error('[press-cms] insert parent not found');
+  assertLegalChild(parent, node);
+  if (parent?.type === 'row' && (parent.children as Node[]).length >= MAX_COLUMNS) {
+    throw new Error(`[press-cms] a row carries at most ${MAX_COLUMNS} columns`);
+  }
+  return updateList(forest, parentPath, (siblings) => {
+    siblings.splice(Math.max(0, Math.min(index, siblings.length)), 0, node);
+    return siblings;
+  });
+}
+
+export function removeNode(forest: Forest, path: NodePath): Forest {
+  const parentPath = path.slice(0, -1);
+  const index = path[path.length - 1];
+  return updateList(forest, parentPath.length ? parentPath : null, (siblings) => {
+    siblings.splice(index, 1);
+    return siblings;
+  });
+}
+
+export function moveNode(forest: Forest, path: NodePath, delta: -1 | 1): Forest {
+  const parentPath = path.slice(0, -1);
+  const index = path[path.length - 1];
+  return updateList(forest, parentPath.length ? parentPath : null, (siblings) => {
+    const target = index + delta;
+    if (target < 0 || target >= siblings.length) return siblings;
+    const [node] = siblings.splice(index, 1);
+    siblings.splice(target, 0, node);
+    return siblings;
+  });
+}
+
+function patchNode(forest: Forest, path: NodePath, patch: (node: Node) => Node): Forest {
+  const parentPath = path.slice(0, -1);
+  const index = path[path.length - 1];
+  return updateList(forest, parentPath.length ? parentPath : null, (siblings) => {
+    if (!siblings[index]) throw new Error('[press-cms] node not found at path');
+    siblings[index] = patch(siblings[index]);
+    return siblings;
+  });
+}
+
+export function setBlockData(forest: Forest, path: NodePath, data: Record<string, unknown>): Forest {
+  return patchNode(forest, path, (node) => {
+    if (node.type !== 'block') throw new Error('[press-cms] setBlockData targets block nodes');
+    return { ...node, data };
+  });
+}
+
+export function setContainerAttr(
+  forest: Forest,
+  path: NodePath,
+  key: 'width' | 'gap' | 'verticalAlign',
+  value: string | undefined,
+): Forest {
+  return patchNode(forest, path, (node) => {
+    if (node.type === 'block') throw new Error('[press-cms] blocks carry no container attrs');
+    const container = { ...(node.container ?? {}) } as Record<string, unknown>;
+    if (value === undefined) delete container[key];
+    else container[key] = value;
+    const next = { ...node } as Node & { container?: Record<string, unknown> };
+    if (Object.keys(container).length === 0) delete next.container;
+    else next.container = container;
+    return next as Node;
+  });
+}
+
+export function setRowRatio(forest: Forest, path: NodePath, ratio: Ratio): Forest {
+  return patchNode(forest, path, (node) => {
+    if (node.type !== 'row') throw new Error('[press-cms] setRowRatio targets row nodes');
+    const children = [...node.children];
+    while (children.length < RATIO_SLOTS[ratio]) children.push(newColumnNode());
+    return { ...node, ratio, children };
+  });
+}
+
+export function addColumn(forest: Forest, rowPath: NodePath): Forest {
+  const row = getNode(forest, rowPath);
+  if (!row || row.type !== 'row') throw new Error('[press-cms] addColumn targets row nodes');
+  return insertNode(forest, rowPath, row.children.length, newColumnNode());
+}
