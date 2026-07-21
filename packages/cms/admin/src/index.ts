@@ -53,8 +53,22 @@ const CATEGORY_LABELS: Record<string, Record<string, string>> = {
 CATEGORY_LABELS.pt = CATEGORY_LABELS['pt-BR'];
 
 export default {
-  register(): void {
-    // No admin surface beyond translations — the plugin is server-first.
+  register(app: any): void {
+    // The composition-builder custom field: the JSON PressTree editor that
+    // replaces the retired Dynamic Zones on page `body` and Site Settings
+    // `pageDefaults`. Registered as `plugin::press-cms.builder`; the Input is
+    // lazy-imported so the tree-editor bundle only loads on the edit view.
+    app.customFields.register({
+      name: 'builder',
+      pluginId: 'press-cms',
+      type: 'json',
+      intlLabel: { id: 'press-cms.builder.label', defaultMessage: 'Composition' },
+      intlDescription: { id: 'press-cms.builder.description', defaultMessage: 'The press composition tree (layout + blocks)' },
+      components: {
+        Input: async () => import('./components/builder-input'),
+      },
+      options: { base: [], advanced: [] },
+    });
   },
   async registerTrads({ locales }: { locales: string[] }): Promise<TradEntry[]> {
     return locales.map((locale) => ({ locale, data: CATEGORY_LABELS[locale] ?? {} }));
