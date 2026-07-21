@@ -19,11 +19,19 @@ export interface Manifest {
 /**
  * The packages published to npm: @ogs-tech/create-press (the run-once scaffolder,
  * which is NOT a generated-project dependency) plus the engine @ogs-tech/press-{web,cms}
- * that a generated project installs. @ogs-tech/press-shared is deliberately absent: it is
- * an internal, dev-only contract package (web/cms import it via `import type`, erased at
- * transpile time), so it stays private and must NOT publish. The test asserts that privacy separately.
+ * that a generated project installs, and @ogs-tech/press-shared — the wire contract
+ * package (PressSchema types + the `validatePressTree` runtime validator) that
+ * press-web now depends on at runtime (Decision 3 of the composition-builder
+ * refactor). press-shared is a PUBLISHED runtime contract package, not an internal,
+ * dev-only, never-published one — it ships its own version/publishConfig and is
+ * co-published alongside web/cms via changesets.
  */
-export const PUBLISHABLE_PACKAGES = ['@ogs-tech/create-press', '@ogs-tech/press-web', '@ogs-tech/press-cms'] as const;
+export const PUBLISHABLE_PACKAGES = [
+  '@ogs-tech/create-press',
+  '@ogs-tech/press-web',
+  '@ogs-tech/press-cms',
+  '@ogs-tech/press-shared',
+] as const;
 
 // Dependency fields that ship in the published manifest. devDependencies do not,
 // so a workspace: spec there is harmless — but here it would point the tarball at
@@ -50,10 +58,17 @@ export function checkPublishReadiness(manifest: Manifest): string[] {
   // stays pure. A package may legitimately use either (cli/cms: files; web:
   // .npmignore, because under a files allowlist npm stops honoring .npmignore).
 
-  // workspace: must be rewritten to a real range by the publish tool, never shipped raw.
+  // workspace: must be rewritten to a real range by the publish tool, never shipped raw
+  // — UNLESS the target is itself one of PUBLISHABLE_PACKAGES: changesets co-publish
+  // those together, rewriting workspace:* to that package's real published version, so
+  // e.g. press-web's `"@ogs-tech/press-shared": "workspace:*"` resolves at publish time.
+  // A workspace: spec pointing at anything else would ship a protocol npm can't resolve
+  // and break the adopter's install.
   for (const field of PUBLISHED_DEP_FIELDS) {
     for (const [dep, spec] of Object.entries(manifest[field] ?? {})) {
-      if (typeof spec === 'string' && spec.startsWith('workspace:')) {
+      const isWorkspaceSpec = typeof spec === 'string' && spec.startsWith('workspace:');
+      const isCoPublishedTarget = (PUBLISHABLE_PACKAGES as readonly string[]).includes(dep);
+      if (isWorkspaceSpec && !isCoPublishedTarget) {
         violations.push(`${field}.${dep} still uses the workspace: protocol`);
       }
     }
