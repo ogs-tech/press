@@ -1,3 +1,4 @@
+import type { Node } from '@ogs-tech/press-shared';
 import type { Canonical } from '../urn';
 import type { RawCookieConsent, ResolvedCookieConsentPlugin } from '../plugins/cookie-consent/types';
 import type { ResolvedLink } from '../link';
@@ -58,15 +59,6 @@ export interface PressConfig {
 /** A fully-resolved navigation link (page relation already collapsed to an href). */
 export type ResolvedNavLink = ResolvedLink;
 
-/**
- * A chrome dynamic-zone entry. Loose by design: the zones admit preset-atom.* /
- * preset-organism.* / custom-* blocks the engine cannot enumerate, and the
- * renderer only dispatches on `__component`. The engine chrome organisms
- * (preset-organism.navbar/footer) gain `brand`/`links` during hydration
- * (mapSiteSettings, Spec §3).
- */
-export type ChromeBlock = { __component: string; id: number; [k: string]: unknown };
-
 /** Hydrated `preset-organism.navbar` — the exact props the Navbar renderer receives (Spec §3). */
 export interface ResolvedChromeNavbar {
   /** Injected from Site Settings identity — never stored on the block (Spec §1). */
@@ -74,14 +66,6 @@ export interface ResolvedChromeNavbar {
   /** `items` resolved: page > url precedence, home slug → '/', external flag. */
   links: ResolvedLink[];
   cta?: (ResolvedLink & { variant?: 'primary' | 'secondary' }) | null;
-}
-
-/** Hydrated `preset-organism.footer` — brand injected for the copyright fallback (Spec §1). */
-export interface ResolvedChromeFooter {
-  __component: 'preset-organism.footer';
-  id: number;
-  text?: string | null;
-  brand: { name: string };
 }
 
 /**
@@ -124,16 +108,14 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
     radius: ThemeRadius;
   };
   /**
-   * Site chrome (Spec §3): the two Site-Settings Dynamic Zones, HYDRATED —
-   * preset-organism.navbar entries carry the resolved brand + links and
-   * preset-organism.footer entries carry the brand for the copyright fallback;
-   * all other blocks pass
-   * through untouched so BlockRenderer stays intentionally dumb. Empty when the
-   * CMS is empty/unreachable/malformed (unbranded over synthetic — Spec §4).
+   * The two Site-Settings pageDefaults slots (Spec §3/§6), RAW nodes — engine
+   * blocks are hydrated exactly once, by `resolveTree` (tree/resolve-slots.ts),
+   * never here. Empty when the CMS is empty/unreachable/malformed (unbranded
+   * over synthetic — Spec §4).
    */
-  chrome: {
-    header: ChromeBlock[];
-    footer: ChromeBlock[];
+  pageDefaults: {
+    header: Node[];
+    footer: Node[];
   };
   /**
    * Engine plugins (cookie-consent Spec §1): a NAMED map — one required key
@@ -141,7 +123,7 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
    * or unreachable. Not an array: plugins are fixed engine features, not
    * editor-composed content (that is what the Dynamic Zones are for). Each
    * new plugin adds a required key — a deliberate press-web major, the same
-   * discipline as `urn`/`chrome`.
+   * discipline as `urn`/`pageDefaults`.
    */
   plugins: {
     cookieConsent: ResolvedCookieConsentPlugin;
@@ -186,6 +168,6 @@ export interface SiteSettingsData {
   themeColors?: Partial<ThemeColors> | null;
   themeRadius?: Partial<ThemeRadius> | null;
   cookieConsent?: RawCookieConsent | null;
-  header?: ChromeBlock[] | null;
-  footer?: ChromeBlock[] | null;
+  /** The two page-default slots (Spec §6): bare Node[] arrays, validated by mapSiteSettings. */
+  pageDefaults?: { header?: unknown; footer?: unknown } | null;
 }

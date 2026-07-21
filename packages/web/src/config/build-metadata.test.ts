@@ -24,7 +24,7 @@ const resolved: ResolvedPressConfig = {
     fonts: {},
     radius: { xs: '6px', sm: '10px', md: '14px', lg: '20px' },
   },
-  chrome: { header: [], footer: [] },
+  pageDefaults: { header: [], footer: [] },
   plugins: { cookieConsent: mapCookieConsent(null, 'home') },
 };
 

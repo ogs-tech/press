@@ -64,10 +64,8 @@ export type {
   ResolvedPressConfig,
   BuildTimeConfig,
   ThemeName,
-  ChromeBlock,
   ResolvedNavLink,
   ResolvedChromeNavbar,
-  ResolvedChromeFooter,
 } from './config/types';
 export { Container, Grid, Row, Column, BREAKPOINTS } from './layout';
 export type {
