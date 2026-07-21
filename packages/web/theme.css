@@ -101,14 +101,42 @@ main {
    content edge sits on (the margin-start formula mirrors the Container's
    centering math + gutter) — NOT viewport-centered: a centered narrow column
    next to lg-container organisms (hero/cta) produced a zig-zag of left edges;
-   one shared rail reads as a single axis at every viewport. Organisms and
-   non-atom customs are deliberately excluded — they own their own Container. */
-main [data-block^="preset-atom."],
-main [data-block^="custom-atom."] {
+   one shared rail reads as a single axis at every viewport. top-level BlockNodes
+   render as direct `<main>` children, so the editorial prose column survives
+   exactly where it applies; cell-nested atoms are excluded on purpose — the
+   cell owns their width. */
+main > [data-block^="preset-atom."],
+main > [data-block^="custom-atom."] {
   max-width: var(--press-container-prose);
   margin-inline-start: calc(max(100% - var(--press-container-lg), 0px) / 2 + var(--press-container-padding-x));
   margin-inline-end: var(--press-container-padding-x);
 }
+
+/* Tree root rhythm: the LayoutNode's container.gap. Flex gap replaces the
+   blocks' own vertical margins (margins never collapse inside flex — without
+   the reset every gap would double). Absent gap → no attr → legacy margins. */
+main[data-press-stack] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--press-tree-gap, var(--press-space-5));
+}
+main[data-press-stack] > * {
+  margin-block: 0;
+}
+
+/* Tree column cells: stack rhythm + vertical placement within the row height.
+   height:100% makes verticalAlign meaningful when siblings are taller. */
+[data-press-cell] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--press-cell-gap, var(--press-space-4));
+  height: 100%;
+}
+[data-press-cell] > * {
+  margin-block: 0;
+}
+[data-press-cell][data-cell-align="center"] { justify-content: center; }
+[data-press-cell][data-cell-align="end"] { justify-content: flex-end; }
 
 footer {
   border-top: 1px solid var(--press-color-border);
@@ -213,8 +241,7 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
 
 /* Button family — ONE visual contract for every button-shaped link the engine
    renders: the button atom, the navbar CTA (desktop bar + mobile drawer), the
-   hero CTA, the cta-banner button, and the per-column button of
-   preset-organism.columns. The always-present transparent border
+   hero CTA, and the cta-banner button. The always-present transparent border
    keeps the filled and outlined voices the same height. The secondary border
    rides on currentColor — it self-themes with ANY adopter palette (a neutral
    --press-color-border stroke read as unfinished next to primary-colored
@@ -225,8 +252,7 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
 [data-block="preset-atom.button"] a,
 [data-block="preset-organism.navbar"] [data-navbar="cta"],
 [data-block="preset-organism.hero"] [data-hero="cta"],
-[data-block="preset-organism.cta"] [data-cta="button"],
-[data-block="preset-organism.columns"] [data-column="button"] {
+[data-block="preset-organism.cta"] [data-cta="button"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -246,47 +272,40 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
 [data-block="preset-atom.button"] a[data-variant="primary"],
 [data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="primary"],
 [data-block="preset-organism.hero"] [data-hero="cta"],
-[data-block="preset-organism.cta"] [data-cta="button"],
-[data-block="preset-organism.columns"] [data-column="button"][data-variant="primary"] {
+[data-block="preset-organism.cta"] [data-cta="button"] {
   background: var(--press-color-primary);
   color: var(--press-color-on-primary);
 }
 [data-block="preset-atom.button"] a[data-variant="primary"]:hover,
 [data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="primary"]:hover,
 [data-block="preset-organism.hero"] [data-hero="cta"]:hover,
-[data-block="preset-organism.cta"] [data-cta="button"]:hover,
-[data-block="preset-organism.columns"] [data-column="button"][data-variant="primary"]:hover {
+[data-block="preset-organism.cta"] [data-cta="button"]:hover {
   background: color-mix(in srgb, var(--press-color-primary) 85%, var(--press-color-ink));
 }
 [data-block="preset-atom.button"] a[data-variant="primary"]:active,
 [data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="primary"]:active,
 [data-block="preset-organism.hero"] [data-hero="cta"]:active,
-[data-block="preset-organism.cta"] [data-cta="button"]:active,
-[data-block="preset-organism.columns"] [data-column="button"][data-variant="primary"]:active {
+[data-block="preset-organism.cta"] [data-cta="button"]:active {
   background: color-mix(in srgb, var(--press-color-primary) 72%, var(--press-color-ink));
 }
 [data-block="preset-atom.button"] a[data-variant="secondary"],
-[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"],
-[data-block="preset-organism.columns"] [data-column="button"][data-variant="secondary"] {
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"] {
   background: transparent;
   color: var(--press-color-primary);
   border-color: currentColor;
 }
 [data-block="preset-atom.button"] a[data-variant="secondary"]:hover,
-[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"]:hover,
-[data-block="preset-organism.columns"] [data-column="button"][data-variant="secondary"]:hover {
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"]:hover {
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
 [data-block="preset-atom.button"] a[data-variant="secondary"]:active,
-[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"]:active,
-[data-block="preset-organism.columns"] [data-column="button"][data-variant="secondary"]:active {
+[data-block="preset-organism.navbar"] [data-navbar="cta"][data-variant="secondary"]:active {
   background: color-mix(in srgb, currentColor 18%, transparent);
 }
 [data-block="preset-atom.button"] a:focus-visible,
 [data-block="preset-organism.navbar"] [data-navbar="cta"]:focus-visible,
 [data-block="preset-organism.hero"] [data-hero="cta"]:focus-visible,
-[data-block="preset-organism.cta"] [data-cta="button"]:focus-visible,
-[data-block="preset-organism.columns"] [data-column="button"]:focus-visible {
+[data-block="preset-organism.cta"] [data-cta="button"]:focus-visible {
   outline: 2px solid var(--press-color-primary);
   outline-offset: 2px;
 }
@@ -366,43 +385,6 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
   color: var(--press-color-muted);
 }
 /* [data-cta="button"] is styled by the shared button family (always primary). */
-
-/* Engine section: preset-organism.columns — an editor-composed 2–4 column
-   layout on the 12-track grid (ratio/gap/verticalAlign are closed CMS enums
-   resolved by the renderer into the layout primitives' vars). Pure token
-   consumer (Spec §5.2). */
-[data-block="preset-organism.columns"] {
-  margin-block: var(--press-space-7);
-}
-/* Rhythm inside a cell: content / image / button stack with one gap, whatever
-   subset the editor filled in. */
-[data-block="preset-organism.columns"] [data-column="cell"] > * + * {
-  margin-top: var(--press-space-4);
-}
-[data-block="preset-organism.columns"] [data-column="content"] p {
-  margin: 0;
-  font-size: var(--press-text-body);
-  line-height: 1.7;
-}
-[data-block="preset-organism.columns"] [data-column="content"] p + p {
-  margin-top: var(--press-space-4);
-}
-[data-block="preset-organism.columns"] [data-column="content"] ul,
-[data-block="preset-organism.columns"] [data-column="content"] ol {
-  margin: 0;
-  padding-left: var(--press-space-5);
-}
-[data-block="preset-organism.columns"] [data-column="content"] a {
-  color: var(--press-color-primary);
-  text-underline-offset: 2px;
-}
-[data-block="preset-organism.columns"] [data-column="image"] {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--press-radius-md);
-}
-/* [data-column="button"] is styled by the shared button family (variant-aware). */
 
 /* Engine plugin: cookie-consent — the consent banner (cookie-consent Spec §5).
    Fixed bottom bar, 1px stroke over shadow, pure token consumer. The html

@@ -1,10 +1,10 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import {
-  BlockRenderer,
   buildMetadata,
   getPage,
   getSiteConfig,
   getStaticPageParams,
+  TreeRenderer,
 } from '@ogs-tech/press-web';
 import { customBlocks } from '../../press.blocks';
 import { buildTime } from '../../press-config';
@@ -52,7 +52,10 @@ export default async function CatchAllPage({ params }: PageProps) {
   // (e.g. /home) 308-redirects to '/', so home has no public slug URL.
   if (path && path === buildTime.routes.home) permanentRedirect('/');
 
-  const page = await getPage(path || buildTime.routes.home);
+  const [site, page] = await Promise.all([
+    getSiteConfig(buildTime),
+    getPage(path || buildTime.routes.home),
+  ]);
   if (!page) notFound();
-  return <BlockRenderer blocks={page.body} components={customBlocks} />;
+  return <TreeRenderer body={page.body} site={site} components={customBlocks} />;
 }

@@ -1,6 +1,5 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
 import {
-  BlockRenderer,
   buildConsentBootstrapScript,
   buildMetadata,
   buildThemeStyle,
@@ -8,7 +7,6 @@ import {
   getSiteConfig,
 } from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
-import { customBlocks } from '../press.blocks';
 import { buildTime } from '../press-config';
 
 // Default-theme fonts, loaded + optimized by next/font at build time. Each exposes
@@ -46,19 +44,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: buildConsentBootstrapScript() }} />
       </head>
       <body>
-        {/* Block-composed chrome (Spec §3): the same pipeline as the page body,
-            hydrated by mapSiteSettings. An unreachable CMS → empty zones →
-            header/footer render nothing (unbranded over synthetic, Spec §4). */}
-        <header>
-          <BlockRenderer blocks={site.chrome.header} components={customBlocks} />
-        </header>
-        <main>{children}</main>
-        <footer>
-          <BlockRenderer blocks={site.chrome.footer} components={customBlocks} />
-        </footer>
-        {/* Cookie-consent plugin mount (cookie-consent Spec §1/§5): config is
-            CMS-sourced and fails OPEN (banner shows with engine defaults when
-            the CMS is unreachable — a consent gate must not vanish on a hiccup). */}
+        {/* The page shell (header/main/footer) is rendered by TreeRenderer inside the
+            route — the layout cannot see the slug, so it cannot resolve per-page
+            slots (Spec §5). It keeps html/head, theme injection, consent bootstrap
+            and the cookie banner. */}
+        {children}
         <CookieConsentBanner key={site.plugins.cookieConsent.urn} plugin={site.plugins.cookieConsent} />
       </body>
     </html>
