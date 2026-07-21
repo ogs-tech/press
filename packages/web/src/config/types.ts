@@ -1,5 +1,6 @@
 import type { Canonical } from '../urn';
 import type { RawCookieConsent, ResolvedCookieConsentPlugin } from '../plugins/cookie-consent/types';
+import type { ResolvedLink } from '../link';
 
 /** The only embedded theme this phase. The union exists so a second theme is additive, not breaking (Spec §2). */
 export type ThemeName = 'default';
@@ -55,12 +56,7 @@ export interface PressConfig {
 }
 
 /** A fully-resolved navigation link (page relation already collapsed to an href). */
-export interface ResolvedNavLink {
-  label: string;
-  href: string;
-  external: boolean;
-  newTab: boolean;
-}
+export type ResolvedNavLink = ResolvedLink;
 
 /**
  * A chrome dynamic-zone entry. Loose by design: the zones admit preset-atom.* /
@@ -73,13 +69,11 @@ export type ChromeBlock = { __component: string; id: number; [k: string]: unknow
 
 /** Hydrated `preset-organism.navbar` — the exact props the Navbar renderer receives (Spec §3). */
 export interface ResolvedChromeNavbar {
-  __component: 'preset-organism.navbar';
-  id: number;
   /** Injected from Site Settings identity — never stored on the block (Spec §1). */
   brand: { name: string; logo?: string };
   /** `items` resolved: page > url precedence, home slug → '/', external flag. */
-  links: ResolvedNavLink[];
-  cta?: { label?: string; href?: string; variant?: 'primary' | 'secondary' } | null;
+  links: ResolvedLink[];
+  cta?: (ResolvedLink & { variant?: 'primary' | 'secondary' }) | null;
 }
 
 /** Hydrated `preset-organism.footer` — brand injected for the copyright fallback (Spec §1). */
