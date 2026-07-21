@@ -35,15 +35,31 @@ async function buildResolvers(strapi: Core.Strapi, refs: TreeRefs): Promise<Tree
   };
 }
 
-export async function hydratePageDoc<T extends { body?: unknown }>(strapi: Core.Strapi, doc: T | null): Promise<T | null> {
-  if (!doc || doc.body === undefined || doc.body === null) return doc;
-  const getSchema = schemaLookup(strapi);
-  const resolvers = await buildResolvers(strapi, collectTreeRefs(doc.body, getSchema));
+/** Applies already-built resolvers to one doc's body — the shared last step of both hydration paths below. */
+function hydrateBody<T extends Record<string, unknown>>(doc: T, getSchema: SchemaLookup, resolvers: TreeResolvers): T {
   return { ...doc, body: hydrateTree(doc.body, getSchema, resolvers) };
 }
 
-export async function hydratePageDocs<T extends { body?: unknown }>(strapi: Core.Strapi, docs: T[]): Promise<T[]> {
-  return Promise.all(docs.map((doc) => hydratePageDoc(strapi, doc) as Promise<T>));
+export async function hydratePageDoc<T extends Record<string, unknown>>(strapi: Core.Strapi, doc: T | null): Promise<T | null> {
+  if (!doc || doc.body === undefined || doc.body === null) return doc;
+  const getSchema = schemaLookup(strapi);
+  const resolvers = await buildResolvers(strapi, collectTreeRefs(doc.body, getSchema));
+  return hydrateBody(doc, getSchema, resolvers);
+}
+
+/** One resolver build for the WHOLE list (kills the per-doc N+1 on the unpaginated `GET /pages`): collect refs across every doc's body, resolve once, then hydrate each doc against the shared resolvers. */
+export async function hydratePageDocs<T extends Record<string, unknown>>(strapi: Core.Strapi, docs: T[]): Promise<T[]> {
+  const getSchema = schemaLookup(strapi);
+  const combinedRefs = docs.reduce<TreeRefs>((refs, doc) => {
+    if (!doc || doc.body === undefined || doc.body === null) return refs;
+    const docRefs = collectTreeRefs(doc.body, getSchema);
+    return {
+      assetIds: [...refs.assetIds, ...docRefs.assetIds],
+      pageDocumentIds: [...refs.pageDocumentIds, ...docRefs.pageDocumentIds],
+    };
+  }, { assetIds: [], pageDocumentIds: [] });
+  const resolvers = await buildResolvers(strapi, combinedRefs);
+  return docs.map((doc) => (!doc || doc.body === undefined || doc.body === null ? doc : hydrateBody(doc, getSchema, resolvers)));
 }
 
 export async function hydrateSiteSetting<T extends { pageDefaults?: unknown }>(strapi: Core.Strapi, data: T | null): Promise<T | null> {
