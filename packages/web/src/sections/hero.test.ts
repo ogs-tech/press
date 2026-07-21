@@ -64,9 +64,12 @@ describe('Hero renderer', () => {
     expect(render({ title: 'T' })).not.toContain('--press-col-span-md:5');
   });
 
-  it('renders the CTA only when BOTH ctaLabel and ctaHref are present (Spec §8)', () => {
-    expect(render({ title: 'T', ctaLabel: 'Go', ctaHref: '/go' })).toContain('href="/go"');
-    expect(render({ title: 'T', ctaLabel: 'Go' })).not.toContain('data-hero="cta"');
-    expect(render({ title: 'T', ctaHref: '/go' })).not.toContain('data-hero="cta"');
+  it('renders the CTA only when a complete link is present (Spec §8)', () => {
+    const withCta = render({ title: 'T', cta: { label: 'Go', url: '/go' } });
+    expect(withCta).toContain('data-hero="cta"');
+    expect(withCta).toContain('href="/go"');
+    expect(withCta).toContain('Go');
+    expect(render({ title: 'T', cta: { label: 'Go' } })).not.toContain('data-hero="cta"');
+    expect(render({ title: 'T' })).not.toContain('data-hero="cta"');
   });
 });

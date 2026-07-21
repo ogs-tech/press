@@ -52,10 +52,12 @@ describe('Navbar renderer', () => {
     const withCta = render({
       brand: { name: 'Acme' },
       links: [],
-      cta: { label: 'Sign up', href: '/signup', variant: 'secondary' },
+      cta: { label: 'Get started', href: 'https://x', external: true, newTab: false, variant: 'primary' },
     });
-    expect(withCta).toMatch(/<a[^>]*data-navbar="cta"[^>]*href="\/signup"/);
-    expect(withCta).toContain('data-variant="secondary"');
+    expect(withCta).toMatch(/<a[^>]*data-navbar="cta"[^>]*href="https:\/\/x"/);
+    expect(withCta).toContain('data-variant="primary"');
+    expect(withCta).toContain('data-navbar-desktop');
+    expect(withCta).toContain('Get started');
 
     expect(render({ brand: { name: 'Acme' }, links: [], cta: { label: 'Sign up' } }))
       .not.toContain('data-navbar="cta"');
@@ -63,8 +65,11 @@ describe('Navbar renderer', () => {
   });
 
   it('defaults the CTA variant to primary', () => {
-    expect(render({ brand: { name: 'Acme' }, links: [], cta: { label: 'Go', href: '/go' } }))
-      .toContain('data-variant="primary"');
+    expect(render({
+      brand: { name: 'Acme' },
+      links: [],
+      cta: { label: 'Go', href: '/go', external: false, newTab: false },
+    })).toContain('data-variant="primary"');
   });
 
   it('tolerates an un-hydrated block (no brand/links) without crashing', () => {

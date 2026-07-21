@@ -2,6 +2,8 @@ import type { PresetOrganismHero } from '../types/base';
 import { Container } from '../layout/container';
 import { Grid } from '../layout/grid';
 import { Column } from '../layout/column';
+import { coerceLink } from '../link';
+import { PressLink } from '../press-link';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
 
@@ -23,12 +25,11 @@ export function Hero({
   title,
   subtitle,
   image,
-  ctaLabel,
-  ctaHref,
+  cta,
   align,
 }: PresetOrganismHero) {
   if (!title) return null;
-  const hasCta = Boolean(ctaLabel && ctaHref);
+  const hasCta = Boolean(coerceLink(cta));
   const hasImage = Boolean(image?.url);
   return (
     <Container
@@ -47,11 +48,7 @@ export function Hero({
             {eyebrow ? <p data-hero="eyebrow">{eyebrow}</p> : null}
             <h1>{title}</h1>
             {subtitle ? <p data-hero="subtitle">{subtitle}</p> : null}
-            {hasCta ? (
-              <a data-hero="cta" href={ctaHref}>
-                {ctaLabel}
-              </a>
-            ) : null}
+            {hasCta ? <PressLink data-hero="cta" link={cta} /> : null}
           </div>
         </Column>
         {hasImage ? (

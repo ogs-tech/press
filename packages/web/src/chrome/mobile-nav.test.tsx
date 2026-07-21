@@ -104,7 +104,7 @@ describe('<MobileNav>', () => {
     render(
       <MobileNav
         links={[link('About', '/about')]}
-        cta={{ label: 'Sign up', href: '/signup', variant: 'primary' }}
+        cta={{ label: 'Sign up', href: '/signup', external: false, newTab: false, variant: 'primary' }}
       />,
     );
     act(() => toggle().click());
