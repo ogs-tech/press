@@ -18,7 +18,7 @@ const OPTIONAL_CATEGORIES = ['analytics', 'marketing'] as const;
  * snapshot), so hydration can never mismatch.
  *
  * The component is intentionally dumb about config: `plugin` arrives TOTAL
- * from mapCookieConsent — no defaulting here (the BlockRenderer "renderers
+ * from mapCookieConsent — no defaulting here (the TreeRenderer "renderers
  * stay dumb" discipline).
  */
 export function CookieConsentBanner({ plugin }: { plugin: ResolvedCookieConsentPlugin }) {

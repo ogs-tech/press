@@ -12,7 +12,7 @@ import { Spacer } from './blocks/spacer';
  * Engine-owned ATOM registry — the Atomic Design base layer: atomic text blocks
  * (paragraph/heading/list/quote), media (image) and structural
  * (button/separator/spacer). Adopter `custom-*` blocks are never named here —
- * they arrive via the explicit `components` prop on <BlockRenderer/>.
+ * they arrive via the explicit `components` prop on <TreeRenderer/>.
  */
 export const atomBlocks: Record<string, ComponentType<any>> = {
   'preset-atom.paragraph': Paragraph,

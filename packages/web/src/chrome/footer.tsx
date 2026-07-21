@@ -1,4 +1,3 @@
-import type { ResolvedChromeFooter } from '../config/types';
 import { Container } from '../layout/container';
 
 /**
@@ -11,7 +10,7 @@ import { Container } from '../layout/container';
  * exactly what the old hardcoded footer rendered. Brand arrives via hydration;
  * missing brand degrades to "· year", never a crash.
  */
-export function Footer({ text, brand }: ResolvedChromeFooter) {
+export function Footer({ text, brand }: { text?: string; brand?: { name: string; logo?: string } }) {
   return (
     <Container as="div" maxWidth="full" padded data-block="preset-organism.footer">
       <small>{text || `${brand?.name ?? ''} · ${new Date().getFullYear()}`}</small>

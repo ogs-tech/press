@@ -18,9 +18,9 @@ import { PressLink } from '../press-link';
  * hamburger drawer takes over. Both surfaces receive the same
  * `links` + `cta` data.
  *
- * Receives HYDRATED props (Spec §3): mapSiteSettings resolved the links and
+ * Receives HYDRATED props (Spec §3): resolveTree resolved the links and
  * injected the brand, so this stays a dumb server component. Tolerant of an
- * un-hydrated block (direct BlockRenderer use): missing brand/links degrade,
+ * un-hydrated block (direct TreeRenderer use): missing brand/links degrade,
  * never crash.
  */
 export function Navbar({ brand, links, cta }: ResolvedChromeNavbar) {
