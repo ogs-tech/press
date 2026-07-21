@@ -1,25 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { BlocksContent } from '../types/base';
-import { Paragraph } from './paragraph';
+import { createElement } from 'react';
+import { Paragraph, splitParagraphs } from './paragraph';
 
-const render = (content: BlocksContent): string =>
-  renderToStaticMarkup(Paragraph({ __component: 'preset-atom.paragraph', id: 1, content }));
+describe('splitParagraphs', () => {
+  it('splits on blank lines and drops empties', () => {
+    expect(splitParagraphs('One.\n\nTwo.\n\n\n')).toEqual(['One.', 'Two.']);
+    expect(splitParagraphs(undefined)).toEqual([]);
+    expect(splitParagraphs('  \n ')).toEqual([]);
+  });
+});
 
-const para = (...children: any[]): any => ({ type: 'paragraph', children });
-const text = (value: string, marks: Record<string, boolean> = {}): any => ({ type: 'text', text: value, ...marks });
-
-describe('Paragraph renderer', () => {
-  it('wraps output in a data-block="preset-atom.paragraph" section', () => {
-    expect(render([para(text('hi'))])).toContain('<section data-block="preset-atom.paragraph">');
+describe('Paragraph', () => {
+  it('renders one <p> per blank-line-separated paragraph inside the data-block wrapper', () => {
+    const html = renderToStaticMarkup(createElement(Paragraph, { content: 'First.\n\nSecond.' }));
+    expect(html).toContain('data-block="preset-atom.paragraph"');
+    expect(html.match(/<p>/g)).toHaveLength(2);
+    expect(html).toContain('First.');
   });
 
-  it('renders the prose through the shared in-house blocks renderer', () => {
-    expect(render([para(text('Hello'), text(' world', { bold: true }))])).toContain('Hello<strong> world</strong>');
-  });
-
-  it('tolerates empty content without throwing', () => {
-    expect(() => render([])).not.toThrow();
-    expect(render([])).toBe('<section data-block="preset-atom.paragraph"></section>');
+  it('renders nothing for empty content (tolerance)', () => {
+    expect(renderToStaticMarkup(createElement(Paragraph, { content: '' }))).toBe('');
   });
 });

@@ -1,30 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { BlocksContent } from '../types/base';
+import { createElement } from 'react';
 import { List } from './list';
 
-const render = (content: BlocksContent): string =>
-  renderToStaticMarkup(List({ __component: 'preset-atom.list', id: 1, content }));
-
-const li = (value: string): any => ({ type: 'list-item', children: [{ type: 'text', text: value }] });
-
-describe('List renderer', () => {
-  it('wraps output in a data-block="preset-atom.list" section', () => {
-    expect(render([{ type: 'list', format: 'unordered', children: [li('a')] }]))
-      .toContain('<section data-block="preset-atom.list">');
+describe('List', () => {
+  it('renders one <li> per non-empty line, unordered by default', () => {
+    const html = renderToStaticMarkup(createElement(List, { content: 'a\nb\n\nc' }));
+    expect(html).toContain('data-block="preset-atom.list"');
+    expect(html).toContain('<ul>');
+    expect(html.match(/<li>/g)).toHaveLength(3);
   });
 
-  it('renders an unordered list as <ul>', () => {
-    expect(render([{ type: 'list', format: 'unordered', children: [li('a'), li('b')] }]))
-      .toContain('<ul><li>a</li><li>b</li></ul>');
-  });
-
-  it('renders an ordered list as <ol>', () => {
-    expect(render([{ type: 'list', format: 'ordered', children: [li('one')] }]))
-      .toContain('<ol><li>one</li></ol>');
-  });
-
-  it('tolerates empty content without throwing', () => {
-    expect(() => render([])).not.toThrow();
+  it('renders <ol> for format ordered and nothing when empty', () => {
+    expect(renderToStaticMarkup(createElement(List, { content: '1st', format: 'ordered' }))).toContain('<ol>');
+    expect(renderToStaticMarkup(createElement(List, { content: '' }))).toBe('');
   });
 });

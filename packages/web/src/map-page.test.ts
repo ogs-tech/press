@@ -6,7 +6,10 @@ const raw: RawPage = {
   documentId: 'doc-abc',
   title: 'Home',
   slug: 'home',
-  body: [{ __component: 'preset-atom.paragraph', id: 3 }],
+  body: {
+    version: 1,
+    root: { type: 'layout', header: { mode: 'none' }, footer: { mode: 'none' }, children: [] },
+  },
 };
 
 describe('mapPage', () => {

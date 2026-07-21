@@ -1,11 +1,17 @@
 import type { PresetAtomList } from '../types/base';
-import { renderBlocks } from './blocks-content';
 
-/**
- * Atom `preset-atom.list` — an ordered/unordered list, server-rendered.
- * `content` is a Strapi blocks field; the shared renderer turns its `list` node
- * into the matching `<ul>`/`<ol>` markup.
- */
-export function List({ content }: PresetAtomList) {
-  return <section data-block="preset-atom.list">{renderBlocks(content)}</section>;
+/** Atom `preset-atom.list` — one item per non-empty line of the curated text. */
+export function List({ content, format }: PresetAtomList) {
+  const items = (content ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
+  if (items.length === 0) return null;
+  const Tag = format === 'ordered' ? 'ol' : 'ul';
+  return (
+    <div data-block="preset-atom.list">
+      <Tag>
+        {items.map((item, i) => (
+          <li key={i}>{item}</li>
+        ))}
+      </Tag>
+    </div>
+  );
 }

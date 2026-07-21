@@ -1,11 +1,26 @@
 import type { PresetAtomParagraph } from '../types/base';
-import { renderBlocks } from './blocks-content';
+
+/** Curated plain-text splitting (locked decision 2026-07-20): a blank line starts a new paragraph. */
+export function splitParagraphs(content: string | undefined): string[] {
+  return (content ?? '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
 
 /**
- * Atom `preset-atom.paragraph` — editorial prose, server-rendered for SEO.
- * `content` is a Strapi blocks field rendered by the engine's in-house renderer
- * (no client hydration, zero runtime deps).
+ * Atom `preset-atom.paragraph` — editorial prose from a curated plain-text
+ * string. Server-rendered, zero JS; the blocks AST left the wire with the
+ * composition-builder refactor.
  */
 export function Paragraph({ content }: PresetAtomParagraph) {
-  return <section data-block="preset-atom.paragraph">{renderBlocks(content)}</section>;
+  const paragraphs = splitParagraphs(content);
+  if (paragraphs.length === 0) return null;
+  return (
+    <div data-block="preset-atom.paragraph">
+      {paragraphs.map((text, i) => (
+        <p key={i}>{text}</p>
+      ))}
+    </div>
+  );
 }
