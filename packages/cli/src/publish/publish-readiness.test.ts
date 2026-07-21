@@ -36,10 +36,13 @@ describe('publish-readiness', () => {
     expect(controlled, `${name} has neither a files allowlist nor an .npmignore`).toBe(true);
   });
 
-  it('keeps @ogs-tech/press-shared private (internal dev-only contract, never published)', () => {
-    // web/cms consume it via `import type` only — erased at transpile time, so the
-    // adopter never resolves it. Publishing it would leak an internal package.
-    expect(manifestOf('@ogs-tech/press-shared').private).toBe(true);
+  it('publishes @ogs-tech/press-shared as a public runtime contract package', () => {
+    // press-web now imports its validator at runtime (composition-builder Decision 3),
+    // so press-shared is a co-published runtime dependency, not a private, dev-only,
+    // never-published package.
+    const manifest = manifestOf('@ogs-tech/press-shared');
+    expect(manifest.private).not.toBe(true);
+    expect(manifest.publishConfig?.access).toBe('public');
   });
 
   it('flags a manifest missing publishConfig and version', () => {
@@ -52,8 +55,20 @@ describe('publish-readiness', () => {
     const violations = checkPublishReadiness({
       publishConfig: { access: 'public' },
       version: '1.0.0',
+      dependencies: { 'some-external-pkg': 'workspace:*' },
+    });
+    expect(violations).toContain('dependencies.some-external-pkg still uses the workspace: protocol');
+  });
+
+  it('allows a workspace: protocol dependency on a co-published PUBLISHABLE_PACKAGES target', () => {
+    // press-web's "@ogs-tech/press-shared": "workspace:*" is exactly this case: both
+    // packages are co-published via changesets, which rewrites the spec to press-shared's
+    // real published version at publish time — no unresolvable protocol ships.
+    const violations = checkPublishReadiness({
+      publishConfig: { access: 'public' },
+      version: '1.0.0',
       dependencies: { '@ogs-tech/press-shared': 'workspace:*' },
     });
-    expect(violations).toContain('dependencies.@ogs-tech/press-shared still uses the workspace: protocol');
+    expect(violations).not.toContain('dependencies.@ogs-tech/press-shared still uses the workspace: protocol');
   });
 });
