@@ -435,11 +435,22 @@ This split is recent and easy to get wrong:
   contradicting the live default — while text stays empty ("no defaults
   duplicated in the CMS"). It does NOT set its flag when the Site Settings
   record is missing, so a broken bootstrap order self-heals next boot.
+- **React version + admin bundle (load-bearing):** the whole monorepo is pinned
+  to **React 19** via a root `pnpm.overrides` (`react`/`react-dom` = Strapi 5's
+  `19.2.7`) so the Next host, the engine packages, and Strapi's admin all share
+  ONE React. A React-18/19 split previously caused a duplicate-React admin crash
+  ("Cannot read properties of null (reading 'useState')"). The cms plugin ALSO
+  declares `react`/`react-dom` as **peerDependencies** so `@strapi/sdk-plugin`'s
+  build EXTERNALIZES them (its vite config externalizes only the plugin's
+  `dependencies`+`peerDependencies`) — otherwise the builder custom field bundles
+  its own React copy and crashes the admin with a null hooks dispatcher. A guard
+  test (`cms/server/src/lib/admin-react-externals.test.ts`) pins this, since
+  build/test/typecheck all pass while only the browser catches it.
 - **Testing note:** the banner's interactive tests (`// @vitest-environment
-  jsdom`) use a hand-rolled `act()`+`createRoot` harness, deliberately NOT
-  `@testing-library/react` — the workspace's `node-linker=hoisted` layout
-  (required by Strapi 5) materializes only Strapi-admin's react-19 RTL variant
-  at the root, which cannot render this package's react-18 elements.
+  jsdom`) use a hand-rolled `act()`+`createRoot` harness rather than
+  `@testing-library/react` — a lightweight, zero-extra-dep choice (it also
+  predates the React-19 unification above, which retired the earlier
+  react-18/react-19 rendering split).
 
 ### Canonical identity (URNs)
 

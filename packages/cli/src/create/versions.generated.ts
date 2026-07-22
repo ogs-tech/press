@@ -6,6 +6,6 @@ export const VERSIONS = {
   pressWeb: '0.4.1',
   pressCms: '0.3.2',
   next: '^15.1.0',
-  react: '^18.3.1',
+  react: '^19.2.7',
   strapi: '5.48.0',
 } as const;
