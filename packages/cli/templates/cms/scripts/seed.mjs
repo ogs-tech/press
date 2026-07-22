@@ -1,14 +1,11 @@
 // cms/scripts/seed.mjs — One-shot sample content for the cms host. Boots it
 // programmatically (CMS server must be STOPPED), fills the Site Settings single
 // type (identity/SEO + theme + a demo navbar with links and CTA), uploads one
-// tiny PNG (the hero cover — the media-crosses-REST proof), and creates a
-// PUBLISHED 'home' page that opens with the engine's layout-system organisms
-// (preset-organism.hero 2-col responsive grid, closing preset-organism.cta
-// banner) around a ~72ch prose atom sequence (heading, paragraph, list, quote,
-// separator, button, spacer) plus the adopter's custom-organism.callout, so the
-// first `press dev` renders a branded, themed, fully-navigable site. Every CTA
-// label on the page is distinct on purpose — demo content must not read as
-// copy-paste repetition.
+// tiny PNG (the image-atom cover — the media-crosses-REST proof), and creates a
+// PUBLISHED 'home' page kept deliberately SIMPLE (a few components + one 50-50
+// grid-layout row — see buildHomeBody), so the first `press dev` renders a
+// branded, themed, navigable site whose body demonstrates components and the
+// grid layout without being a pre-filled kitchen sink.
 // Skip-if-empty: seeds only a fresh CMS — existing content is never overwritten
 // (delete cms/.tmp to reset).
 import { createRequire } from 'node:module';
@@ -28,8 +25,8 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 const SLUG = 'home';
 
 // A visible 480×270 (16:9) placeholder cover — brand primary over accent — so
-// the hero's media field renders a real image rather than a degenerate 1×1
-// transparent pixel (and proves an uploaded media crosses the REST contract).
+// the image atom renders a real image rather than a degenerate 1×1 transparent
+// pixel (and proves an uploaded media crosses the REST contract).
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAeAAAAEOCAIAAADe+FMwAAAC+ElEQVR42u3UQQ0AIAwAsVnAB2LwhoLJws0s8NySJlVwj4t1DwANhQQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAYNIBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEGrAGDQABg0gEEDYNAABg2AQQNg0AAGDYBBAxg0AAYNgEEDGDQABg1g0AAYNIBBA2DQABg0gEEDYNAABg2AQQNg0AAGDYBBAxg0AAYNYNAAGDQABg1g0AAYNIBBA2DQABg0gEEDYNAABg2AQQMYtAoABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAYNIBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0AAYNYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg2AQQMYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBA2DQAAYNgEEDGDQABg1g0AAYNAAGDWDQABg0gEEDYNAAGDSAQQNg0AAGDYBBAxg0AAYNwO+gX24AGjJoAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgADBrAoAEwaACDBsCgAQwaAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgAgwbAoAEwaACDBsCgAQwaAIMGwKABDBoAgwYwaAAMGsCgJQAwaAAMGsCgATBoAIMGwKABMGgAgwbAoAEMGgCDBsCgAQwaAIMGMGgADBrAoAEwaAAMGsCgATBoAIMGwKABMGgAgwbAoAEMGgCDBjBoAAwaAIMGMGgADBrAoAEwaAAMGsCgATBoAIMGwKABDFoFAIMGwKABDBoAgwYwaAAMGgCDBjBoAAwawKABMGgADBrAoAEwaACDBsCgAQwaAIMGwKABJiqe+vFZK33AgwAAAABJRU5ErkJggg==',
   'base64',
@@ -64,10 +61,10 @@ async function main() {
       console.log(`[seed] ${existing.length} published page(s) exist — skipping page seed (delete cms/.tmp to reset).`);
       homeDocumentId = existing.find((p) => p.slug === SLUG)?.documentId;
     } else {
-      const heroImageId = await uploadImage('press-hero.png');
-      console.log(`[seed] uploaded hero image id=${heroImageId}`);
+      const coverImageId = await uploadImage('press-cover.png');
+      console.log(`[seed] uploaded cover image id=${coverImageId}`);
       const page = await app.documents(PAGE_UID).create({
-        data: { title: 'Hello from press', slug: SLUG, body: buildHomeBody({ heroAssetId: heroImageId }) },
+        data: { title: 'Hello from press', slug: SLUG, body: buildHomeBody({ imageAssetId: coverImageId }) },
         status: 'published',
       });
       homeDocumentId = page.documentId;

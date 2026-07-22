@@ -6,7 +6,7 @@ import { validatePressTree, validateNodeArray } from '@ogs-tech/press-shared';
 import { buildHomeBody, buildPageDefaults } from '../../templates/cms/scripts/seed-content.mjs';
 
 describe('seeded home body', () => {
-  const tree = buildHomeBody({ heroAssetId: 7 }) as any;
+  const tree = buildHomeBody({ imageAssetId: 7 }) as any;
 
   it('is a valid PressTree with inherited chrome', () => {
     const { value, errors, warnings } = validatePressTree(tree);
@@ -15,28 +15,30 @@ describe('seeded home body', () => {
     expect(value!.root.header).toEqual({ mode: 'inherit' });
   });
 
-  it('opens with the hero (assetId media ref) and closes with cta + adopter callout', () => {
+  it('demonstrates atoms then the grid: heading/paragraph/list atoms + a 50-50 row (no hero, no nested rows)', () => {
     const children = tree.root.children;
-    expect(children[0]).toMatchObject({ type: 'block', component: 'preset-organism.hero' });
-    expect(children[0].data.image).toEqual({ assetId: 7 });
-    expect(children.at(-2)).toMatchObject({ component: 'preset-organism.cta' });
-    expect(children.at(-1)).toMatchObject({ component: 'custom-organism.callout' });
+    expect(children.map((n: any) => n.type)).toEqual(['block', 'block', 'block', 'block', 'row']);
+    expect(children.slice(0, 4).map((n: any) => n.component)).toEqual([
+      'preset-atom.heading', 'preset-atom.paragraph', 'preset-atom.list', 'preset-atom.heading',
+    ]);
+    expect(children.some((n: any) => n.component === 'preset-organism.hero')).toBe(false);
+
+    const rowNode = children[4];
+    expect(rowNode).toMatchObject({ type: 'row', ratio: '50-50' });
+    expect(rowNode.children).toHaveLength(2);
+    // an image atom (media assetId ref) sits in the first column; no deeper row nesting
+    const imageAtom = rowNode.children[0].children[0];
+    expect(imageAtom).toMatchObject({ type: 'block', component: 'preset-atom.image' });
+    expect(imageAtom.data.image).toEqual({ assetId: 7 });
+    expect(rowNode.children[1].children.some((n: any) => n.type === 'row')).toBe(false);
   });
 
-  it('demonstrates recursion: a 50-50 row whose column nests another row', () => {
-    const rowNode = tree.root.children.find((n: any) => n.type === 'row');
-    expect(rowNode.ratio).toBe('50-50');
-    const nested = rowNode.children[1].children.find((n: any) => n.type === 'row');
-    expect(nested).toBeDefined();
-    expect(nested.children).toHaveLength(2);
-  });
-
-  it('uses plain-text content and link descriptors (no blocks AST, no href strings)', () => {
+  it('uses plain-text content (no blocks AST, no href strings)', () => {
     const json = JSON.stringify(tree);
     expect(json).not.toContain('"type":"paragraph"');   // no blocks AST nodes
     expect(json).not.toContain('ctaHref');
-    const button = tree.root.children.find((n: any) => n.component === 'preset-atom.button');
-    expect(button.data.link).toMatchObject({ label: 'Star on GitHub' });
+    const paragraph = tree.root.children.find((n: any) => n.component === 'preset-atom.paragraph');
+    expect(typeof paragraph.data.content).toBe('string');
   });
 });
 
