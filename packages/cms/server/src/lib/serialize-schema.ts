@@ -64,11 +64,17 @@ export const serializeSchema = (strapi: Core.Strapi): PressSchema => {
   const page = requireContentType(strapi, PAGE_UID);
   const siteSetting = requireContentType(strapi, SITE_SETTING_UID);
 
-  const registry = strapi.get('components') as Map<string, any>;
+  // Strapi's components registry is NOT a Map: it exposes keys()/get()/getAll()
+  // (see @strapi/core registries/components), never entries(). The old `as Map`
+  // cast let a `registry.entries()` call both typecheck AND pass a Map-based unit
+  // fake, yet throw at runtime ("registry.entries is not a function"). Enumerate
+  // via keys()+get(); the structural type below makes a future .entries() a
+  // compile error.
+  const registry = strapi.get('components') as { keys(): string[]; get(uid: string): { attributes: Record<string, Attr> } };
   const components: PressSchema['components'] = {};
-  for (const [uid, comp] of registry.entries()) {
+  for (const uid of registry.keys()) {
     if (!isPaletteUid(uid)) continue;
-    components[uid] = { uid, attributes: pickAttributes(comp.attributes) };
+    components[uid] = { uid, attributes: pickAttributes(registry.get(uid).attributes) };
   }
 
   return {
