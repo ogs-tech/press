@@ -6,6 +6,7 @@
  * per-block code. Plain HTML elements on purpose (no design-system dep).
  */
 import { useEffect, useState } from 'react';
+import type { JSX } from 'react'; // @types/react 19 removed the global JSX namespace
 import type { PressSchema } from '@ogs-tech/press-shared';
 import { fieldsFor, type FieldDescriptor } from '../lib/form-model';
 import { fetchPages, type PageOption } from '../lib/press-data';

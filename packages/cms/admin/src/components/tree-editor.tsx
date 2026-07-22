@@ -4,6 +4,7 @@
  * structural invariants hold by construction.
  */
 import { useState } from 'react';
+import type { JSX } from 'react'; // @types/react 19 removed the global JSX namespace
 import type { PressSchema, Ratio } from '@ogs-tech/press-shared';
 import { applicableContainerAttrs, paletteGroups } from '../lib/form-model';
 import {
