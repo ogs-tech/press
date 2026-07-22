@@ -17,7 +17,6 @@
     "./package.json": "./package.json",
     ".": { "types": "./src/index.ts", "default": "./src/index.ts" }
   },
-  "files": ["src"],
   "scripts": {
     "build": "echo '@ogs-tech/press-shared ships TS source; nothing to build'",
     "test": "vitest run",

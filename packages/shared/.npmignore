@@ -1,1 +1,8 @@
-src/**/*.test.ts
+# An .npmignore (NOT a `files` allowlist) is REQUIRED here: with a `files` field
+# npm STOPS honoring .npmignore and would re-ship the vitest suites (the exact
+# trap the CLI publish-readiness guard documents; web uses this same pattern).
+# Relying on .npmignore alone keeps tests out of the tarball while still
+# shipping the TS source that press-web imports at runtime and press-cms bundles.
+node_modules/
+vitest.config.ts
+**/*.test.ts
