@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
+import type { ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { DesignSystemProvider } from '@strapi/design-system';
 import BuilderInput from './builder-input';
 import { resetPressDataCache } from '../lib/press-data';
 
@@ -23,7 +25,23 @@ let container: HTMLDivElement;
 let root: Root;
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
+// jsdom lacks these; the design-system widgets touch them on render.
+const stubBrowserApis = (): void => {
+  if (!window.matchMedia) {
+    window.matchMedia = ((query: string) => ({
+      matches: false, media: query, onchange: null,
+      addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent() { return false; },
+    })) as any;
+  }
+  if (!(globalThis as any).ResizeObserver) {
+    (globalThis as any).ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  }
+};
+
+const render = (ui: ReactElement) => root.render(<DesignSystemProvider>{ui}</DesignSystemProvider>);
+
 beforeEach(() => {
+  stubBrowserApis();
   resetPressDataCache();
   vi.stubGlobal('fetch', vi.fn(async (url: string) => ({
     ok: true,
@@ -42,25 +60,27 @@ afterEach(async () => {
 
 const flush = async () => act(async () => { await Promise.resolve(); });
 
+/** Finds a <button> by its exact (trimmed) visible text — icon-only children carry no text. */
+const buttonByText = (scope: ParentNode, text: string): HTMLButtonElement => {
+  const btn = [...scope.querySelectorAll('button')].find((b) => b.textContent?.trim() === text);
+  if (!btn) throw new Error(`button "${text}" not found`);
+  return btn as HTMLButtonElement;
+};
+
 describe('BuilderInput (tree mode)', () => {
-  it('renders slot editors + body forest from an empty value and emits a tree on add', async () => {
+  it('renders slot sections + body forest and emits a tree when a palette block is added', async () => {
     const onChange = vi.fn();
     await act(async () => {
-      root.render(
-        <BuilderInput name="body" attribute={{}} value={undefined} onChange={onChange} />,
-      );
+      render(<BuilderInput name="body" attribute={{}} value={undefined} onChange={onChange} />);
     });
     await flush();
-    expect(container.textContent).toContain('header');
-    expect(container.textContent).toContain('body');
+    expect(container.textContent).toContain('Header');
+    expect(container.textContent).toContain('Body');
+    expect(container.textContent).toContain('Footer');
 
-    const select = container.querySelector('[data-press-slot="body"] select[aria-label="Add node"]') as HTMLSelectElement;
-    const addButton = select.parentElement!.querySelector('button') as HTMLButtonElement;
-    await act(async () => {
-      select.value = 'preset-atom.paragraph';
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    await act(async () => { addButton.click(); });
+    const body = container.querySelector('[data-press-slot="body"]') as HTMLElement;
+    await act(async () => { buttonByText(body, 'Add block').click(); }); // open the palette
+    await act(async () => { buttonByText(body, 'Paragraph').click(); }); // pick a block
 
     const emitted = onChange.mock.calls.at(-1)![0].target;
     expect(emitted.type).toBe('json');
@@ -72,15 +92,13 @@ describe('BuilderInput (tree mode)', () => {
 });
 
 describe('BuilderInput (slots mode)', () => {
-  it('edits { header, footer } node arrays', async () => {
+  it('edits { header, footer } node arrays and labels blocks by friendly name', async () => {
     const onChange = vi.fn();
     const value = { header: [{ id: 'n1', type: 'block', component: 'preset-organism.navbar', data: {} }], footer: [] };
     await act(async () => {
-      root.render(
-        <BuilderInput name="pageDefaults" attribute={{ options: { mode: 'slots' } }} value={value} onChange={onChange} />,
-      );
+      render(<BuilderInput name="pageDefaults" attribute={{ options: { mode: 'slots' } }} value={value} onChange={onChange} />);
     });
     await flush();
-    expect(container.textContent).toContain('preset-organism.navbar');
+    expect(container.textContent).toContain('Navbar');
   });
 });

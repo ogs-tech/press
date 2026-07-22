@@ -17,6 +17,11 @@ export interface PressPageRef {
   slug?: string;
 }
 
+export interface CustomOrganismCallout {
+  message: string;
+  variant?: 'info' | 'warning' | 'success';
+}
+
 export interface PresetAtomParagraph {
   content: string;
 }
@@ -47,11 +52,11 @@ export interface PresetAtomButton {
 }
 
 export interface PresetAtomSeparator {
-  variant?: 'line' | 'dots';
+  variant: 'line' | 'dots';
 }
 
 export interface PresetAtomSpacer {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export interface PresetMoleculeLink {
@@ -59,21 +64,6 @@ export interface PresetMoleculeLink {
   page?: PressPageRef;
   url?: string;
   newTab?: boolean;
-}
-
-export interface PresetLayoutContainer {
-  width?: 'prose' | 'lg' | 'full';
-  gap?: 'compact' | 'normal' | 'spacious';
-  verticalAlign?: 'top' | 'center' | 'bottom';
-}
-
-export interface PresetLayoutRow {
-  ratio?: '50-50' | '33-67' | '67-33' | '33-33-33' | '25-25-25-25';
-  container?: PresetLayoutContainer;
-}
-
-export interface PresetLayoutColumn {
-  container?: PresetLayoutContainer;
 }
 
 export interface PresetOrganismHero {
@@ -101,9 +91,66 @@ export interface PresetOrganismFooter {
   text?: string;
 }
 
-export interface CustomOrganismCallout {
-  message: string;
-  variant?: 'info' | 'warning' | 'success';
+export interface PresetLayoutContainer {
+  width?: 'prose' | 'lg' | 'full';
+  gap?: 'compact' | 'normal' | 'spacious';
+  verticalAlign?: 'top' | 'center' | 'bottom';
+}
+
+export interface PresetLayoutRow {
+  ratio?: '50-50' | '33-67' | '67-33' | '33-33-33' | '25-25-25-25';
+  container?: PresetLayoutContainer;
+}
+
+export interface PresetLayoutColumn {
+  container?: PresetLayoutContainer;
+}
+
+export interface PresetConfigSeo {
+  titleTemplate?: string;
+  title?: string;
+  description?: string;
+  image?: PressMedia;
+}
+
+export interface PresetConfigThemeColors {
+  primary?: string;
+  accent?: string;
+  secondary?: string;
+  ink?: string;
+  surface?: string;
+  muted?: string;
+  danger?: string;
+  onPrimary?: string;
+  border?: string;
+}
+
+export interface PresetConfigThemeRadius {
+  xs?: string;
+  sm?: string;
+  md?: string;
+  lg?: string;
+}
+
+export interface PresetConfigCookieCategory {
+  enabled?: boolean;
+  label?: string;
+  description?: string;
+}
+
+export interface PresetConfigCookieConsent {
+  enabled?: boolean;
+  title?: string;
+  description?: string;
+  acceptAllLabel?: string;
+  rejectAllLabel?: string;
+  manageLabel?: string;
+  saveLabel?: string;
+  privacyLinkLabel?: string;
+  privacyPage?: PressPageRef;
+  necessary?: PresetConfigCookieCategory;
+  analytics?: PresetConfigCookieCategory;
+  marketing?: PresetConfigCookieCategory;
 }
 
 /** The page body IS the composition tree (composition-builder spec §5). */

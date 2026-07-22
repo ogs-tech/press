@@ -4,9 +4,14 @@
  *  - options.mode === 'slots': the Site Settings pageDefaults `{ header, footer }`
  * Value tolerance: Strapi hands the form value as an object (or a JSON string on
  * some paths) — normalize on the way in, always emit an object with type 'json'.
+ * Rendered with the design-system so the field reads as native admin UI; the
+ * production admin already wraps plugin inputs in its DesignSystemProvider.
  */
 import { useEffect, useState } from 'react';
+import type { JSX } from 'react'; // @types/react 19 removed the global JSX namespace
 import { useStrapiApp } from '@strapi/strapi/admin';
+import { Box, Button, Field, Flex, NumberInput, SingleSelect, SingleSelectOption, Typography } from '@strapi/design-system';
+import { Image } from '@strapi/icons';
 import type { Node, PressSchema, PressTree, Slot } from '@ogs-tech/press-shared';
 import { fetchPressSchema } from '../lib/press-data';
 import type { Forest } from '../lib/tree-ops';
@@ -35,6 +40,16 @@ const emptyTree = (): PressTree => ({
   root: { type: 'layout', header: { mode: 'inherit' }, footer: { mode: 'inherit' }, children: [] },
 });
 
+/** A titled card wrapping one slot's editor — the visual unit for header/body/footer. */
+function Section({ dataSlot, title, children }: { dataSlot: string; title: string; children: JSX.Element }) {
+  return (
+    <Box data-press-slot={dataSlot} background="neutral0" hasRadius shadow="tableShadow" padding={4}>
+      <Typography variant="delta" tag="h3">{title}</Typography>
+      <Box marginTop={3}>{children}</Box>
+    </Box>
+  );
+}
+
 /** Media field: Strapi's media-library dialog when registered, else a bare asset-id input. Stores { assetId }. */
 function MediaField({ value, disabled, onChange }: { value: unknown; disabled?: boolean; onChange(v: unknown): void }) {
   const components = useStrapiApp('PressBuilderMediaField', (state: any) => state.components);
@@ -43,21 +58,23 @@ function MediaField({ value, disabled, onChange }: { value: unknown; disabled?: 
   const assetId = isRecord(value) && typeof value.assetId === 'number' ? value.assetId : undefined;
   if (!MediaLibraryDialog) {
     return (
-      <input
-        type="number"
+      <NumberInput
+        aria-label="asset id"
         placeholder="asset id"
         disabled={disabled}
-        value={assetId ?? ''}
-        onChange={(e) => onChange(e.target.value === '' ? undefined : { assetId: Number(e.target.value) })}
+        value={assetId}
+        onValueChange={(v) => onChange(v == null ? undefined : { assetId: v })}
       />
     );
   }
   return (
-    <span>
-      <button type="button" disabled={disabled} onClick={() => setOpen(true)}>
-        {assetId ? `Asset #${assetId} — change` : 'Pick media'}
-      </button>
-      {assetId ? <button type="button" disabled={disabled} onClick={() => onChange(undefined)}>Clear</button> : null}
+    <>
+      <Flex gap={2}>
+        <Button variant="secondary" size="S" startIcon={<Image />} disabled={disabled} onClick={() => setOpen(true)}>
+          {assetId ? `Asset #${assetId} — change` : 'Pick media'}
+        </Button>
+        {assetId ? <Button variant="danger-light" size="S" disabled={disabled} onClick={() => onChange(undefined)}>Clear</Button> : null}
+      </Flex>
       {open ? (
         <MediaLibraryDialog
           allowedTypes={['images']}
@@ -68,7 +85,7 @@ function MediaField({ value, disabled, onChange }: { value: unknown; disabled?: 
           }}
         />
       ) : null}
-    </span>
+    </>
   );
 }
 
@@ -80,26 +97,34 @@ function SlotEditor({ title, slot, schema, disabled, onChange }: {
   onChange(slot: Slot): void;
 }) {
   return (
-    <fieldset data-press-slot={title}>
-      <legend>{title}</legend>
-      <select
-        aria-label={`${title} mode`}
-        disabled={disabled}
-        value={slot.mode}
-        onChange={(e) => {
-          const mode = e.target.value as Slot['mode'];
-          onChange(mode === 'custom' ? { mode, children: slot.mode === 'custom' ? slot.children : [] } : { mode });
-        }}
-      >
-        <option value="inherit">inherit site defaults</option>
-        <option value="none">none (bare page)</option>
-        <option value="custom">custom</option>
-      </select>
-      {slot.mode === 'custom' ? (
-        <TreeEditor forest={slot.children as Forest} schema={schema} disabled={disabled}
-          onChange={(children) => onChange({ mode: 'custom', children: children as Node[] })} MediaField={MediaField} />
-      ) : null}
-    </fieldset>
+    <Section dataSlot={title.toLowerCase()} title={title}>
+      <>
+        <Box maxWidth="20rem">
+          <Field.Root name={`${title}-mode`}>
+            <Field.Label>Mode</Field.Label>
+            <SingleSelect
+              aria-label={`${title} mode`}
+              disabled={disabled}
+              value={slot.mode}
+              onChange={(v) => {
+                const mode = v as Slot['mode'];
+                onChange(mode === 'custom' ? { mode, children: slot.mode === 'custom' ? slot.children : [] } : { mode });
+              }}
+            >
+              <SingleSelectOption value="inherit">Inherit site defaults</SingleSelectOption>
+              <SingleSelectOption value="none">None (bare page)</SingleSelectOption>
+              <SingleSelectOption value="custom">Custom</SingleSelectOption>
+            </SingleSelect>
+          </Field.Root>
+        </Box>
+        {slot.mode === 'custom' ? (
+          <Box marginTop={4}>
+            <TreeEditor forest={slot.children as Forest} schema={schema} disabled={disabled}
+              onChange={(children) => onChange({ mode: 'custom', children: children as Node[] })} MediaField={MediaField} />
+          </Box>
+        ) : null}
+      </>
+    </Section>
   );
 }
 
@@ -117,29 +142,35 @@ export default function BuilderInput({ name, attribute, value, disabled, label, 
   const emit = (next: unknown): void => onChange({ target: { name, value: next, type: 'json' } });
   const parsed = parseValue(value);
 
-  if (loadError) return <p role="alert">press builder: schema unavailable ({loadError})</p>;
-  if (!schema) return <p>Loading press schema…</p>;
+  if (loadError) return <Typography role="alert" textColor="danger600">press builder: schema unavailable ({loadError})</Typography>;
+  if (!schema) return <Typography textColor="neutral600">Loading press schema…</Typography>;
 
   const slotsMode = attribute.options?.mode === 'slots';
+
+  const footer = (
+    <>
+      {hint ? <Typography variant="pi" textColor="neutral600">{hint}</Typography> : null}
+      {error ? <Typography variant="pi" textColor="danger600" role="alert">{error}</Typography> : null}
+    </>
+  );
 
   if (slotsMode) {
     const pd = isRecord(parsed) ? parsed : {};
     const header = Array.isArray(pd.header) ? (pd.header as Forest) : [];
-    const footer = Array.isArray(pd.footer) ? (pd.footer as Forest) : [];
+    const footerNodes = Array.isArray(pd.footer) ? (pd.footer as Forest) : [];
     return (
-      <div data-press-builder="slots">
-        {label ? <strong>{label}</strong> : null}
-        <fieldset><legend>header</legend>
+      <Flex direction="column" alignItems="stretch" gap={4} data-press-builder="slots">
+        {label ? <Typography variant="beta" tag="h2">{label}</Typography> : null}
+        <Section dataSlot="header" title="Header">
           <TreeEditor forest={header} schema={schema} disabled={disabled}
             onChange={(next) => emit({ ...pd, header: next })} MediaField={MediaField} />
-        </fieldset>
-        <fieldset><legend>footer</legend>
-          <TreeEditor forest={footer} schema={schema} disabled={disabled}
+        </Section>
+        <Section dataSlot="footer" title="Footer">
+          <TreeEditor forest={footerNodes} schema={schema} disabled={disabled}
             onChange={(next) => emit({ ...pd, footer: next })} MediaField={MediaField} />
-        </fieldset>
-        {hint ? <small>{hint}</small> : null}
-        {error ? <p role="alert">{error}</p> : null}
-      </div>
+        </Section>
+        {footer}
+      </Flex>
     );
   }
 
@@ -147,17 +178,15 @@ export default function BuilderInput({ name, attribute, value, disabled, label, 
   const setRoot = (patch: Partial<PressTree['root']>): void => emit({ ...tree, root: { ...tree.root, ...patch } });
 
   return (
-    <div data-press-builder="tree">
-      {label ? <strong>{label}</strong> : null}
-      <SlotEditor title="header" slot={tree.root.header} schema={schema} disabled={disabled} onChange={(header) => setRoot({ header })} />
-      <fieldset data-press-slot="body">
-        <legend>body</legend>
+    <Flex direction="column" alignItems="stretch" gap={4} data-press-builder="tree">
+      {label ? <Typography variant="beta" tag="h2">{label}</Typography> : null}
+      <SlotEditor title="Header" slot={tree.root.header} schema={schema} disabled={disabled} onChange={(header) => setRoot({ header })} />
+      <Section dataSlot="body" title="Body">
         <TreeEditor forest={tree.root.children as Forest} schema={schema} disabled={disabled}
           onChange={(children) => setRoot({ children: children as Node[] })} MediaField={MediaField} />
-      </fieldset>
-      <SlotEditor title="footer" slot={tree.root.footer} schema={schema} disabled={disabled} onChange={(footer) => setRoot({ footer })} />
-      {hint ? <small>{hint}</small> : null}
-      {error ? <p role="alert">{error}</p> : null}
-    </div>
+      </Section>
+      <SlotEditor title="Footer" slot={tree.root.footer} schema={schema} disabled={disabled} onChange={(footer) => setRoot({ footer })} />
+      {footer}
+    </Flex>
   );
 }

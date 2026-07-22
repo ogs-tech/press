@@ -36,73 +36,37 @@ const column = (children, container) => ({ id: randomUUID(), type: 'column', chi
 const row = (ratio, children, container) => ({ id: randomUUID(), type: 'row', ratio, children, ...(container ? { container } : {}) });
 
 /**
- * The demo home as a PressTree (Spec §4 seeds): hero → prose atoms → a 50-50
- * row whose right column nests ANOTHER row (the recursion demo) → separator/
- * button/spacer → cta banner → adopter callout. Chrome inherits pageDefaults.
+ * The demo home as a PressTree (Spec §4 seeds): a deliberately SIMPLE showcase of
+ * the two things worth demonstrating up front — the COMPONENTS you place (a few
+ * blocks + a note on the wider palette) and the GRID LAYOUT (a 50-50 row split
+ * into columns, with a component in each cell; the image component also carries
+ * the media-crosses-REST proof via its `image` assetId). No hero, no deep
+ * nesting — the rest of the palette is composed in the admin builder, not
+ * pre-seeded. Chrome inherits pageDefaults.
  */
-export const buildHomeBody = ({ heroAssetId }) => ({
+export const buildHomeBody = ({ imageAssetId }) => ({
   version: 1,
   root: {
     type: 'layout',
     header: { mode: 'inherit' },
     footer: { mode: 'inherit' },
     children: [
-      block('preset-organism.hero', {
-        eyebrow: 'Press engine',
-        title: 'Hello from press',
-        subtitle: 'A press-powered site, server-rendered end-to-end.',
-        image: { assetId: heroAssetId },
-        cta: { label: 'Read the docs', url: REPO_URL },
-        align: 'left',
-      }),
-      block('preset-atom.heading', { text: 'What ships in the box', level: '2' }),
+      block('preset-atom.heading', { text: 'Components', level: '2' }),
       block('preset-atom.paragraph', {
-        content: 'This prose lives in the CMS and renders as static HTML — no client hydration.',
+        content: 'Components are the blocks you place in the tree. They render as static HTML with no client hydration.',
       }),
       block('preset-atom.list', {
         format: 'unordered',
-        content: [
-          'Atomic text blocks — paragraph, heading, list and quote.',
-          'Media & structure — image, button, separator and spacer.',
-          'Rows and columns — recursive layout composed in the admin.',
-          'Your own custom-* blocks, usable anywhere in the tree.',
-        ].join('\n'),
+        content: ['Atoms — heading, paragraph, list, quote, image, button', 'Organisms — hero, cta and site chrome', 'Your own custom-* blocks, anywhere in the tree'].join('\n'),
       }),
-      block('preset-atom.quote', {
-        content: 'The contract is HTML on the server.',
-        citation: 'The press engine',
-      }),
-      // The composition mechanism itself: a 50-50 row whose RIGHT column nests
-      // another 50-50 row — full recursion on the demo page.
+      block('preset-atom.heading', { text: 'Grid layout', level: '2' }),
+      // Grid layout: a 50-50 row splits into two columns; a component sits in each cell.
       row('50-50', [
-        column([
-          block('preset-atom.paragraph', {
-            content: 'Editor-composed layout — rows and columns arranged in the admin, rendered on the engine grid.',
-          }),
-        ]),
-        column([
-          row('50-50', [
-            column([block('preset-atom.paragraph', { content: 'Columns nest rows.' })]),
-            column([block('preset-atom.paragraph', { content: 'Rows nest columns.' })]),
-          ]),
-        ], { verticalAlign: 'center' }),
-      ], { gap: 'normal' }),
-      block('preset-atom.separator', { variant: 'line' }),
-      block('preset-atom.button', {
-        link: { label: 'Star on GitHub', url: REPO_URL, newTab: true },
-        variant: 'secondary',
-      }),
-      block('preset-atom.spacer', { size: 'md' }),
-      block('preset-organism.cta', {
-        title: 'Ready to press publish?',
-        subtitle: 'Scaffold a site, open the admin, and ship your first page in minutes.',
-        button: { label: 'Scaffold your site', url: PRESS_SITE_URL },
-        align: 'center',
-      }),
-      block('custom-organism.callout', {
-        message: 'Adopter callout renders via the Project-zone block map',
-        variant: 'success',
-      }),
+        column([block('preset-atom.image', { image: { assetId: imageAssetId }, caption: 'An image component inside a column' })]),
+        column([block('preset-atom.paragraph', {
+          content: 'Rows and columns are the grid layout. Here an image fills the left column and this paragraph the right — a 50-50 split. Compose the rest in the builder.',
+        })]),
+      ]),
     ],
   },
 });
