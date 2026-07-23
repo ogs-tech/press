@@ -44,7 +44,7 @@ const fakeStrapi = () => {
 
 describe('serializeSchema', () => {
   it('serves the tree contract version', () => {
-    expect(serializeSchema(fakeStrapi()).tree).toEqual({ version: 1 });
+    expect(serializeSchema(fakeStrapi()).tree).toEqual({ version: 2 });
   });
 
   it('serves the FULL registered palette — every preset-* and custom-* uid, nothing else', () => {

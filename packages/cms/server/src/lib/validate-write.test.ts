@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { assertValidPageWrite, assertValidSiteSettingWrite } from './validate-write';
 
 const validTree = {
-  version: 1,
+  version: 2,
   root: { type: 'layout', header: { mode: 'inherit' }, footer: { mode: 'inherit' }, children: [] },
 };
 
@@ -16,10 +16,10 @@ describe('assertValidPageWrite', () => {
   it('rejects structural errors AND stripped-attr warnings (strict write)', () => {
     expect(() => assertValidPageWrite({ body: { version: 99 } })).toThrow(/unsupported tree version/);
     const warned = {
-      version: 1,
+      version: 2,
       root: { type: 'layout', header: { mode: 'none' }, footer: { mode: 'none' }, children: [
-        { id: 'r', type: 'row', ratio: '50-50', container: { width: 'xl' }, children: [
-          { id: 'c', type: 'column', children: [] },
+        { id: 'r', type: 'row', container: { width: 'xl' }, children: [
+          { id: 'c', type: 'column', span: { base: 12 }, children: [] },
         ] },
       ] },
     };

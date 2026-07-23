@@ -102,9 +102,10 @@ describe('injectComponents', () => {
 
   it('injects the preset-layout tree-node descriptors (container/row) with the real JSON enum values', () => {
     // preset-layout.container is the shared curated attribute surface (width/gap/
-    // verticalAlign) referenced by row/column via `component:` fields; row's ratio
-    // is the closed column-split enum. These are JSON-sourced (no TS shape check),
-    // so a typo like "spacius" would otherwise pass every other check.
+    // verticalAlign) referenced by row/column via `component:` fields; row carries
+    // only the container reference now; column span is builder-owned structural
+    // data. These are JSON-sourced (no TS shape check), so a typo like "spacius"
+    // would otherwise pass every other check.
     const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
 
@@ -116,14 +117,11 @@ describe('injectComponents', () => {
       verticalAlign: { type: 'enumeration', enum: ['top', 'center', 'bottom'] },
     });
 
+    const rowAttrs = components.get('preset-layout.row')?.attributes as Record<string, unknown>;
     expect(components.get('preset-layout.row')?.modelType).toBe('component');
     expect(components.get('preset-layout.row')?.category).toBe('preset-layout');
-    expect(components.get('preset-layout.row')?.attributes).toMatchObject({
-      ratio: {
-        type: 'enumeration',
-        enum: ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'],
-        default: '50-50',
-      },
+    expect(rowAttrs).not.toHaveProperty('ratio');
+    expect(rowAttrs).toMatchObject({
       container: { type: 'component', repeatable: false, component: 'preset-layout.container' },
     });
   });
