@@ -5,33 +5,34 @@
  * construction, which is what makes the lifecycle validator "unreachable" from
  * the admin. No React, no Strapi: unit-tested without a DOM.
  */
-import type { BlockNode, ColumnNode, Node, Ratio, RowNode } from '@ogs-tech/press-shared';
+import type { BlockNode, ColumnNode, ColumnSpan, Node, RowNode } from '@ogs-tech/press-shared';
 
 export type Forest = Node[];
 export type NodePath = number[];
 
-export const RATIO_SLOTS: Record<Ratio, number> = {
-  '50-50': 2,
-  '33-67': 2,
-  '67-33': 2,
-  '33-33-33': 3,
-  '25-25-25-25': 4,
-};
-
-export const MAX_COLUMNS = 4;
+export const MAX_COLUMNS = 12;
 
 const uuid = (): string => globalThis.crypto.randomUUID();
 
 export const newBlockNode = (component: string): BlockNode => ({ id: uuid(), type: 'block', component, data: {} });
 
-export const newColumnNode = (): ColumnNode => ({ id: uuid(), type: 'column', children: [] });
+export const newColumnNode = (span: ColumnSpan = { base: 12 }): ColumnNode => ({
+  id: uuid(), type: 'column', span, children: [],
+});
 
-export const newRowNode = (ratio: Ratio): RowNode => ({
+/** A fresh row: 2 columns, stacked on mobile (base 12) and 50/50 on desktop (md 6). */
+export const newRowNode = (): RowNode => ({
   id: uuid(),
   type: 'row',
-  ratio,
-  children: Array.from({ length: RATIO_SLOTS[ratio] }, () => newColumnNode()),
+  children: [newColumnNode({ base: 12, md: 6 }), newColumnNode({ base: 12, md: 6 })],
 });
+
+/** The span actually applied at a tier, resolving the mobile-first cascade (lg→md→base). */
+export function effectiveSpan(span: ColumnSpan, tier: 'base' | 'md' | 'lg'): number {
+  if (tier === 'lg') return span.lg ?? span.md ?? span.base;
+  if (tier === 'md') return span.md ?? span.base;
+  return span.base;
+}
 
 const childrenOf = (node: Node): Node[] =>
   node.type === 'block' ? [] : (node.children as Node[]);
@@ -148,12 +149,23 @@ export function setContainerAttr(
   });
 }
 
-export function setRowRatio(forest: Forest, path: NodePath, ratio: Ratio): Forest {
+export function setColumnSpan(
+  forest: Forest,
+  path: NodePath,
+  tier: 'base' | 'md' | 'lg',
+  value: number | undefined,
+): Forest {
   return patchNode(forest, path, (node) => {
-    if (node.type !== 'row') throw new Error('[press-cms] setRowRatio targets row nodes');
-    const children = [...node.children];
-    while (children.length < RATIO_SLOTS[ratio]) children.push(newColumnNode());
-    return { ...node, ratio, children };
+    if (node.type !== 'column') throw new Error('[press-cms] setColumnSpan targets column nodes');
+    const span: ColumnSpan = { ...node.span };
+    if (tier === 'base') {
+      span.base = value ?? 12; // base can never be cleared
+    } else if (value === undefined) {
+      delete span[tier];
+    } else {
+      span[tier] = value;
+    }
+    return { ...node, span };
   });
 }
 

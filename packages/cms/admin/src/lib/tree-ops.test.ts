@@ -1,23 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addColumn, getNode, insertNode, moveNode, newBlockNode, newColumnNode, newRowNode,
-  RATIO_SLOTS, removeNode, setBlockData, setContainerAttr, setRowRatio, type Forest,
+  addColumn, effectiveSpan, getNode, insertNode, MAX_COLUMNS, moveNode, newBlockNode, newColumnNode,
+  newRowNode, removeNode, setBlockData, setColumnSpan, setContainerAttr, type Forest,
 } from './tree-ops';
 
 const forest = (): Forest => {
-  const row = newRowNode('50-50');
+  const row = newRowNode();
   return [newBlockNode('preset-organism.hero'), row];
 };
 
 describe('node factories', () => {
-  it('mints unique string ids and ratio-sized rows', () => {
+  it('mints unique string ids and 2-column rows with the mobile-first defaults', () => {
     const a = newBlockNode('preset-atom.paragraph');
     const b = newBlockNode('preset-atom.paragraph');
     expect(a.id).not.toBe(b.id);
     expect(a).toMatchObject({ type: 'block', component: 'preset-atom.paragraph', data: {} });
-    const row = newRowNode('33-33-33');
-    expect(row.children).toHaveLength(RATIO_SLOTS['33-33-33']);
+    expect(newColumnNode().span).toEqual({ base: 12 });
+    expect(newColumnNode({ base: 12, md: 6 }).span).toEqual({ base: 12, md: 6 });
+    const row = newRowNode();
+    expect(row.children).toHaveLength(2);
     expect(row.children.every((c) => c.type === 'column')).toBe(true);
+    expect(row.children.every((c) => c.span.base === 12 && c.span.md === 6)).toBe(true);
   });
 });
 
@@ -29,7 +32,7 @@ describe('insertNode invariants (by construction)', () => {
     expect((out[0] as any).component).toBe('preset-atom.spacer');
     expect(f).toHaveLength(2); // immutable
 
-    const intoColumn = insertNode(out, [2, 0], 0, newRowNode('50-50')); // row INSIDE a column: the recursion point
+    const intoColumn = insertNode(out, [2, 0], 0, newRowNode()); // row INSIDE a column: the recursion point
     expect((getNode(intoColumn, [2, 0, 0]) as any).type).toBe('row');
   });
 
@@ -39,14 +42,11 @@ describe('insertNode invariants (by construction)', () => {
     expect(() => insertNode(f, [1], 0, newBlockNode('preset-atom.spacer'))).toThrow(/row/i);
   });
 
-  it('caps a row at 4 columns', () => {
-    let f: Forest = [newRowNode('25-25-25-25')];
-    expect(() => insertNode(f, [0], 4, newColumnNode())).toThrow(/4/);
-    f = [newRowNode('50-50')];
-    f = addColumn(f, [0]);
-    f = addColumn(f, [0]);
-    expect((f[0] as any).children).toHaveLength(4);
-    expect(() => addColumn(f, [0])).toThrow(/4/);
+  it('caps a row at 12 columns (MAX_COLUMNS)', () => {
+    let f: Forest = [newRowNode()]; // starts with 2 columns
+    while ((f[0] as any).children.length < MAX_COLUMNS) f = addColumn(f, [0]);
+    expect((f[0] as any).children).toHaveLength(12);
+    expect(() => addColumn(f, [0])).toThrow(/12/);
   });
 });
 
@@ -70,13 +70,28 @@ describe('remove / move / update', () => {
     const cleared = setContainerAttr(withAttr, [1], 'gap', undefined);
     expect((cleared[1] as any).container).toBeUndefined();
   });
+});
 
-  it('setRowRatio grows children to the slot count but never shrinks', () => {
-    let f: Forest = [newRowNode('25-25-25-25')];
-    f = setRowRatio(f, [0], '50-50');
-    expect((f[0] as any).children).toHaveLength(4); // never shrinks (renderer tolerance)
-    let g: Forest = [newRowNode('50-50')];
-    g = setRowRatio(g, [0], '33-33-33');
-    expect((g[0] as any).children).toHaveLength(3);
+describe('span ops', () => {
+  it('setColumnSpan sets base and sets/clears md·lg (clear = inherit)', () => {
+    let f: Forest = [newRowNode()]; // row with 2 columns
+    f = setColumnSpan(f, [0, 0], 'base', 6);
+    expect((f[0] as any).children[0].span.base).toBe(6);
+    f = setColumnSpan(f, [0, 0], 'lg', 3);
+    expect((f[0] as any).children[0].span.lg).toBe(3);
+    f = setColumnSpan(f, [0, 0], 'md', undefined); // clear md → inherit
+    expect((f[0] as any).children[0].span).toEqual({ base: 6, lg: 3 });
+  });
+
+  it('setColumnSpan targets only column nodes', () => {
+    const f = forest();
+    expect(() => setColumnSpan(f, [0], 'base', 6)).toThrow(/column/i); // [0] is a block
+  });
+
+  it('effectiveSpan resolves the lg→md→base cascade', () => {
+    expect(effectiveSpan({ base: 12 }, 'md')).toBe(12);
+    expect(effectiveSpan({ base: 12, md: 6 }, 'lg')).toBe(6);
+    expect(effectiveSpan({ base: 12, md: 6, lg: 3 }, 'lg')).toBe(3);
+    expect(effectiveSpan({ base: 8 }, 'base')).toBe(8);
   });
 });
