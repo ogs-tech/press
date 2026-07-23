@@ -73,24 +73,29 @@ Input which shape to render).
 - **Node kinds** (`Node = RowNode | ColumnNode | BlockNode`): the tree root is
   always a `LayoutNode` — `header`/`footer` are `Slot`s (`{ mode: 'inherit' }` |
   `{ mode: 'none' }` | `{ mode: 'custom'; children }`), plus top-level `children`.
-  A `RowNode` carries a `ratio` (`50-50 | 33-67 | 67-33 | 33-33-33 | 25-25-25-25`)
-  and 1–4 `ColumnNode` children; a `ColumnNode` is the recursion point — it nests
-  arbitrary further `Node`s, including more rows, to unlimited depth; a `BlockNode`
-  is a placed component (`component`: a palette uid; `data`: validated against
-  that component's registry schema).
+  A `RowNode` carries 1–`MAX_COLUMNS` (12) `ColumnNode` children (no shared
+  row-level ratio); each `ColumnNode` carries a `span` (`ColumnSpan`: `{ base;
+  md?; lg? }`, `base` required, each tier 1–12 tracks, mobile-first) — the ONE
+  responsive value stored in the tree — and is the recursion point: it nests
+  arbitrary further `Node`s, including more rows, to unlimited depth; a
+  `BlockNode` is a placed component.
 - **The ONE `container` attr surface** (`ContainerAttrs`: `width | gap |
   verticalAlign`) is carried by every children-bearing node (layout root, row,
   column) as an optional `container` field. An attr that doesn't apply to a node
   type is ignored by the renderer and hidden by the builder form — never an
   error; an absent field (or the whole group) means the engine default.
-  Responsiveness NEVER appears in this JSON — `ratio` and `container` are
-  editorial intents only; `web/src/tree/container-attrs.ts` (`RATIO_SPANS`,
-  `GAP_TIERS`) maps them to `Responsive<T>` layout-primitive props.
+  Column `span` (per-breakpoint, mobile-first) is the ONE responsive value the
+  composition JSON carries — a deliberate reversal of the old
+  "responsiveness never in the JSON" rule. Everything else stays code-side:
+  `container` attrs are editorial intents only, mapped to `Responsive<T>`
+  layout-primitive props by `web/src/tree/container-attrs.ts` (`GAP_TIERS`).
+  `spanFor(column)` now passes the stored span straight to `<Column>` — the old
+  `RATIO_SPANS`/`RATIO_SLOTS`/`setRowRatio` mapping table is retired.
 - **Ids are builder-minted** (`crypto.randomUUID`), used only as React keys and as
   the addressing scheme for builder mutations (`tree-ops.ts`) — never an `Entity`,
   never a URN (see "Canonical identity" below: this is the one identity class kept
   deliberately OUT of the URN system).
-- **Version-gated readers.** `PRESS_TREE_VERSION` (currently `1`) is served as
+- **Version-gated readers.** `PRESS_TREE_VERSION` (currently `2`) is served as
   `tree.version` in `/api/press/schema`; `validatePressTree` rejects any other
   `version` outright (fail-to-empty) — this is the seam a future tree migration
   hangs off.
@@ -142,7 +147,18 @@ its own; each `ColumnNode` becomes `<Column span={…}>` wrapping a
 `[data-press-cell]` div that stacks its children (gap/align read off that
 column's `container` via `container-attrs.ts`). This is the mechanism behind the
 tree's row/column recursion — arbitrary nesting depth costs nothing extra
-because every level is just another `Grid`/`Column` pair.
+because every level is just another `Grid`/`Column` pair. A column's
+`<Column span>` now comes from its own stored `ColumnSpan` (`spanFor(column)` —
+a passthrough); the retired `RowNode.ratio` no longer exists, so `spanFor`
+takes the column, not `(ratio, index)`. `theme.css` and the four primitives
+are untouched — `ColumnSpan` already matches the `Responsive<Span>` the
+`<Column>` primitive consumes, and the `--press-col-span[-md|-lg]` var()
+cascade handles mobile-first inheritance.
+
+**Retired with the ratio→span change:** `RATIO_SPANS` (web,
+`container-attrs.ts`), `setRowRatio`/`RATIO_SLOTS` (cms admin, the old builder
+row-ratio control), and `MAX_ROW_COLUMNS` (shared validator, the old 1–4
+column cap) are all gone; the builder's own `MAX_COLUMNS` is now 12.
 
 **Why two surfaces named `layout`.** (1) DEV-facing — the React primitives above,
 consumed by `TreeRenderer`, engine organisms, future page-set-plugin templates,
