@@ -13,6 +13,7 @@ import { useStrapiApp } from '@strapi/strapi/admin';
 import { Box, Button, Field, Flex, NumberInput, SingleSelect, SingleSelectOption, Typography } from '@strapi/design-system';
 import { Image } from '@strapi/icons';
 import type { Node, PressSchema, PressTree, Slot } from '@ogs-tech/press-shared';
+import { PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
 import { fetchPressSchema } from '../lib/press-data';
 import type { Forest } from '../lib/tree-ops';
 import { TreeEditor } from './tree-editor';
@@ -36,7 +37,7 @@ const parseValue = (value: unknown): unknown => {
 };
 
 const emptyTree = (): PressTree => ({
-  version: 1,
+  version: PRESS_TREE_VERSION,
   root: { type: 'layout', header: { mode: 'inherit' }, footer: { mode: 'inherit' }, children: [] },
 });
 
