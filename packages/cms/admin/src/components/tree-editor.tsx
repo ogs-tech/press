@@ -18,19 +18,21 @@ import {
   ArrowDown, ArrowUp, ChevronDown, ChevronRight, Plus, Trash,
 } from '@strapi/icons';
 import type {
-  BlockNode, ColumnNode, PressSchema, Ratio, RowNode,
+  BlockNode, ColumnNode, PressSchema, RowNode,
 } from '@ogs-tech/press-shared';
 import { applicableContainerAttrs, paletteGroups } from '../lib/form-model';
 import {
   blockIcon, blockLabel, categoryLabel, COLUMN_ICON, fieldLabel, ROW_ICON,
 } from '../lib/palette-labels';
 import {
-  addColumn, insertNode, MAX_COLUMNS, moveNode, newBlockNode, newRowNode,
-  removeNode, setBlockData, setContainerAttr, setRowRatio, type Forest, type NodePath,
+  addColumn, effectiveSpan, insertNode, MAX_COLUMNS, moveNode, newBlockNode, newRowNode,
+  removeNode, setBlockData, setColumnSpan, setContainerAttr, type Forest, type NodePath,
 } from '../lib/tree-ops';
 import { NodeForm } from './node-form';
 
-const RATIOS: Ratio[] = ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'];
+const SPAN_VALUES = Array.from({ length: 12 }, (_, i) => i + 1); // 1..12
+const TIERS = ['base', 'md', 'lg'] as const;
+type Tier = (typeof TIERS)[number];
 const CONTAINER_OPTIONS: Record<'width' | 'gap' | 'verticalAlign', string[]> = {
   width: ['prose', 'lg', 'full'],
   gap: ['compact', 'normal', 'spacious'],
@@ -147,7 +149,7 @@ function AddMenu({ ctx, parentPath, index, allowRow }: {
   const [open, setOpen] = useState(false);
   const groups = paletteGroups(ctx.schema);
   const add = (kind: string): void => {
-    const node = kind === 'row' ? newRowNode('50-50') : newBlockNode(kind);
+    const node = kind === 'row' ? newRowNode() : newBlockNode(kind);
     ctx.onChange(insertNode(ctx.forest, parentPath, index, node));
     setOpen(false);
   };
@@ -234,6 +236,60 @@ function BlockCard({ node, path, ctx }: { node: BlockNode; path: NodePath; ctx: 
   );
 }
 
+/** Per-column base/md/lg span selects — base required 1..12, md/lg clearable (inherit). */
+function SpanControls({ column, columnPath, ctx }: { column: ColumnNode; columnPath: NodePath; ctx: TreeCtx }) {
+  const set = (tier: Tier, value: number | undefined): void =>
+    ctx.onChange(setColumnSpan(ctx.forest, columnPath, tier, value));
+  return (
+    <Flex gap={2} alignItems="flex-end" wrap="wrap" data-press-span="">
+      <Field.Root name="span-base">
+        <Field.Label>Base</Field.Label>
+        <SingleSelect size="S" disabled={ctx.disabled} value={String(column.span.base)}
+          onChange={(v) => set('base', Number(v))}>
+          {SPAN_VALUES.map((n) => <SingleSelectOption key={n} value={String(n)}>{n}</SingleSelectOption>)}
+        </SingleSelect>
+      </Field.Root>
+      <Field.Root name="span-md">
+        <Field.Label>md</Field.Label>
+        <SingleSelect size="S" placeholder="inherit" disabled={ctx.disabled}
+          value={column.span.md !== undefined ? String(column.span.md) : undefined}
+          onClear={() => set('md', undefined)} clearLabel="Inherit from base"
+          onChange={(v) => set('md', v ? Number(v) : undefined)}>
+          {SPAN_VALUES.map((n) => <SingleSelectOption key={n} value={String(n)}>{n}</SingleSelectOption>)}
+        </SingleSelect>
+      </Field.Root>
+      <Field.Root name="span-lg">
+        <Field.Label>lg</Field.Label>
+        <SingleSelect size="S" placeholder="inherit" disabled={ctx.disabled}
+          value={column.span.lg !== undefined ? String(column.span.lg) : undefined}
+          onClear={() => set('lg', undefined)} clearLabel="Inherit from md"
+          onChange={(v) => set('lg', v ? Number(v) : undefined)}>
+          {SPAN_VALUES.map((n) => <SingleSelectOption key={n} value={String(n)}>{n}</SingleSelectOption>)}
+        </SingleSelect>
+      </Field.Root>
+    </Flex>
+  );
+}
+
+/** Read-only 12-track bar of each column's EFFECTIVE span at the active tier. */
+function GridPreview({ columns, tier }: { columns: ColumnNode[]; tier: Tier }) {
+  const spans = columns.map((c) => effectiveSpan(c.span, tier));
+  const total = spans.reduce((a, b) => a + b, 0);
+  const trailing = total < 12 ? 12 - total : 0; // fill; overflow (>12) wraps naturally
+  return (
+    <div data-press-grid-preview="" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '2px' }}>
+      {spans.map((n, i) => (
+        <div key={i} style={{
+          gridColumn: `span ${Math.max(1, Math.min(n, 12))}`,
+          background: '#4945ff', color: '#fff', fontSize: '11px', lineHeight: '18px',
+          textAlign: 'center', borderRadius: '2px',
+        }}>{n}</div>
+      ))}
+      {trailing > 0 ? <div style={{ gridColumn: `span ${trailing}`, background: '#dcdce4', borderRadius: '2px' }} /> : null}
+    </div>
+  );
+}
+
 function ColumnCard({ column, columnPath, index, ctx }: { column: ColumnNode; columnPath: NodePath; index: number; ctx: TreeCtx }) {
   return (
     <Box data-press-node="column" hasRadius background="neutral0" borderColor="neutral200" borderStyle="solid" borderWidth="1px" padding={2}>
@@ -245,6 +301,9 @@ function ColumnCard({ column, columnPath, index, ctx }: { column: ColumnNode; co
         <IconButton label={`Remove column ${index + 1}`} variant="ghost" size="S" disabled={ctx.disabled}
           onClick={() => ctx.onChange(removeNode(ctx.forest, columnPath))}><Trash /></IconButton>
       </Flex>
+      <Box marginTop={2}>
+        <SpanControls column={column} columnPath={columnPath} ctx={ctx} />
+      </Box>
       <Box marginTop={2}>
         <ContainerSection nodeType="column" topLevel={false} container={column.container as Record<string, unknown> | undefined}
           disabled={ctx.disabled} onSet={(k, v) => ctx.onChange(setContainerAttr(ctx.forest, columnPath, k, v))} />
@@ -258,7 +317,9 @@ function ColumnCard({ column, columnPath, index, ctx }: { column: ColumnNode; co
 
 function RowCard({ node, path, topLevel, ctx }: { node: RowNode; path: NodePath; topLevel: boolean; ctx: TreeCtx }) {
   const open = ctx.openIds.has(node.id);
+  const [tier, setTier] = useState<Tier>('base');
   const columnCount = node.children.length;
+  const total = node.children.reduce((sum, c) => sum + effectiveSpan(c.span, tier), 0);
   return (
     <Box data-press-node="row" hasRadius background="primary100" borderColor="primary200" borderStyle="solid" borderWidth="1px" padding={2}>
       <Flex justifyContent="space-between" alignItems="center" gap={2} wrap="wrap">
@@ -272,25 +333,36 @@ function RowCard({ node, path, topLevel, ctx }: { node: RowNode; path: NodePath;
             <Typography variant="pi" textColor="neutral600">· {columnCount} column{columnCount === 1 ? '' : 's'}</Typography>
           ) : null}
         </Flex>
-        <Flex gap={2} alignItems="center">
-          <SingleSelect aria-label="Row ratio" size="S" value={node.ratio} disabled={ctx.disabled}
-            onChange={(v) => ctx.onChange(setRowRatio(ctx.forest, path, v as Ratio))}>
-            {RATIOS.map((r) => <SingleSelectOption key={r} value={r}>{r}</SingleSelectOption>)}
-          </SingleSelect>
-          <NodeControls
-            label="row"
-            disabled={ctx.disabled}
-            onUp={() => ctx.onChange(moveNode(ctx.forest, path, -1))}
-            onDown={() => ctx.onChange(moveNode(ctx.forest, path, 1))}
-            onRemove={() => ctx.onChange(removeNode(ctx.forest, path))}
-          />
-        </Flex>
+        <NodeControls
+          label="row"
+          disabled={ctx.disabled}
+          onUp={() => ctx.onChange(moveNode(ctx.forest, path, -1))}
+          onDown={() => ctx.onChange(moveNode(ctx.forest, path, 1))}
+          onRemove={() => ctx.onChange(removeNode(ctx.forest, path))}
+        />
       </Flex>
       {open ? (
         <>
           <Box marginTop={2}>
             <ContainerSection nodeType="row" topLevel={topLevel} container={node.container as Record<string, unknown> | undefined}
               disabled={ctx.disabled} onSet={(k, v) => ctx.onChange(setContainerAttr(ctx.forest, path, k, v))} />
+          </Box>
+          <Box marginTop={2} data-press-preview="">
+            <Flex justifyContent="space-between" alignItems="center" marginBottom={2}>
+              <Flex gap={1} tag="span" data-press-tier-toggle="">
+                {TIERS.map((t) => (
+                  <Button key={t} size="S" variant={t === tier ? 'secondary' : 'tertiary'} disabled={ctx.disabled}
+                    aria-pressed={t === tier} data-press-tier={t} onClick={() => setTier(t)}>
+                    {t === 'base' ? 'Base' : t}
+                  </Button>
+                ))}
+              </Flex>
+              <Typography variant="pi" fontWeight="bold" data-press-span-total=""
+                textColor={total > 12 ? 'danger600' : 'neutral600'}>
+                {tier} {total}/12
+              </Typography>
+            </Flex>
+            <GridPreview columns={node.children} tier={tier} />
           </Box>
           <Flex direction="column" alignItems="stretch" gap={2} marginTop={2} data-press-columns="">
             {node.children.map((column, ci) => (

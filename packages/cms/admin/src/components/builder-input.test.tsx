@@ -12,7 +12,7 @@ vi.mock('@strapi/strapi/admin', () => ({
 }));
 
 const SCHEMA = {
-  tree: { version: 1 },
+  tree: { version: 2 },
   contentTypes: {},
   components: {
     'preset-atom.paragraph': { uid: 'preset-atom.paragraph', attributes: { content: { type: 'text', required: true } } },
@@ -84,7 +84,7 @@ describe('BuilderInput (tree mode)', () => {
 
     const emitted = onChange.mock.calls.at(-1)![0].target;
     expect(emitted.type).toBe('json');
-    expect(emitted.value.version).toBe(1);
+    expect(emitted.value.version).toBe(2);
     expect(emitted.value.root.children).toHaveLength(1);
     expect(emitted.value.root.children[0]).toMatchObject({ type: 'block', component: 'preset-atom.paragraph', data: {} });
     expect(typeof emitted.value.root.children[0].id).toBe('string');
