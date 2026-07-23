@@ -29,7 +29,6 @@ export type {
   BlockNode,
   Slot,
   ContainerAttrs,
-  Ratio,
   Gap,
   VerticalAlign,
   ContainerWidth,

@@ -7,7 +7,7 @@
  * already sanitized by the shared validator.
  */
 import type { ComponentType, CSSProperties } from 'react';
-import type { ColumnNode, Node, Ratio, RowNode } from '@ogs-tech/press-shared';
+import type { ColumnNode, Node, RowNode } from '@ogs-tech/press-shared';
 import { validatePressTree } from '@ogs-tech/press-shared';
 import { atomBlocks } from '../atom-blocks';
 import { organismBlocks } from '../organism-blocks';
@@ -40,12 +40,12 @@ function BlockView({ node, registry }: { node: Node & { type: 'block' }; registr
   return <Component {...node.data} />;
 }
 
-function ColumnView({ column, ratio, index, registry }: { column: ColumnNode; ratio: Ratio; index: number; registry: Registry }) {
+function ColumnView({ column, registry }: { column: ColumnNode; registry: Registry }) {
   const gap = stackGap(column.container);
   const align = cellAlign(column.container);
   const style = gap ? ({ ['--press-cell-gap' as string]: gap } as CSSProperties) : undefined;
   return (
-    <Column span={spanFor(ratio, index)}>
+    <Column span={spanFor(column)}>
       <div data-press-cell="" data-cell-align={align} style={style}>
         <NodeList nodes={column.children} registry={registry} top={false} />
       </div>
@@ -56,8 +56,8 @@ function ColumnView({ column, ratio, index, registry }: { column: ColumnNode; ra
 function RowView({ row, registry, top }: { row: RowNode; registry: Registry; top: boolean }) {
   const grid = (
     <Grid gap={rowGap(row.container)} alignItems={rowAlign(row.container)}>
-      {row.children.map((column, i) => (
-        <ColumnView key={column.id} column={column} ratio={row.ratio} index={i} registry={registry} />
+      {row.children.map((column) => (
+        <ColumnView key={column.id} column={column} registry={registry} />
       ))}
     </Grid>
   );

@@ -12,7 +12,7 @@ const site = (overrides: Partial<{ header: Node[]; footer: Node[] }> = {}) =>
   }) as any;
 
 const tree = (children: Node[], extra: Partial<PressTree['root']> = {}): PressTree => ({
-  version: 1,
+  version: 2,
   root: { type: 'layout', header: { mode: 'none' }, footer: { mode: 'none' }, children, ...extra },
 });
 
@@ -32,13 +32,13 @@ describe('TreeRenderer', () => {
 
   it('renders a top-level row as Container>Grid>Column and a NESTED row as bare Grid (recursion)', () => {
     const body = tree([{
-      id: 'r1', type: 'row', ratio: '33-67', container: { width: 'full', gap: 'compact', verticalAlign: 'center' },
+      id: 'r1', type: 'row', container: { width: 'full', gap: 'compact', verticalAlign: 'center' },
       children: [
-        { id: 'c1', type: 'column', children: [paragraph('p2', 'left')] },
-        { id: 'c2', type: 'column', container: { verticalAlign: 'bottom', gap: 'spacious' }, children: [{
-          id: 'r2', type: 'row', ratio: '50-50', children: [
-            { id: 'c3', type: 'column', children: [paragraph('p3', 'deep')] },
-            { id: 'c4', type: 'column', children: [] },
+        { id: 'c1', type: 'column', span: { base: 12, md: 4 }, children: [paragraph('p2', 'left')] },
+        { id: 'c2', type: 'column', span: { base: 12, md: 8 }, container: { verticalAlign: 'bottom', gap: 'spacious' }, children: [{
+          id: 'r2', type: 'row', children: [
+            { id: 'c3', type: 'column', span: { base: 12, md: 6 }, children: [paragraph('p3', 'deep')] },
+            { id: 'c4', type: 'column', span: { base: 12, md: 6 }, children: [] },
           ],
         }] },
       ],
@@ -50,6 +50,8 @@ describe('TreeRenderer', () => {
     expect(html).toContain('data-align-items="center"');
     expect(html).toContain('data-cell-align="end"');
     expect(html).toContain('--press-cell-gap:var(--press-space-7)');
+    expect(html).toContain('--press-col-span-md:4');   // first column's md span
+    expect(html).toContain('--press-col-span-md:8');   // second column's md span
     expect(html).toContain('deep');
   });
 

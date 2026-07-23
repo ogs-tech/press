@@ -1,15 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { cellAlign, RATIO_SPANS, rowAlign, rowGap, rowWidth, spanFor, stackGap } from './container-attrs';
+import type { ColumnNode } from '@ogs-tech/press-shared';
+import { cellAlign, rowAlign, rowGap, rowWidth, spanFor, stackGap } from './container-attrs';
+
+const col = (span: ColumnNode['span']): ColumnNode => ({ id: 'c', type: 'column', span, children: [] });
 
 describe('spanFor', () => {
-  it('keeps the columns-organism ratio scale, including 25-25-25-25 two-stage md/lg', () => {
-    expect(RATIO_SPANS['25-25-25-25'][0]).toEqual({ base: 12, md: 6, lg: 3 });
-    expect(spanFor('33-67', 1)).toEqual({ base: 12, md: 8 });
-  });
-
-  it('defaults to 50-50 and reuses the last span past the ratio slots (tolerance)', () => {
-    expect(spanFor(undefined, 0)).toEqual({ base: 12, md: 6 });
-    expect(spanFor('50-50', 5)).toEqual({ base: 12, md: 6 });
+  it('returns the column span unchanged (base plus any declared tiers)', () => {
+    expect(spanFor(col({ base: 12 }))).toEqual({ base: 12 });
+    expect(spanFor(col({ base: 12, md: 6 }))).toEqual({ base: 12, md: 6 });
+    expect(spanFor(col({ base: 12, md: 6, lg: 3 }))).toEqual({ base: 12, md: 6, lg: 3 });
   });
 });
 
