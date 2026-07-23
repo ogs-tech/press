@@ -32,8 +32,8 @@ export const SITE_SETTINGS = {
 };
 
 const block = (component, data = {}) => ({ id: randomUUID(), type: 'block', component, data });
-const column = (children, container) => ({ id: randomUUID(), type: 'column', children, ...(container ? { container } : {}) });
-const row = (ratio, children, container) => ({ id: randomUUID(), type: 'row', ratio, children, ...(container ? { container } : {}) });
+const column = (span, children, container) => ({ id: randomUUID(), type: 'column', span, children, ...(container ? { container } : {}) });
+const row = (children, container) => ({ id: randomUUID(), type: 'row', children, ...(container ? { container } : {}) });
 
 /**
  * The demo home as a PressTree (Spec §4 seeds): a deliberately SIMPLE showcase of
@@ -45,7 +45,7 @@ const row = (ratio, children, container) => ({ id: randomUUID(), type: 'row', ra
  * pre-seeded. Chrome inherits pageDefaults.
  */
 export const buildHomeBody = ({ imageAssetId }) => ({
-  version: 1,
+  version: 2,
   root: {
     type: 'layout',
     header: { mode: 'inherit' },
@@ -60,11 +60,11 @@ export const buildHomeBody = ({ imageAssetId }) => ({
         content: ['Atoms — heading, paragraph, list, quote, image, button', 'Organisms — hero, cta and site chrome', 'Your own custom-* blocks, anywhere in the tree'].join('\n'),
       }),
       block('preset-atom.heading', { text: 'Grid layout', level: '2' }),
-      // Grid layout: a 50-50 row splits into two columns; a component sits in each cell.
-      row('50-50', [
-        column([block('preset-atom.image', { image: { assetId: imageAssetId }, caption: 'An image component inside a column' })]),
-        column([block('preset-atom.paragraph', {
-          content: 'Rows and columns are the grid layout. Here an image fills the left column and this paragraph the right — a 50-50 split. Compose the rest in the builder.',
+      // Grid layout: two columns, stacked on phones (base 12) and 50/50 on desktop (md 6).
+      row([
+        column({ base: 12, md: 6 }, [block('preset-atom.image', { image: { assetId: imageAssetId }, caption: 'An image component inside a column' })]),
+        column({ base: 12, md: 6 }, [block('preset-atom.paragraph', {
+          content: 'Rows and columns are the grid layout. Here an image fills the left column and this paragraph the right — a 12/6 span split. Compose the rest in the builder.',
         })]),
       ]),
     ],

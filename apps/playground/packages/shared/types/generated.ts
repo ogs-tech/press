@@ -98,7 +98,6 @@ export interface PresetLayoutContainer {
 }
 
 export interface PresetLayoutRow {
-  ratio?: '50-50' | '33-67' | '67-33' | '33-33-33' | '25-25-25-25';
   container?: PresetLayoutContainer;
 }
 
