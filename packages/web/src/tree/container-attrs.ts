@@ -1,34 +1,21 @@
 /**
- * Curated container attrs → layout-primitive props (Spec §5). This module is
- * where editorial intent meets the responsive system: the JSON never carries
- * breakpoints — RATIO_SPANS/GAP_TIERS (inherited verbatim from the retired
- * columns organism) own the base/md/lg mapping, so the 11-gap floor and the
- * 25-25-25-25 two-stage md/lg behavior stay engine-owned and untouchable.
- * Every picker treats an ABSENT attr as the engine default (Spec §3).
+ * Curated container attrs → layout-primitive props. Editorial intent meets the
+ * responsive system here: `container` attrs map to Responsive<T> props, and a
+ * column's stored `span` (the ONE responsive value on the wire) passes straight
+ * through to the <Column> primitive. Every picker treats an ABSENT attr as the
+ * engine default.
  */
-import type { ContainerAttrs, Gap, Ratio } from '@ogs-tech/press-shared';
+import type { ColumnNode, ContainerAttrs, Gap } from '@ogs-tech/press-shared';
 import type { Responsive } from '../layout/breakpoints';
 import type { Span } from '../layout/column';
 import type { ContainerMaxWidth } from '../layout/container';
 import type { GridAlignItems, GridGap } from '../layout/grid';
 
-export const RATIO_SPANS: Record<Ratio, Responsive<Span>[]> = {
-  '50-50': [{ base: 12, md: 6 }, { base: 12, md: 6 }],
-  '33-67': [{ base: 12, md: 4 }, { base: 12, md: 8 }],
-  '67-33': [{ base: 12, md: 8 }, { base: 12, md: 4 }],
-  '33-33-33': [{ base: 12, md: 4 }, { base: 12, md: 4 }, { base: 12, md: 4 }],
-  '25-25-25-25': [
-    { base: 12, md: 6, lg: 3 },
-    { base: 12, md: 6, lg: 3 },
-    { base: 12, md: 6, lg: 3 },
-    { base: 12, md: 6, lg: 3 },
-  ],
-};
-
-/** Column i of a row: extra columns beyond the ratio's slots reuse the last span (columns tolerance). */
-export function spanFor(ratio: Ratio | undefined, index: number): Responsive<Span> {
-  const spans = (ratio && RATIO_SPANS[ratio]) || RATIO_SPANS['50-50'];
-  return spans[Math.min(index, spans.length - 1)];
+/** A column's stored span → the Responsive<Span> the <Column> primitive consumes.
+ *  `base` is guaranteed by the validator; md/lg cascade up via the CSS var() chain.
+ *  Cast is safe: the validator has already constrained every tier to 1..12. */
+export function spanFor(column: ColumnNode): Responsive<Span> {
+  return column.span as Responsive<Span>;
 }
 
 /** Semantic gap → GridGap tiers: a 12-track grid carries 11 interior gaps, so 'spacious' tier-scales. */

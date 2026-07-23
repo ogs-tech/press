@@ -24,16 +24,16 @@ const site = (defaults: { header?: Node[]; footer?: Node[] }) =>
   }) as any;
 
 const tree = (header: any, footer: any, children: Node[] = []): PressTree => ({
-  version: 1,
+  version: 2,
   root: { type: 'layout', header, footer, children },
 });
 
 describe('hydrateEngineBlocks', () => {
   it('hydrates navbar brand/links/cta with home-slug collapse, at any depth', () => {
     const nested: Node[] = [{
-      id: 'r', type: 'row', ratio: '50-50', children: [
-        { id: 'c', type: 'column', children: [navbarNode()] },
-        { id: 'c2', type: 'column', children: [] },
+      id: 'r', type: 'row', children: [
+        { id: 'c', type: 'column', span: { base: 12 }, children: [navbarNode()] },
+        { id: 'c2', type: 'column', span: { base: 12 }, children: [] },
       ],
     }];
     const [row] = hydrateEngineBlocks(nested, brand, 'home') as any[];

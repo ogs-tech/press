@@ -7,7 +7,7 @@ const raw: RawPage = {
   title: 'Home',
   slug: 'home',
   body: {
-    version: 1,
+    version: 2,
     root: { type: 'layout', header: { mode: 'none' }, footer: { mode: 'none' }, children: [] },
   },
 };
