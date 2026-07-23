@@ -1,17 +1,28 @@
 /**
  * The press composition tree — the JSON stored by the `plugin::press-cms.builder`
  * custom field (page `body`) and, as bare `Node[]` slots, by Site Settings
- * `pageDefaults` (Spec §3). Pure wire types: no Strapi, no React.
+ * `pageDefaults`. Pure wire types: no Strapi, no React.
  *
- * Responsiveness NEVER appears in this JSON — `ratio` and the `container` attrs
- * are editorial intents; the web renderer maps them to Responsive<T> values.
+ * Column `span` (base/md/lg) is the ONE responsive value this JSON carries — the
+ * deliberate exception to "responsiveness lives in code". `container` attrs remain
+ * editorial intents the web renderer maps to Responsive<T> values code-side.
  */
 
 /** Readers reject any other version (fail-to-empty); gates future migrations. */
-export const PRESS_TREE_VERSION = 1;
+export const PRESS_TREE_VERSION = 2;
 
-/** Row-only: defines the column split. The closed scale inherited from the retired columns organism. */
-export type Ratio = '50-50' | '33-67' | '67-33' | '33-33-33' | '25-25-25-25';
+/** 1..12 track span. Kept `number` on the wire (not a 12-arm literal union);
+ *  the range is enforced by the validator, not the type. */
+export type Span = number;
+
+/** Mobile-first responsive span: `base` is the required mobile default; `md`/`lg`
+ *  are optional overrides that cascade up (md inherits base, lg inherits md). */
+export interface ColumnSpan {
+  base: Span;
+  md?: Span;
+  lg?: Span;
+}
+
 export type Gap = 'compact' | 'normal' | 'spacious';
 export type VerticalAlign = 'top' | 'center' | 'bottom';
 export type ContainerWidth = 'prose' | 'lg' | 'full';
@@ -50,6 +61,8 @@ export interface BlockNode {
 export interface ColumnNode {
   id: string;
   type: 'column';
+  /** Per-breakpoint width in 12-track units — the one responsive value on the wire. */
+  span: ColumnSpan;
   container?: ContainerAttrs;
   children: Node[];
 }
@@ -57,9 +70,8 @@ export interface ColumnNode {
 export interface RowNode {
   id: string;
   type: 'row';
-  ratio: Ratio;
   container?: ContainerAttrs;
-  /** 1..4, ratio-bound; extra columns beyond the ratio's slots reuse the last span. */
+  /** 1..N columns; each column owns its own span (no shared row-level ratio). */
   children: ColumnNode[];
 }
 
