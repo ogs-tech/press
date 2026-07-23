@@ -17,14 +17,14 @@ const resolvers = {
 const nodes = [
   { id: 'b1', type: 'block', component: 'preset-atom.image', data: { image: { assetId: 7 }, caption: 'c' } },
   {
-    id: 'r1', type: 'row', ratio: '50-50', children: [
-      { id: 'c1', type: 'column', children: [
+    id: 'r1', type: 'row', children: [
+      { id: 'c1', type: 'column', span: { base: 12 }, children: [
         { id: 'b2', type: 'block', component: 'preset-organism.navbar', data: {
           items: [{ label: 'Home', page: { documentId: 'home-doc' } }, { label: 'Ext', url: 'https://x' }],
           cta: { link: { label: 'Go', page: { documentId: 'gone-doc' } }, variant: 'primary' },
         } },
       ] },
-      { id: 'c2', type: 'column', children: [] },
+      { id: 'c2', type: 'column', span: { base: 12 }, children: [] },
     ],
   },
   { id: 'b3', type: 'block', component: 'unknown.block', data: { anything: true } },
@@ -68,7 +68,7 @@ describe('hydrateNodeArray', () => {
 
 describe('tree-level helpers', () => {
   const tree = {
-    version: 1,
+    version: 2,
     root: {
       type: 'layout',
       header: { mode: 'custom', children: [nodes[0]] },

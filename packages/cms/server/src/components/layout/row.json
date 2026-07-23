@@ -3,16 +3,14 @@
   "info": {
     "displayName": "Row",
     "icon": "apps",
-    "description": "A tree row: the ratio defines the column split; container carries the shared layout attributes"
+    "description": "A tree row: a horizontal band of columns; each column owns its per-breakpoint span. container carries the shared layout attributes"
   },
   "options": {},
   "attributes": {
-    "ratio": { "type": "enumeration", "enum": ["50-50", "33-67", "67-33", "33-33-33", "25-25-25-25"], "default": "50-50" },
     "container": { "type": "component", "repeatable": false, "component": "preset-layout.container" }
   },
   "config": {
     "metadatas": {
-      "ratio": { "edit": { "label": "Column layout", "description": "How the columns split the width on desktop; every layout stacks on phones." } },
       "container": { "edit": { "label": "Container" } }
     }
   }

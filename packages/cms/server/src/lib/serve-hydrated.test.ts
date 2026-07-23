@@ -41,7 +41,7 @@ function makeStrapi(files: File[], pages: PageRow[]) {
 
 const imageBlock = (id: string, assetId: number) => ({ id, type: 'block', component: 'preset-atom.image', data: { image: { assetId }, caption: id } });
 const linkBlock = (id: string, documentId: string) => ({ id, type: 'block', component: 'preset-atom.button', data: { link: { label: id, page: { documentId } }, variant: 'primary' } });
-const bodyOf = (children: unknown[]) => ({ version: 1, root: { type: 'layout', children } });
+const bodyOf = (children: unknown[]) => ({ version: 2, root: { type: 'layout', children } });
 
 describe('hydratePageDocs — batched across the whole list', () => {
   const FILES: File[] = [{ id: 7, url: '/uploads/x.png', width: 480, height: 270, alternativeText: null, name: 'x.png', mime: 'image/png' }];
