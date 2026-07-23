@@ -10,7 +10,7 @@
  * warnings (strict write); readers render whenever `value` is non-null
  * (tolerant read).
  */
-import type { ColumnNode, ContainerAttrs, LayoutNode, Node, PressTree, RowNode, Slot } from './tree';
+import type { ColumnNode, ColumnSpan, ContainerAttrs, LayoutNode, Node, PressTree, RowNode, Slot } from './tree';
 import { PRESS_TREE_VERSION } from './tree';
 
 export interface TreeIssue {
@@ -24,9 +24,6 @@ export interface TreeResult<T> {
   warnings: TreeIssue[];
 }
 
-export const MAX_ROW_COLUMNS = 4;
-
-const RATIOS: readonly string[] = ['50-50', '33-67', '67-33', '33-33-33', '25-25-25-25'];
 const WIDTHS: readonly string[] = ['prose', 'lg', 'full'];
 const GAPS: readonly string[] = ['compact', 'normal', 'spacious'];
 const VERTICAL_ALIGNS: readonly string[] = ['top', 'center', 'bottom'];
@@ -70,6 +67,32 @@ function sanitizeContainer(input: unknown, path: string, ctx: Ctx): ContainerAtt
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
+const isSpanValue = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 12;
+
+/** Attr-level: a malformed span never nulls the tree — it defaults + warns. */
+function sanitizeSpan(input: unknown, path: string, ctx: Ctx): ColumnSpan {
+  if (!isRecord(input)) {
+    warn(ctx, path, 'span must be an object { base; md?; lg? } — defaulted to { base: 12 }');
+    return { base: 12 };
+  }
+  let base: number;
+  if (isSpanValue(input.base)) {
+    base = input.base;
+  } else {
+    warn(ctx, `${path}.base`, `base span must be an integer 1..12 — defaulted to 12`);
+    base = 12;
+  }
+  const out: ColumnSpan = { base };
+  for (const tier of ['md', 'lg'] as const) {
+    const v = input[tier];
+    if (v === undefined) continue;
+    if (isSpanValue(v)) out[tier] = v;
+    else warn(ctx, `${path}.${tier}`, `${tier} span must be an integer 1..12 — tier dropped (inherits)`);
+  }
+  return out;
+}
+
 function requireId(input: Record<string, unknown>, path: string, ctx: Ctx): string | null {
   if (typeof input.id !== 'string' || input.id.length === 0) {
     return fail(ctx, `${path}.id`, 'node id must be a non-empty string');
@@ -85,7 +108,7 @@ function validateColumn(input: unknown, path: string, ctx: Ctx): ColumnNode | nu
   if (id === null) return null;
   const children = validateChildren(input.children, `${path}.children`, ctx);
   if (children === null) return null;
-  const node: ColumnNode = { id, type: 'column', children };
+  const node: ColumnNode = { id, type: 'column', span: sanitizeSpan(input.span, `${path}.span`, ctx), children };
   const container = sanitizeContainer(input.container, `${path}.container`, ctx);
   if (container) node.container = container;
   return node;
@@ -124,21 +147,18 @@ function validateNode(input: unknown, path: string, ctx: Ctx): Node | null {
     case 'row': {
       const id = requireId(input, path, ctx);
       if (id === null) return null;
-      if (typeof input.ratio !== 'string' || !RATIOS.includes(input.ratio)) {
-        return fail(ctx, `${path}.ratio`, `ratio must be one of ${RATIOS.join(' | ')}`);
-      }
       if (!Array.isArray(input.children)) {
         return fail(ctx, `${path}.children`, 'row children must be an array of columns');
       }
-      if (input.children.length < 1 || input.children.length > MAX_ROW_COLUMNS) {
-        return fail(ctx, `${path}.children`, `a row carries 1–${MAX_ROW_COLUMNS} columns, got ${input.children.length}`);
+      if (input.children.length < 1) {
+        return fail(ctx, `${path}.children`, 'a row carries at least one column');
       }
       const columns: ColumnNode[] = [];
       input.children.forEach((c, i) => {
         const col = validateColumn(c, `${path}.children[${i}]`, ctx);
         if (col) columns.push(col);
       });
-      const node: RowNode = { id, type: 'row', ratio: input.ratio as RowNode['ratio'], children: columns };
+      const node: RowNode = { id, type: 'row', children: columns };
       const container = sanitizeContainer(input.container, `${path}.container`, ctx);
       if (container) node.container = container;
       return node;
