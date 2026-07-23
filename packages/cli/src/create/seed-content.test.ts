@@ -15,7 +15,7 @@ describe('seeded home body', () => {
     expect(value!.root.header).toEqual({ mode: 'inherit' });
   });
 
-  it('demonstrates atoms then the grid: heading/paragraph/list atoms + a 50-50 row (no hero, no nested rows)', () => {
+  it('demonstrates atoms then the grid: heading/paragraph/list atoms + a spanned row (no hero, no nested rows)', () => {
     const children = tree.root.children;
     expect(children.map((n: any) => n.type)).toEqual(['block', 'block', 'block', 'block', 'row']);
     expect(children.slice(0, 4).map((n: any) => n.component)).toEqual([
@@ -24,8 +24,12 @@ describe('seeded home body', () => {
     expect(children.some((n: any) => n.component === 'preset-organism.hero')).toBe(false);
 
     const rowNode = children[4];
-    expect(rowNode).toMatchObject({ type: 'row', ratio: '50-50' });
+    expect(rowNode).toMatchObject({ type: 'row' });
+    expect(rowNode).not.toHaveProperty('ratio');
     expect(rowNode.children).toHaveLength(2);
+    // each column carries a mobile-first span (stacked on phones, 50/50 on desktop)
+    expect(rowNode.children[0].span).toEqual({ base: 12, md: 6 });
+    expect(rowNode.children[1].span).toEqual({ base: 12, md: 6 });
     // an image atom (media assetId ref) sits in the first column; no deeper row nesting
     const imageAtom = rowNode.children[0].children[0];
     expect(imageAtom).toMatchObject({ type: 'block', component: 'preset-atom.image' });
