@@ -1,7 +1,8 @@
 /**
  * Pure, immutable operations on a composition forest (a slot's Node[]). The
  * builder UI calls ONLY these — the structural invariants (Spec §4: Column only
- * under Row, Row children are Columns only, 1–4 columns) are enforced here by
+ * under Row, Row children are Columns only, 1–12 columns via MAX_COLUMNS; the
+ * wire itself has no upper cap) are enforced here by
  * construction, which is what makes the lifecycle validator "unreachable" from
  * the admin. No React, no Strapi: unit-tested without a DOM.
  */
