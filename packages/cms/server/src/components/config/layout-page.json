@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_preset_config_layout_pages",
+  "info": {
+    "displayName": "Layout · Page",
+    "icon": "stack",
+    "description": "Page-level layout default: the vertical rhythm between top-level blocks and rows"
+  },
+  "options": {},
+  "attributes": {
+    "gap": { "type": "enumeration", "enum": ["compact", "normal", "spacious"] }
+  },
+  "config": {
+    "metadatas": {
+      "gap": { "edit": { "label": "Vertical rhythm", "description": "Space between top-level blocks and rows. Leave empty to keep each block's own spacing." } }
+    }
+  }
+}

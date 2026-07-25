@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_preset_config_layout_rows",
+  "info": {
+    "displayName": "Layout · Row",
+    "icon": "apps",
+    "description": "Row-level layout defaults: container width, gap between columns, and cell alignment"
+  },
+  "options": {},
+  "attributes": {
+    "width": { "type": "enumeration", "enum": ["prose", "lg", "full"] },
+    "gap": { "type": "enumeration", "enum": ["compact", "normal", "spacious"] },
+    "verticalAlign": { "type": "enumeration", "enum": ["top", "center", "bottom"] }
+  },
+  "config": {
+    "metadatas": {
+      "width": { "edit": { "label": "Width", "description": "How wide a top-level row's content sits: reading width, content width, or full bleed." } },
+      "gap": { "edit": { "label": "Column gap", "description": "Horizontal space between the columns of a row." } },
+      "verticalAlign": { "edit": { "label": "Vertical align", "description": "How a row aligns its columns against each other." } }
+    }
+  }
+}

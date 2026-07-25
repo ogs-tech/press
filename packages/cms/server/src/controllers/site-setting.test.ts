@@ -67,4 +67,11 @@ describe('site-setting controller', () => {
       },
     });
   });
+
+  it('deep-populates layout — one component per tree level sits below a shallow populate', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.layout).toEqual({ populate: { page: true, row: true, column: true } });
+  });
 });

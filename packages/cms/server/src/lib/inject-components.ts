@@ -20,6 +20,10 @@ import themeColorsSchema from '../components/config/theme-colors.json';
 import themeRadiusSchema from '../components/config/theme-radius.json';
 import cookieCategorySchema from '../components/config/cookie-category.json';
 import cookieConsentSchema from '../components/config/cookie-consent.json';
+import layoutDefaultsPageSchema from '../components/config/layout-page.json';
+import layoutDefaultsRowSchema from '../components/config/layout-row.json';
+import layoutDefaultsColumnSchema from '../components/config/layout-column.json';
+import layoutDefaultsSchema from '../components/config/layout.json';
 import { toGlobalId } from './global-id';
 
 /**
@@ -108,6 +112,12 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   { layer: 'config', name: 'theme-radius', schema: themeRadiusSchema as Record<string, unknown> },
   { layer: 'config', name: 'cookie-category', schema: cookieCategorySchema as Record<string, unknown> },
   { layer: 'config', name: 'cookie-consent', schema: cookieConsentSchema as Record<string, unknown> },
+  // Layout defaults — the CMS-owned baseline `resolveLayoutDefaults` sanitizes and
+  // both sides resolve against. Nested children first: `layout` references them.
+  { layer: 'config', name: 'layout-page', schema: layoutDefaultsPageSchema as Record<string, unknown> },
+  { layer: 'config', name: 'layout-row', schema: layoutDefaultsRowSchema as Record<string, unknown> },
+  { layer: 'config', name: 'layout-column', schema: layoutDefaultsColumnSchema as Record<string, unknown> },
+  { layer: 'config', name: 'layout', schema: layoutDefaultsSchema as Record<string, unknown> },
 ];
 
 /**

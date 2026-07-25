@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CONTAINER_ENUMS } from '@ogs-tech/press-shared';
 import { injectComponents } from './inject-components';
 import pageSchema from '../content-types/page/schema.json';
 import siteSettingSchema from '../content-types/site-setting/schema.json';
@@ -125,6 +126,53 @@ describe('injectComponents', () => {
       container: { type: 'component', repeatable: false, component: 'preset-layout.container' },
     });
   });
+
+  it('registers the four preset-config.layout* descriptors (layout-defaults spec §4)', () => {
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+    for (const uid of ['preset-config.layout', 'preset-config.layout-page', 'preset-config.layout-row', 'preset-config.layout-column']) {
+      expect(components.get(uid)?.modelType).toBe('component');
+      expect(components.get(uid)?.category).toBe('preset-config');
+    }
+    // the group holds exactly one component per tree level — the shape LayoutDefaults mirrors
+    expect(components.get('preset-config.layout')?.attributes).toEqual({
+      page: { type: 'component', repeatable: false, component: 'preset-config.layout-page' },
+      row: { type: 'component', repeatable: false, component: 'preset-config.layout-row' },
+      column: { type: 'component', repeatable: false, component: 'preset-config.layout-column' },
+    });
+  });
+
+  it('gives each level exactly the attrs that apply there — never a field the renderer ignores', () => {
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+    expect(Object.keys(components.get('preset-config.layout-page').attributes)).toEqual(['gap']);
+    expect(Object.keys(components.get('preset-config.layout-row').attributes)).toEqual(['width', 'gap', 'verticalAlign']);
+    expect(Object.keys(components.get('preset-config.layout-column').attributes)).toEqual(['gap', 'verticalAlign']);
+  });
+
+  it('pins every layout enum to the shared CONTAINER_ENUMS (one source of allowed values)', () => {
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+    const attrs = (uid: string) => components.get(uid).attributes as Record<string, { enum: string[] }>;
+    expect(attrs('preset-config.layout-page').gap.enum).toEqual([...CONTAINER_ENUMS.gap]);
+    expect(attrs('preset-config.layout-row').width.enum).toEqual([...CONTAINER_ENUMS.width]);
+    expect(attrs('preset-config.layout-row').gap.enum).toEqual([...CONTAINER_ENUMS.gap]);
+    expect(attrs('preset-config.layout-row').verticalAlign.enum).toEqual([...CONTAINER_ENUMS.verticalAlign]);
+    expect(attrs('preset-config.layout-column').gap.enum).toEqual([...CONTAINER_ENUMS.gap]);
+    expect(attrs('preset-config.layout-column').verticalAlign.enum).toEqual([...CONTAINER_ENUMS.verticalAlign]);
+  });
+
+  it('labels the level fields EXACTLY as the builder names them (Site default · … traceability)', () => {
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+    const label = (uid: string, field: string) => (components.get(uid) as any).config.metadatas[field].edit.label;
+    expect(label('preset-config.layout-page', 'gap')).toBe('Vertical rhythm');
+    expect(label('preset-config.layout-row', 'width')).toBe('Width');
+    expect(label('preset-config.layout-row', 'gap')).toBe('Column gap');
+    expect(label('preset-config.layout-row', 'verticalAlign')).toBe('Vertical align');
+    expect(label('preset-config.layout-column', 'gap')).toBe('Vertical rhythm');
+    expect(label('preset-config.layout-column', 'verticalAlign')).toBe('Content align');
+  });
 });
 
 describe('page.body customField (composition-builder storage, Spec §4)', () => {
@@ -184,5 +232,16 @@ describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () =
       label: { type: 'string' },
       description: { type: 'text' },
     });
+  });
+});
+
+describe('site-setting layout attribute (layout-defaults spec §4)', () => {
+  it('attaches preset-config.layout as a config component labelled "Layout"', () => {
+    expect((siteSettingSchema.attributes as any).layout).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'preset-config.layout',
+    });
+    expect((siteSettingSchema as any).config.metadatas.layout.edit.label).toBe('Layout');
   });
 });

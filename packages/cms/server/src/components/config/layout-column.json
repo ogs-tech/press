@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_preset_config_layout_columns",
+  "info": {
+    "displayName": "Layout · Column",
+    "icon": "stack",
+    "description": "Column-level layout defaults: vertical rhythm inside a cell and where its content sits"
+  },
+  "options": {},
+  "attributes": {
+    "gap": { "type": "enumeration", "enum": ["compact", "normal", "spacious"] },
+    "verticalAlign": { "type": "enumeration", "enum": ["top", "center", "bottom"] }
+  },
+  "config": {
+    "metadatas": {
+      "gap": { "edit": { "label": "Vertical rhythm", "description": "Space between the blocks stacked inside a column. Leave empty to keep each block's own spacing." } },
+      "verticalAlign": { "edit": { "label": "Content align", "description": "Where a column's content sits within the cell height." } }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_preset_config_layouts",
+  "info": {
+    "displayName": "Layout",
+    "icon": "expand",
+    "description": "Site-level layout defaults — the baseline every page, row and column inherits unless a node overrides it"
+  },
+  "options": {},
+  "attributes": {
+    "page": { "type": "component", "repeatable": false, "component": "preset-config.layout-page" },
+    "row": { "type": "component", "repeatable": false, "component": "preset-config.layout-row" },
+    "column": { "type": "component", "repeatable": false, "component": "preset-config.layout-column" }
+  },
+  "config": {
+    "metadatas": {
+      "page": { "edit": { "label": "Page", "description": "Applies to the page as a whole: rhythm between top-level blocks and rows." } },
+      "row": { "edit": { "label": "Row", "description": "Applies to every row: container width, space between columns, cell alignment." } },
+      "column": { "edit": { "label": "Column", "description": "Applies inside every column cell: vertical rhythm and content alignment." } }
+    }
+  }
+}

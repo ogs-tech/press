@@ -18,6 +18,7 @@
     "seo": { "type": "component", "repeatable": false, "component": "preset-config.seo" },
     "themeColors": { "type": "component", "repeatable": false, "component": "preset-config.theme-colors" },
     "themeRadius": { "type": "component", "repeatable": false, "component": "preset-config.theme-radius" },
+    "layout": { "type": "component", "repeatable": false, "component": "preset-config.layout" },
     "cookieConsent": { "type": "component", "repeatable": false, "component": "preset-config.cookie-consent" },
     "pageDefaults": {
       "type": "customField",
@@ -35,6 +36,7 @@
       "seo": { "edit": { "label": "SEO" } },
       "themeColors": { "edit": { "label": "Theme Colors" } },
       "themeRadius": { "edit": { "label": "Theme Radius" } },
+      "layout": { "edit": { "label": "Layout", "description": "Baseline layout every page, row and column inherits unless a node overrides it in the Composition builder. Leave a field empty to keep the engine default." } },
       "cookieConsent": { "edit": { "label": "Cookie Consent", "description": "Cookie banner shown to visitors. Category keys (necessary/analytics/marketing) are engine-fixed; toggles and copy are yours." } },
       "pageDefaults": { "edit": { "label": "Page defaults", "description": "The default header and footer every page inherits. Pages can override or drop them per-slot." } }
     }

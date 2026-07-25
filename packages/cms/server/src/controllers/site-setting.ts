@@ -20,6 +20,9 @@ const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
     seo: { populate: { image: true } },
     themeColors: true,
     themeRadius: true,
+    // The layout group holds one component per tree level, and a shallow populate
+    // stops at the group — same reason as seo.image above.
+    layout: { populate: { page: true, row: true, column: true } },
     // Nested category components + the privacy page's slug sit one level below
     // what a shallow populate reaches — same reason as seo.image above.
     cookieConsent: {
