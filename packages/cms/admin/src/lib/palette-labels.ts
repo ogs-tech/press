@@ -12,6 +12,7 @@ import {
   ArrowsOut, BulletList, Cursor, Feather, HeadingOne, Image, Layout, Link,
   Minus, Paragraph, PuzzlePiece, Quotes, SquaresFour, Stack, Star,
 } from '@strapi/icons';
+import type { ContainerKey } from '@ogs-tech/press-shared';
 
 export type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -91,4 +92,37 @@ const CATEGORY_LABELS: Record<string, string> = {
 /** "preset-organism" → "Organisms"; unmapped categories show their raw uid segment. */
 export function categoryLabel(category: string): string {
   return CATEGORY_LABELS[category] ?? category;
+}
+
+/**
+ * Per-LEVEL container field labels. `gap` is two different physical axes — space
+ * BETWEEN columns on a row versus vertical rhythm WITHIN a page/column stack — so
+ * there is one label per (node type, key), never one shared label.
+ *
+ * These strings must match the Site Settings "Layout" field labels verbatim
+ * (`preset-config.layout-*`): that correspondence is what makes a builder
+ * placeholder like `Site default · Normal` traceable to the field an editor set.
+ */
+const CONTAINER_FIELD_LABELS: Record<'layout' | 'row' | 'column', Partial<Record<ContainerKey, string>>> = {
+  layout: { gap: 'Vertical rhythm' },
+  row: { width: 'Width', gap: 'Column gap', verticalAlign: 'Vertical align' },
+  column: { gap: 'Vertical rhythm', verticalAlign: 'Content align' },
+};
+
+export function containerFieldLabel(nodeType: 'layout' | 'row' | 'column', key: ContainerKey): string {
+  return CONTAINER_FIELD_LABELS[nodeType][key] ?? fieldLabel(key);
+}
+
+/** Wire token → editorial name. The wire keeps `lg`; an editor reads "Content width". */
+const CONTAINER_OPTION_LABELS: Record<ContainerKey, Record<string, string>> = {
+  width: { prose: 'Reading width', lg: 'Content width', full: 'Full bleed' },
+  gap: { compact: 'Compact', normal: 'Normal', spacious: 'Spacious' },
+  verticalAlign: { top: 'Top', center: 'Center', bottom: 'Bottom' },
+};
+
+/** `undefined` is a real, nameable state (page/column gap): no stack attribute is
+ *  emitted and every block keeps its own margins. */
+export function containerOptionLabel(key: ContainerKey, value: string | undefined): string {
+  if (value === undefined) return 'per-block spacing';
+  return CONTAINER_OPTION_LABELS[key][value] ?? titleize(value);
 }

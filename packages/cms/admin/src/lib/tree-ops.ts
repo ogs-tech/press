@@ -6,7 +6,7 @@
  * construction, which is what makes the lifecycle validator "unreachable" from
  * the admin. No React, no Strapi: unit-tested without a DOM.
  */
-import type { BlockNode, ColumnNode, ColumnSpan, Node, RowNode } from '@ogs-tech/press-shared';
+import type { BlockNode, ColumnNode, ColumnSpan, ContainerAttrs, ContainerKey, Node, RowNode } from '@ogs-tech/press-shared';
 
 export type Forest = Node[];
 export type NodePath = number[];
@@ -132,20 +132,35 @@ export function setBlockData(forest: Forest, path: NodePath, data: Record<string
   });
 }
 
+/**
+ * The container-attr patch RULE, shared by the path-addressed `setContainerAttr`
+ * below and the root-addressed layout-node call in builder-input: setting
+ * `undefined` deletes the key, and an emptied container disappears entirely so a
+ * cleared node never persists `container: {}`. Pure — never mutates its input.
+ */
+export function patchContainer(
+  container: ContainerAttrs | undefined,
+  key: ContainerKey,
+  value: string | undefined,
+): ContainerAttrs | undefined {
+  const next = { ...(container ?? {}) } as Record<string, unknown>;
+  if (value === undefined) delete next[key];
+  else next[key] = value;
+  return Object.keys(next).length === 0 ? undefined : (next as ContainerAttrs);
+}
+
 export function setContainerAttr(
   forest: Forest,
   path: NodePath,
-  key: 'width' | 'gap' | 'verticalAlign',
+  key: ContainerKey,
   value: string | undefined,
 ): Forest {
   return patchNode(forest, path, (node) => {
     if (node.type === 'block') throw new Error('[press-cms] blocks carry no container attrs');
-    const container = { ...(node.container ?? {}) } as Record<string, unknown>;
-    if (value === undefined) delete container[key];
-    else container[key] = value;
-    const next = { ...node } as Node & { container?: Record<string, unknown> };
-    if (Object.keys(container).length === 0) delete next.container;
-    else next.container = container;
+    const container = patchContainer(node.container, key, value);
+    const next = { ...node } as Node & { container?: ContainerAttrs };
+    if (container) next.container = container;
+    else delete next.container;
     return next as Node;
   });
 }

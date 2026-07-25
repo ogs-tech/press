@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   addColumn, effectiveSpan, getNode, insertNode, MAX_COLUMNS, moveNode, newBlockNode, newColumnNode,
-  newRowNode, removeNode, setBlockData, setColumnSpan, setContainerAttr, type Forest,
+  newRowNode, patchContainer, removeNode, setBlockData, setColumnSpan, setContainerAttr, type Forest,
 } from './tree-ops';
 
 const forest = (): Forest => {
@@ -93,5 +93,26 @@ describe('span ops', () => {
     expect(effectiveSpan({ base: 12, md: 6 }, 'lg')).toBe(6);
     expect(effectiveSpan({ base: 12, md: 6, lg: 3 }, 'lg')).toBe(3);
     expect(effectiveSpan({ base: 8 }, 'base')).toBe(8);
+  });
+});
+
+describe('patchContainer', () => {
+  it('adds a key to an absent container', () => {
+    expect(patchContainer(undefined, 'gap', 'compact')).toEqual({ gap: 'compact' });
+  });
+
+  it('replaces one key and leaves siblings alone, without mutating the input', () => {
+    const before = { width: 'full', gap: 'normal' } as const;
+    expect(patchContainer(before, 'gap', 'spacious')).toEqual({ width: 'full', gap: 'spacious' });
+    expect(before).toEqual({ width: 'full', gap: 'normal' });
+  });
+
+  it('deletes the key when the value is undefined', () => {
+    expect(patchContainer({ width: 'full', gap: 'normal' }, 'gap', undefined)).toEqual({ width: 'full' });
+  });
+
+  it('returns undefined when clearing the LAST key — an emptied container disappears', () => {
+    expect(patchContainer({ gap: 'normal' }, 'gap', undefined)).toBeUndefined();
+    expect(patchContainer(undefined, 'gap', undefined)).toBeUndefined();
   });
 });
