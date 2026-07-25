@@ -334,7 +334,7 @@ about that belongs to press" (`serialize-schema.ts`, `admin/src/lib/form-model.t
     is RETIRED — its job (2–4 column layouts, closed `ratio`/`gap`/`verticalAlign` enums) is
     now native tree recursion (`RowNode`/`ColumnNode`, unlimited depth), not a discrete block.
   - `preset-config.*` — seo, theme-colors, theme-radius, cookie-consent, cookie-category,
-    layout-page, layout-row, layout-column: non-block settings referenced by `component:`
+    layout, layout-page, layout-row, layout-column: non-block settings referenced by `component:`
     fields on Site Settings, never a tree node.
   - `preset-layout.{container,row,column}` — no longer reserved-empty: pure registry
     descriptors the builder's admin form generator reads to build the row/column edit forms
