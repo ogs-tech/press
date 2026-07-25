@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { hydrateSiteSetting } from '../lib/serve-hydrated';
+import { LAYOUT_POPULATE } from '../lib/read-layout-defaults';
 
 const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 
@@ -22,7 +23,7 @@ const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
     themeRadius: true,
     // The layout group holds one component per tree level, and a shallow populate
     // stops at the group — same reason as seo.image above.
-    layout: { populate: { page: true, row: true, column: true } },
+    layout: { populate: LAYOUT_POPULATE },
     // Nested category components + the privacy page's slug sit one level below
     // what a shallow populate reaches — same reason as seo.image above.
     cookieConsent: {

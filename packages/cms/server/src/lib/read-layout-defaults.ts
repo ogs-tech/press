@@ -3,6 +3,11 @@ import { resolveLayoutDefaults, type LayoutDefaults } from '@ogs-tech/press-shar
 
 const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 
+/** The one populate shape for the `layout` group's three sub-components — shared
+ *  with `controllers/site-setting.ts` so `/api/press/schema` and `/api/site-setting`
+ *  can never silently disagree on how deep the group is read. */
+export const LAYOUT_POPULATE = { page: true, row: true, column: true } as const;
+
 /**
  * The CMS-owned layout defaults, resolved TOTAL for the `/api/press/schema`
  * payload (layout-defaults spec §4). Deliberately NOT part of `serializeSchema`:
@@ -21,7 +26,7 @@ export async function readLayoutDefaults(strapi: Core.Strapi): Promise<LayoutDef
   try {
     const record = await strapi
       .documents(SITE_SETTING_UID as any)
-      .findFirst({ populate: { layout: { populate: { page: true, row: true, column: true } } } as any });
+      .findFirst({ populate: { layout: { populate: LAYOUT_POPULATE } } as any });
     return resolveLayoutDefaults((record as { layout?: unknown } | null)?.layout);
   } catch {
     return resolveLayoutDefaults(undefined);

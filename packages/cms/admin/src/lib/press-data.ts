@@ -22,6 +22,21 @@ export function fetchPressSchema(): Promise<PressSchema> {
   return schemaPromise;
 }
 
+/**
+ * Clears the cached schema promise and refetches. The module-level cache above
+ * is sound for the PALETTE half of the payload (registry data — a change needs
+ * a Strapi restart, which reloads the admin bundle anyway), but `layoutDefaults`
+ * is EDITABLE Site Settings data: within one admin SPA session, an editor can
+ * save a new site default, navigate to a page's Composition field, and still see
+ * the builder name the pre-edit value off the stale cached promise. Call this on
+ * every builder mount so a fresh form always names the current site default —
+ * one request per open, which is exactly what the cache saves ACROSS mounts.
+ */
+export function refreshPressSchema(): Promise<PressSchema> {
+  schemaPromise = null;
+  return fetchPressSchema();
+}
+
 export function fetchPages(): Promise<PageOption[]> {
   pagesPromise ??= fetch('/api/pages')
     .then((res) => (res.ok ? res.json() : { data: [] }))

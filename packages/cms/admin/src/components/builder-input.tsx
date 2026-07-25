@@ -14,7 +14,7 @@ import { Box, Button, Field, Flex, NumberInput, SingleSelect, SingleSelectOption
 import { Image } from '@strapi/icons';
 import type { ContainerKey, Node, PressSchema, PressTree, Slot } from '@ogs-tech/press-shared';
 import { PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
-import { fetchPressSchema } from '../lib/press-data';
+import { refreshPressSchema } from '../lib/press-data';
 import { layoutDefaultsOf } from '../lib/form-model';
 import { patchContainer, type Forest } from '../lib/tree-ops';
 import { ContainerSection, TreeEditor } from './tree-editor';
@@ -135,7 +135,10 @@ export default function BuilderInput({ name, attribute, value, disabled, label, 
   const [loadError, setLoadError] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
-    fetchPressSchema()
+    // Refetch on every mount, not the module-cached fetchPressSchema: the admin
+    // is an SPA, and layoutDefaults is EDITABLE Site Settings data — a stale
+    // cached payload would name a pre-edit site default (see refreshPressSchema).
+    refreshPressSchema()
       .then((s) => live && setSchema(s))
       .catch((e) => live && setLoadError(String(e)));
     return () => { live = false; };

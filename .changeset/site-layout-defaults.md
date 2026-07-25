@@ -39,7 +39,9 @@ argument (`rowGap(attrs, layout.row)`, `stackGap(attrs, layout.page)`, …) and
 `TreeRenderer` threads `site.layout` beside `registry`. `mapSiteSettings`
 resolves the key FAIL-TO-DEFAULT, joining `theme` and `plugins.cookieConsent`
 rather than the identity/SEO fail-to-empty rule: an unreachable CMS renders with
-the engine's layout, not with none. `watchSchema` now compares the
+the engine's layout, not with none. If you construct `ResolvedPressConfig`
+directly or call `rowGap`/`rowAlign`/`rowWidth`/`stackGap`/`cellAlign` outside
+`TreeRenderer`, add the new second argument. `watchSchema` now compares the
 type-relevant slice of the schema payload (`contentTypes`/`components`/`tree`)
 instead of the raw body, so editing a layout default no longer looks like a type
 change; a non-JSON body (a cms mid-restart) still compares raw.

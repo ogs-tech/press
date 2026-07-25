@@ -125,6 +125,54 @@ describe('BuilderInput (tree mode)', () => {
     await act(async () => { (body.querySelector('[data-press-container-toggle]') as HTMLButtonElement).click(); });
     expect(body.textContent).toContain('Site default · Spacious');
   });
+
+  it('refreshes the schema on every mount, so a second builder open never names a stale site default (Item 1)', async () => {
+    let schemaCalls = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (String(url).includes('/api/press/schema')) {
+          schemaCalls += 1;
+          // The admin is an SPA: between the two mounts below, an editor is
+          // presumed to have saved a NEW Site Settings Layout value — the served
+          // gap flips from 'compact' to 'spacious'.
+          const gap = schemaCalls === 1 ? 'compact' : 'spacious';
+          return { ok: true, json: async () => ({ ...SCHEMA, layoutDefaults: { page: { gap }, row: {}, column: {} } }) };
+        }
+        return { ok: true, json: async () => ({ data: [] }) };
+      }),
+    );
+
+    // First mount — names the pre-edit site default.
+    await act(async () => {
+      render(<BuilderInput name="body" attribute={{}} value={undefined} onChange={() => {}} />);
+    });
+    await flush();
+    let body = container.querySelector('[data-press-slot="body"]') as HTMLElement;
+    await act(async () => { (body.querySelector('[data-press-container-toggle]') as HTMLButtonElement).click(); });
+    expect(body.textContent).toContain('Site default · Compact');
+    expect(schemaCalls).toBe(1);
+
+    // Unmount + remount on a fresh root — simulates Strapi tearing down this
+    // field's component instance (e.g. navigating away and back) without a full
+    // browser reload. A never-invalidated module cache would serve the SAME
+    // promise here and keep naming the pre-edit value.
+    await act(async () => { root.unmount(); });
+    container.remove();
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    await act(async () => {
+      render(<BuilderInput name="body" attribute={{}} value={undefined} onChange={() => {}} />);
+    });
+    await flush();
+    expect(schemaCalls).toBe(2); // second mount issued a FRESH fetch, not a cached promise
+
+    body = container.querySelector('[data-press-slot="body"]') as HTMLElement;
+    await act(async () => { (body.querySelector('[data-press-container-toggle]') as HTMLButtonElement).click(); });
+    expect(body.textContent).toContain('Site default · Spacious');
+  });
 });
 
 describe('BuilderInput (slots mode)', () => {

@@ -173,11 +173,11 @@ cascade handles mobile-first inheritance.
 row-ratio control), and `MAX_ROW_COLUMNS` (shared validator, the old 1–4
 column cap) are all gone; the builder's own `MAX_COLUMNS` is now 12.
 
-**Why two surfaces named `layout`.** (1) DEV-facing — the React primitives above,
+**Why three surfaces named `layout`.** (1) DEV-facing — the React primitives above,
 consumed by `TreeRenderer`, engine organisms, future page-set-plugin templates,
-and adopter custom blocks. (2) CMS-facing — the `preset-layout` Atomic Design
-category is no longer reserved-empty: `preset-layout.container/row/column` are
-the composition tree's own node-shape descriptors, pure schema the builder's
+and adopter custom blocks. (2) CMS-facing NODE SHAPES — the `preset-layout` Atomic
+Design category is no longer reserved-empty: `preset-layout.container/row/column`
+are the composition tree's own node-shape descriptors, pure schema the builder's
 admin form generator (`admin/src/lib/form-model.ts`) reads to build the row/column
 edit forms. `container` is the ONE shared `ContainerAttrs` surface — row and
 column both reference it via a `component:` field, so the "Container" form
@@ -186,6 +186,17 @@ is ever directly PLACEABLE as a tree block: the builder's "Add node" picker
 excludes the whole category (`NON_PLACEABLE = /^preset-(molecule|config|layout|
 template)$/` in `form-model.ts`) — a row/column is minted structurally (the "Add
 Row" control, or column recursion), never chosen from the palette like a block is.
+(3) CMS-facing SITE DEFAULTS — a DIFFERENT category, `preset-config.layout-{page,
+row,column}`, are the Site Settings fields (a `layout` group) that
+`resolveLayoutDefaults` turns into `LayoutDefaults` (`packages/shared/src/
+layout-defaults.ts`); see "Build-time anchors vs. runtime Site Settings" below.
+This is a real naming collision, not a coincidence of prose — it already bit this
+feature once: the implementation plan named a new import `layoutRowSchema`, which
+already existed for surface (2)'s `preset-layout.row` descriptor, and silently
+shadowed it until a previously-passing test regressed. Keep the two CMS-facing
+surfaces straight: `preset-layout.*` never carries a VALUE (a form-shape
+descriptor); `preset-config.layout-*` never describes a NODE (an editorial
+default).
 
 **Data-attr namespace is distinct from blocks.** Primitives use
 `data-press-layout="<primitive>"`, deliberately not `data-block="preset-*"`.
@@ -322,8 +333,9 @@ about that belongs to press" (`serialize-schema.ts`, `admin/src/lib/form-model.t
     layer, unified from the old `section.*`/`chrome.*` palettes. The old `columns` organism
     is RETIRED — its job (2–4 column layouts, closed `ratio`/`gap`/`verticalAlign` enums) is
     now native tree recursion (`RowNode`/`ColumnNode`, unlimited depth), not a discrete block.
-  - `preset-config.*` — seo, theme-colors, theme-radius, cookie-consent, cookie-category:
-    non-block settings referenced by `component:` fields on Site Settings, never a tree node.
+  - `preset-config.*` — seo, theme-colors, theme-radius, cookie-consent, cookie-category,
+    layout-page, layout-row, layout-column: non-block settings referenced by `component:`
+    fields on Site Settings, never a tree node.
   - `preset-layout.{container,row,column}` — no longer reserved-empty: pure registry
     descriptors the builder's admin form generator reads to build the row/column edit forms
     (see "Layout primitives" above for the full mechanics). Never placed as a tree block

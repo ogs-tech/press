@@ -1,5 +1,23 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join, dirname } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { containerFieldLabel, containerOptionLabel } from './palette-labels';
+
+// The six field-label strings are a THREE-copy contract: this admin-side map,
+// plus the server-side `preset-config.layout-{page,row,column}` component JSON
+// (metadatas edit label), plus each side's own test pinning its own literal.
+// Nothing previously compared the two SOURCES to each other — a copy-edit of
+// one JSON label could go green here and in inject-components.test.ts while
+// silently breaking the builder's "Site default · …" traceability. Read the
+// server JSON directly (node:fs, not an import) to sidestep the admin/server
+// tsconfig rootDirs split.
+const configDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'server', 'src', 'components', 'config');
+const readComponent = (file: string) => JSON.parse(readFileSync(join(configDir, file), 'utf8'));
+
+const LAYOUT_PAGE = readComponent('layout-page.json');
+const LAYOUT_ROW = readComponent('layout-row.json');
+const LAYOUT_COLUMN = readComponent('layout-column.json');
 
 describe('containerFieldLabel', () => {
   it('names `gap` per LEVEL — two different physical axes, never one shared label', () => {
@@ -16,6 +34,15 @@ describe('containerFieldLabel', () => {
 
   it('degrades to the generic field label for a level/key pair with no entry', () => {
     expect(containerFieldLabel('layout', 'verticalAlign')).toBe('Vertical Align');
+  });
+
+  it('matches the Site Settings `preset-config.layout-*` component labels — the two SOURCES, not a third copy', () => {
+    expect(containerFieldLabel('layout', 'gap')).toBe(LAYOUT_PAGE.config.metadatas.gap.edit.label);
+    expect(containerFieldLabel('row', 'width')).toBe(LAYOUT_ROW.config.metadatas.width.edit.label);
+    expect(containerFieldLabel('row', 'gap')).toBe(LAYOUT_ROW.config.metadatas.gap.edit.label);
+    expect(containerFieldLabel('row', 'verticalAlign')).toBe(LAYOUT_ROW.config.metadatas.verticalAlign.edit.label);
+    expect(containerFieldLabel('column', 'gap')).toBe(LAYOUT_COLUMN.config.metadatas.gap.edit.label);
+    expect(containerFieldLabel('column', 'verticalAlign')).toBe(LAYOUT_COLUMN.config.metadatas.verticalAlign.edit.label);
   });
 });
 

@@ -5,7 +5,7 @@
  * working form with zero admin code. `preset-molecule.link` needs NO special
  * case — its `page` relation maps to the pageRef dropdown like any other.
  */
-import { DEFAULT_LAYOUT, type Attr, type ContainerKey, type LayoutDefaults, type PressSchema } from '@ogs-tech/press-shared';
+import { resolveLayoutDefaults, type Attr, type ContainerKey, type LayoutDefaults, type PressSchema } from '@ogs-tech/press-shared';
 
 export type FieldKind =
   | 'text' | 'textarea' | 'select' | 'checkbox' | 'number'
@@ -73,9 +73,11 @@ export function applicableContainerAttrs(
   return ['gap', 'verticalAlign'];
 }
 
-/** The site layout defaults the served schema carries — the ONE `?? DEFAULT_LAYOUT`
- *  in the admin, so an older cms that omits the key degrades identically everywhere. */
-export const layoutDefaultsOf = (schema: PressSchema): LayoutDefaults => schema.layoutDefaults ?? DEFAULT_LAYOUT;
+/** The site layout defaults the served schema carries — routed through the shared
+ *  `resolveLayoutDefaults` sanitizer (not a bare `?? DEFAULT_LAYOUT`) so a partial or
+ *  malformed payload degrades PER KEY, never handing out the shared const by reference,
+ *  and an older cms that omits the key degrades identically everywhere. */
+export const layoutDefaultsOf = (schema: PressSchema): LayoutDefaults => resolveLayoutDefaults(schema.layoutDefaults);
 
 /** Categories whose components are never PLACED as blocks (nested-only / settings / descriptors). */
 const NON_PLACEABLE = /^preset-(molecule|config|layout|template)$/;
