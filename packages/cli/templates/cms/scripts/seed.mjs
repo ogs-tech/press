@@ -3,7 +3,7 @@
 // type (identity/SEO + theme + a demo navbar with links and CTA), uploads one
 // tiny PNG (the image-atom cover — the media-crosses-REST proof), and creates a
 // PUBLISHED 'home' page kept deliberately SIMPLE (a few components + one 50-50
-// grid-layout row — see buildHomeBody), so the first `press dev` renders a
+// grid-system row — see buildHomeBody), so the first `press dev` renders a
 // branded, themed, navigable site whose body demonstrates components and the
 // grid system without being a pre-filled kitchen sink.
 // Skip-if-empty: seeds only a fresh CMS — existing content is never overwritten
