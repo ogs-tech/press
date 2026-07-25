@@ -42,6 +42,10 @@ export interface ContainerAttrs {
   verticalAlign?: VerticalAlign;
 }
 
+/** The three container attr keys, named once — read by the validator's enum map,
+ *  the layout defaults resolver, and the builder's per-level label maps. */
+export type ContainerKey = keyof ContainerAttrs;
+
 /**
  * A placed block: `component` is a palette uid (`preset-atom.paragraph`,
  * `custom-organism.callout`); `data` is validated against that component's

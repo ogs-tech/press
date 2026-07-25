@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateNodeArray, validatePressTree } from './validate-tree';
+import { CONTAINER_ENUMS, validateNodeArray, validatePressTree } from './validate-tree';
 import type { PressTree } from './tree';
 
 const block = (component: string, data: Record<string, unknown> = {}) => ({
@@ -197,5 +197,13 @@ describe('validateNodeArray', () => {
   it('rejects non-arrays and invalid members', () => {
     expect(validateNodeArray({}).value).toBeNull();
     expect(validateNodeArray([{ id: 'x', type: 'column', span: { base: 12 }, children: [] }]).value).toBeNull();
+  });
+});
+
+describe('CONTAINER_ENUMS', () => {
+  it('is the ONE copy of the allowed container-attr values', () => {
+    expect(CONTAINER_ENUMS.width).toEqual(['prose', 'lg', 'full']);
+    expect(CONTAINER_ENUMS.gap).toEqual(['compact', 'normal', 'spacious']);
+    expect(CONTAINER_ENUMS.verticalAlign).toEqual(['top', 'center', 'bottom']);
   });
 });

@@ -8,9 +8,16 @@
  * contract itself, owned by neither side (Spec §5.2: the generator stays
  * decoupled from Strapi's internal type format).
  *
- * Consumed type-only (`import type`), so it never enters either package's
- * runtime/published artifact — purely a build-time, single-source-of-truth dep.
+ * NO LONGER type-only. Alongside the types this package ships RUNTIME values —
+ * `PRESS_TREE_VERSION`, `validatePressTree`/`validateNodeArray`,
+ * `CONTAINER_ENUMS`, `DEFAULT_LAYOUT`/`resolveLayoutDefaults` — so it is a
+ * PUBLISHED dependency: press-cms inlines it into its compiled `dist`
+ * (`strapi-plugin build`) and press-web consumes the source (transpiled by the
+ * Next host). The rule that survives: zero Strapi/Next imports, so the same code
+ * runs unmodified on the cms write path and the web render path.
  */
+
+import type { LayoutDefaults } from './layout-defaults';
 
 /**
  * One serialized attribute. `type` is optional and an open index signature is
@@ -33,9 +40,12 @@ export interface Attr {
 export interface PressSchema {
   /** The composition-tree contract version served by this cms (absent on pre-tree engines). */
   tree?: { version: number };
+  /** Site-level layout defaults served by this cms (absent on pre-layout engines). */
+  layoutDefaults?: LayoutDefaults;
   contentTypes: Record<string, { uid: string; info: unknown; attributes: Record<string, Attr> }>;
   components: Record<string, { uid: string; attributes: Record<string, Attr> }>;
 }
 
 export * from './tree';
 export * from './validate-tree';
+export * from './layout-defaults';

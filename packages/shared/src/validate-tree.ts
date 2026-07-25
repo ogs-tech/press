@@ -10,7 +10,7 @@
  * warnings (strict write); readers render whenever `value` is non-null
  * (tolerant read).
  */
-import type { ColumnNode, ColumnSpan, ContainerAttrs, LayoutNode, Node, PressTree, RowNode, Slot } from './tree';
+import type { ColumnNode, ColumnSpan, ContainerAttrs, ContainerKey, LayoutNode, Node, PressTree, RowNode, Slot } from './tree';
 import { PRESS_TREE_VERSION } from './tree';
 
 export interface TreeIssue {
@@ -24,9 +24,19 @@ export interface TreeResult<T> {
   warnings: TreeIssue[];
 }
 
-const WIDTHS: readonly string[] = ['prose', 'lg', 'full'];
-const GAPS: readonly string[] = ['compact', 'normal', 'spacious'];
-const VERTICAL_ALIGNS: readonly string[] = ['top', 'center', 'bottom'];
+/**
+ * The allowed value list per container attr — the ONE copy of these enums.
+ * Read by `sanitizeContainer` below, by `resolveLayoutDefaults`
+ * (layout-defaults.ts), by the cms `preset-config.layout*` component schemas
+ * (pinned by a test), and by the builder's own selects. A `Record<ContainerKey>`
+ * so adding an attr to `ContainerAttrs` is a compile error until its values are
+ * declared here.
+ */
+export const CONTAINER_ENUMS: Record<ContainerKey, readonly string[]> = {
+  width: ['prose', 'lg', 'full'],
+  gap: ['compact', 'normal', 'spacious'],
+  verticalAlign: ['top', 'center', 'bottom'],
+};
 
 interface Ctx {
   errors: TreeIssue[];
@@ -61,9 +71,9 @@ function sanitizeContainer(input: unknown, path: string, ctx: Ctx): ContainerAtt
       warn(ctx, `${path}.${key}`, `invalid value ${JSON.stringify(v)} — attribute dropped`);
     }
   };
-  pick('width', WIDTHS);
-  pick('gap', GAPS);
-  pick('verticalAlign', VERTICAL_ALIGNS);
+  pick('width', CONTAINER_ENUMS.width);
+  pick('gap', CONTAINER_ENUMS.gap);
+  pick('verticalAlign', CONTAINER_ENUMS.verticalAlign);
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
