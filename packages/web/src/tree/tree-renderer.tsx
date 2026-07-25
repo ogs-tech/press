@@ -7,7 +7,7 @@
  * already sanitized by the shared validator.
  */
 import type { ComponentType, CSSProperties } from 'react';
-import type { ColumnNode, Node, RowNode } from '@ogs-tech/press-shared';
+import type { ColumnNode, LayoutDefaults, Node, RowNode } from '@ogs-tech/press-shared';
 import { validatePressTree } from '@ogs-tech/press-shared';
 import { atomBlocks } from '../atom-blocks';
 import { organismBlocks } from '../organism-blocks';
@@ -40,42 +40,42 @@ function BlockView({ node, registry }: { node: Node & { type: 'block' }; registr
   return <Component {...node.data} />;
 }
 
-function ColumnView({ column, registry }: { column: ColumnNode; registry: Registry }) {
-  const gap = stackGap(column.container);
-  const align = cellAlign(column.container);
+function ColumnView({ column, registry, layout }: { column: ColumnNode; registry: Registry; layout: LayoutDefaults }) {
+  const gap = stackGap(column.container, layout.column);
+  const align = cellAlign(column.container, layout.column);
   const style = gap ? ({ ['--press-cell-gap' as string]: gap } as CSSProperties) : undefined;
   return (
     <Column span={spanFor(column)}>
       <div data-press-cell="" data-cell-align={align} style={style}>
-        <NodeList nodes={column.children} registry={registry} top={false} />
+        <NodeList nodes={column.children} registry={registry} layout={layout} top={false} />
       </div>
     </Column>
   );
 }
 
-function RowView({ row, registry, top }: { row: RowNode; registry: Registry; top: boolean }) {
+function RowView({ row, registry, layout, top }: { row: RowNode; registry: Registry; layout: LayoutDefaults; top: boolean }) {
   const grid = (
-    <Grid gap={rowGap(row.container)} alignItems={rowAlign(row.container)}>
+    <Grid gap={rowGap(row.container, layout.row)} alignItems={rowAlign(row.container, layout.row)}>
       {row.children.map((column) => (
-        <ColumnView key={column.id} column={column} registry={registry} />
+        <ColumnView key={column.id} column={column} registry={registry} layout={layout} />
       ))}
     </Grid>
   );
   // width applies to top-level rows only (Spec §3); nested rows fill their cell.
   if (!top) return grid;
   return (
-    <Container as="section" maxWidth={rowWidth(row.container)}>
+    <Container as="section" maxWidth={rowWidth(row.container, layout.row)}>
       {grid}
     </Container>
   );
 }
 
-function NodeList({ nodes, registry, top }: { nodes: Node[]; registry: Registry; top: boolean }) {
+function NodeList({ nodes, registry, layout, top }: { nodes: Node[]; registry: Registry; layout: LayoutDefaults; top: boolean }) {
   return (
     <>
       {nodes.map((node) => {
         if (node.type === 'block') return <BlockView key={node.id} node={node} registry={registry} />;
-        if (node.type === 'row') return <RowView key={node.id} row={node} registry={registry} top={top} />;
+        if (node.type === 'row') return <RowView key={node.id} row={node} registry={registry} layout={layout} top={top} />;
         // A stray column never survives the validator; belt-and-braces skip.
         return null;
       })}
@@ -85,6 +85,10 @@ function NodeList({ nodes, registry, top }: { nodes: Node[]; registry: Registry;
 
 export function TreeRenderer({ body, site, components = {} }: TreeRendererProps) {
   const registry: Registry = { ...atomBlocks, ...organismBlocks, ...components };
+  // Site layout defaults ride alongside `registry` as an explicit prop, not React
+  // context: this subtree is server-first and uses no context today, and four
+  // signatures cost less than introducing a provider.
+  const layout = site.layout;
   const { value: tree, errors } = validatePressTree(body);
   if (!tree && process.env.NODE_ENV !== 'production') {
     console.warn('[press/web] malformed composition tree — rendering empty body', errors);
@@ -99,20 +103,20 @@ export function TreeRenderer({ body, site, components = {} }: TreeRendererProps)
         footer: hydrateEngineBlocks(site.pageDefaults.footer, brand, site.routes.home),
         rootContainer: undefined,
       };
-  const gap = stackGap(resolved.rootContainer);
+  const gap = stackGap(resolved.rootContainer, layout.page);
   return (
     <>
       <header>
-        <NodeList nodes={resolved.header} registry={registry} top />
+        <NodeList nodes={resolved.header} registry={registry} layout={layout} top />
       </header>
       <main
         data-press-stack={gap ? '' : undefined}
         style={gap ? ({ ['--press-tree-gap' as string]: gap } as CSSProperties) : undefined}
       >
-        <NodeList nodes={resolved.children} registry={registry} top />
+        <NodeList nodes={resolved.children} registry={registry} layout={layout} top />
       </main>
       <footer>
-        <NodeList nodes={resolved.footer} registry={registry} top />
+        <NodeList nodes={resolved.footer} registry={registry} layout={layout} top />
       </footer>
     </>
   );

@@ -1,14 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement } from 'react';
-import type { Node, PressTree } from '@ogs-tech/press-shared';
+import { DEFAULT_LAYOUT, type LayoutDefaults, type Node, type PressTree } from '@ogs-tech/press-shared';
 import { TreeRenderer } from './tree-renderer';
 
-const site = (overrides: Partial<{ header: Node[]; footer: Node[] }> = {}) =>
+const site = (overrides: Partial<{ header: Node[]; footer: Node[]; layout: LayoutDefaults }> = {}) =>
   ({
     brand: { name: 'Press', favicon: '' },
     routes: { home: 'home' },
     pageDefaults: { header: overrides.header ?? [], footer: overrides.footer ?? [] },
+    layout: overrides.layout ?? DEFAULT_LAYOUT,
   }) as any;
 
 const tree = (children: Node[], extra: Partial<PressTree['root']> = {}): PressTree => ({
@@ -101,5 +102,40 @@ describe('TreeRenderer', () => {
     expect(html).not.toContain('mystery');
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('custom-organism.mystery'));
     warn.mockRestore();
+  });
+
+  it('resolves an undeclared node attr against the SITE layout defaults at every level', () => {
+    const layout: LayoutDefaults = {
+      page: { gap: 'compact' },
+      row: { width: 'full', gap: 'compact', verticalAlign: 'center' },
+      column: { gap: 'spacious', verticalAlign: 'bottom' },
+    };
+    const body = tree([{
+      id: 'r', type: 'row', children: [
+        { id: 'c', type: 'column', span: { base: 12 }, children: [paragraph('p', 'x')] },
+      ],
+    }]);
+    const html = renderToStaticMarkup(createElement(TreeRenderer, { body, site: site({ layout }) }));
+    expect(html).toContain('data-max-width="full"');                             // row.width
+    expect(html).toContain('--press-grid-gap-current:var(--press-grid-gap-sm)');  // row.gap compact
+    expect(html).toContain('data-align-items="center"');                          // row.verticalAlign
+    expect(html).toContain('data-cell-align="end"');                              // column.verticalAlign
+    expect(html).toContain('--press-cell-gap:var(--press-space-7)');              // column.gap spacious
+    expect(html).toMatch(/<main[^>]*data-press-stack[^>]*--press-tree-gap:var\(--press-space-3\)/); // page.gap
+  });
+
+  it('lets a node container attr override the site default', () => {
+    const layout: LayoutDefaults = {
+      page: {},
+      row: { width: 'full', gap: 'compact', verticalAlign: 'center' },
+      column: { verticalAlign: 'top' },
+    };
+    const body = tree([{
+      id: 'r', type: 'row', container: { width: 'prose' },
+      children: [{ id: 'c', type: 'column', span: { base: 12 }, children: [paragraph('p', 'x')] }],
+    }]);
+    const html = renderToStaticMarkup(createElement(TreeRenderer, { body, site: site({ layout }) }));
+    expect(html).toContain('data-max-width="prose"');   // node wins
+    expect(html).toContain('data-align-items="center"'); // untouched attr still inherits the site
   });
 });
