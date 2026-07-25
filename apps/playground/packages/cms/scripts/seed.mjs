@@ -5,7 +5,7 @@
 // PUBLISHED 'home' page kept deliberately SIMPLE (a few components + one 50-50
 // grid-layout row — see buildHomeBody), so the first `press dev` renders a
 // branded, themed, navigable site whose body demonstrates components and the
-// grid layout without being a pre-filled kitchen sink.
+// grid system without being a pre-filled kitchen sink.
 // Skip-if-empty: seeds only a fresh CMS — existing content is never overwritten
 // (delete cms/.tmp to reset).
 import { createRequire } from 'node:module';

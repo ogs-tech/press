@@ -38,7 +38,7 @@ const row = (children, container) => ({ id: randomUUID(), type: 'row', children,
 /**
  * The demo home as a PressTree (Spec §4 seeds): a deliberately SIMPLE showcase of
  * the two things worth demonstrating up front — the COMPONENTS you place (a few
- * blocks + a note on the wider palette) and the GRID LAYOUT (a 50-50 row split
+ * blocks + a note on the wider palette) and the GRID SYSTEM (a 50-50 row split
  * into columns, with a component in each cell; the image component also carries
  * the media-crosses-REST proof via its `image` assetId). No hero, no deep
  * nesting — the rest of the palette is composed in the admin builder, not
@@ -59,12 +59,12 @@ export const buildHomeBody = ({ imageAssetId }) => ({
         format: 'unordered',
         content: ['Atoms — heading, paragraph, list, quote, image, button', 'Organisms — hero, cta and site chrome', 'Your own custom-* blocks, anywhere in the tree'].join('\n'),
       }),
-      block('preset-atom.heading', { text: 'Grid layout', level: '2' }),
-      // Grid layout: two columns, stacked on phones (base 12) and 50/50 on desktop (md 6).
+      block('preset-atom.heading', { text: 'Grid system', level: '2' }),
+      // Grid system: two columns, stacked on phones (base 12) and 50/50 on desktop (md 6).
       row([
         column({ base: 12, md: 6 }, [block('preset-atom.image', { image: { assetId: imageAssetId }, caption: 'An image component inside a column' })]),
         column({ base: 12, md: 6 }, [block('preset-atom.paragraph', {
-          content: 'Rows and columns are the grid layout. Here an image fills the left column and this paragraph the right — a 12/6 span split. Compose the rest in the builder.',
+          content: 'Rows and columns are the grid system. Here an image fills the left column and this paragraph the right — a 12/6 span split. Compose the rest in the builder.',
         })]),
       ]),
     ],
