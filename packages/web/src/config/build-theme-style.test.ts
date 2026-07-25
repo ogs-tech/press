@@ -3,6 +3,7 @@ import { buildThemeStyle } from './build-theme-style';
 import { DEFAULT_THEME } from './default-theme';
 import { mapCookieConsent } from '../plugins/cookie-consent/map-cookie-consent';
 import type { ResolvedPressConfig } from './types';
+import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 
 const baseResolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
@@ -17,6 +18,7 @@ const baseResolved: ResolvedPressConfig = {
     radius: { ...DEFAULT_THEME.radius },
   },
   pageDefaults: { header: [], footer: [] },
+  layout: DEFAULT_LAYOUT,
   plugins: { cookieConsent: mapCookieConsent(null, 'home') },
 };
 

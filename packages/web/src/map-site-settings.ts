@@ -1,4 +1,4 @@
-import { validateNodeArray, type Node } from '@ogs-tech/press-shared';
+import { resolveLayoutDefaults, validateNodeArray, type Node } from '@ogs-tech/press-shared';
 import type { BuildTimeConfig, ResolvedPressConfig, SiteSettingsData } from './config/types';
 import { DEFAULT_THEME } from './config/default-theme';
 import { mapCookieConsent } from './plugins/cookie-consent/map-cookie-consent';
@@ -77,6 +77,9 @@ export function mapSiteSettings(
       header: mapSlot(c.pageDefaults?.header, 'header'),
       footer: mapSlot(c.pageDefaults?.footer, 'footer'),
     },
+    // Fail-to-DEFAULT (layout-defaults spec §5), like `theme` above and unlike
+    // identity/SEO: an unreachable CMS renders with the engine's layout, not none.
+    layout: resolveLayoutDefaults(c.layout),
     plugins: {
       // Fails OPEN (cookie-consent Spec §3) — unlike identity/SEO, an
       // unreachable CMS still yields an enabled banner with total default copy.

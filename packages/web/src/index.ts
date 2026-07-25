@@ -32,6 +32,7 @@ export type {
   Gap,
   VerticalAlign,
   ContainerWidth,
+  LayoutDefaults,
 } from '@ogs-tech/press-shared';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';

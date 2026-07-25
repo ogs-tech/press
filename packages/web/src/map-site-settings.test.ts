@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mapSiteSettings } from './map-site-settings';
 import type { BuildTimeConfig } from './config/types';
+import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 
 const buildTime: BuildTimeConfig = {
   routes: { home: 'home' },
@@ -99,6 +100,23 @@ describe('mapSiteSettings', () => {
 
   it('maps an absent/unreachable CMS to empty pageDefaults', () => {
     expect(mapSiteSettings(buildTime, null).pageDefaults).toEqual({ header: [], footer: [] });
+  });
+
+  it('resolves layout to DEFAULT_LAYOUT for a null/empty CMS (fail-to-DEFAULT, not fail-to-empty)', () => {
+    expect(mapSiteSettings(buildTime, null).layout).toEqual(DEFAULT_LAYOUT);
+    expect(mapSiteSettings(buildTime, {}).layout).toEqual(DEFAULT_LAYOUT);
+  });
+
+  it('lets a CMS layout value win per key while siblings keep the engine default', () => {
+    const r = mapSiteSettings(buildTime, { layout: { row: { width: 'full' }, column: { gap: 'compact' } } } as any);
+    expect(r.layout.row).toEqual({ width: 'full', gap: 'normal', verticalAlign: 'top' });
+    expect(r.layout.column).toEqual({ verticalAlign: 'top', gap: 'compact' });
+    expect(r.layout.page).toEqual({});
+  });
+
+  it('keeps an unrecognized layout value from breaking the document', () => {
+    const r = mapSiteSettings(buildTime, { layout: { row: { gap: 'huge' } } } as any);
+    expect(r.layout.row.gap).toBe('normal');
   });
 });
 

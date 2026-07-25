@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildMetadata } from './build-metadata';
 import { mapCookieConsent } from '../plugins/cookie-consent/map-cookie-consent';
 import type { ResolvedPressConfig } from './types';
+import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 
 const resolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
@@ -25,6 +26,7 @@ const resolved: ResolvedPressConfig = {
     radius: { xs: '6px', sm: '10px', md: '14px', lg: '20px' },
   },
   pageDefaults: { header: [], footer: [] },
+  layout: DEFAULT_LAYOUT,
   plugins: { cookieConsent: mapCookieConsent(null, 'home') },
 };
 

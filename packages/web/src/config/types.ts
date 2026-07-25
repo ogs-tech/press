@@ -1,4 +1,4 @@
-import type { Node } from '@ogs-tech/press-shared';
+import type { LayoutDefaults, Node } from '@ogs-tech/press-shared';
 import type { Canonical } from '../urn';
 import type { RawCookieConsent, ResolvedCookieConsentPlugin } from '../plugins/cookie-consent/types';
 import type { ResolvedLink } from '../link';
@@ -118,6 +118,15 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
     footer: Node[];
   };
   /**
+   * Site-level layout defaults (layout-defaults spec §5), TOTAL — the baseline
+   * `container-attrs.ts` resolves an undeclared node attr against. A fail-to-DEFAULT
+   * key (joining `theme` and `plugins.cookieConsent`, NOT the identity/SEO
+   * fail-to-empty rule): a site with an unreachable CMS should render with the
+   * engine's layout, not with no layout. Required, hence a press-web major — the
+   * same discipline as `urn` / `pageDefaults` / `plugins`.
+   */
+  layout: LayoutDefaults;
+  /**
    * Engine plugins (cookie-consent Spec §1): a NAMED map — one required key
    * per plugin, resolved TOTAL (defaults applied) even when the CMS is empty
    * or unreachable. Not an array: plugins are fixed engine features, not
@@ -170,4 +179,7 @@ export interface SiteSettingsData {
   cookieConsent?: RawCookieConsent | null;
   /** The two page-default slots (Spec §6): bare Node[] arrays, validated by mapSiteSettings. */
   pageDefaults?: { header?: unknown; footer?: unknown } | null;
+  /** The `preset-config.layout` group, RAW: sanitized downstream by
+   *  `resolveLayoutDefaults`, so the wire shape is never trusted here. */
+  layout?: unknown;
 }
