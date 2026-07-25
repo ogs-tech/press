@@ -89,6 +89,19 @@ Input which shape to render).
   "responsiveness never in the JSON" rule. Everything else stays code-side:
   `container` attrs are editorial intents only, mapped to `Responsive<T>`
   layout-primitive props by `web/src/tree/container-attrs.ts` (`GAP_TIERS`).
+  Their DEFAULTS are no longer code-side: an undeclared attr resolves against
+  CMS-owned `LayoutDefaults` (`shared/src/layout-defaults.ts` — one group per
+  tree level, `page`/`row`/`column`, because a row's `gap` is the space BETWEEN
+  columns while a page/column `gap` is stack rhythm), threaded to the pickers as
+  `site.layout` by `TreeRenderer`. Resolution order per attr: node value → site
+  default → a trailing literal that exists only as a TS type terminator.
+  `resolveLayoutDefaults` sanitizes per key (unknown value ⇒ engine default for
+  that key, never a document failure) and the whole key FAILS TO DEFAULT, not to
+  empty — `DEFAULT_LAYOUT`, the `DEFAULT_THEME` precedent. The builder names the
+  resolved value in every placeholder (`Site default · Content width`) instead of
+  the word "engine", reading it off the existing `/api/press/schema` fetch
+  (`layoutDefaults`) — which is why `watchSchema` now compares only the
+  type-relevant slice of that payload.
   `spanFor(column)` now passes the stored span straight to `<Column>` — the old
   `RATIO_SPANS`/`RATIO_SLOTS`/`setRowRatio` mapping table is retired.
 - **Ids are builder-minted** (`crypto.randomUUID`), used only as React keys and as
@@ -389,7 +402,9 @@ This split is recent and easy to get wrong:
   and `theme.fonts` (which `next/font` must know at build time). The engine **reads**
   this file but **never rewrites** it. A destructive `ThemeName` change fails `tsc`
   right at the `defineConfig` call site.
-- **Identity, SEO, theme color/radius VALUES, and the two `pageDefaults` composition-tree
+- **Identity, SEO, theme color/radius VALUES, layout DEFAULTS (`preset-config.layout`
+  → `layout-page`/`layout-row`/`layout-column`, mirrored 1:1 by `LayoutDefaults`),
+  and the two `pageDefaults` composition-tree
   slots (header/footer)** live in the CMS **"Site Settings"** single type — edited in the
   admin's "Composition" field (the same `plugin::press-cms.builder` custom field as page
   `body`, in `slots` mode: a bare `{ header: Node[]; footer: Node[] }` pair), fetched at
