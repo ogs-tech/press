@@ -89,6 +89,42 @@ describe('BuilderInput (tree mode)', () => {
     expect(emitted.value.root.children[0]).toMatchObject({ type: 'block', component: 'preset-atom.paragraph', data: {} });
     expect(typeof emitted.value.root.children[0].id).toBe('string');
   });
+
+  it('offers page-level Layout options in the Body section, naming the site default', async () => {
+    await act(async () => {
+      render(<BuilderInput name="body" attribute={{}} value={undefined} onChange={() => {}} />);
+    });
+    await flush();
+
+    const body = container.querySelector('[data-press-slot="body"]') as HTMLElement;
+    // the body's OWN container section, before any node card is expanded
+    const toggle = body.querySelector('[data-press-container-toggle]') as HTMLButtonElement;
+    expect(toggle).not.toBeNull();
+    await act(async () => { toggle.click(); });
+
+    // only `gap` applies to the layout root — no Width, no alignment
+    expect(body.textContent).toContain('Vertical rhythm');
+    expect(body.textContent).toContain('Site default · per-block spacing');
+    expect(body.textContent).not.toContain('Width');
+  });
+
+  it('names a CMS-served page gap in the body placeholder', async () => {
+    (globalThis.fetch as any) = vi.fn(async (url: string) => ({
+      ok: true,
+      json: async () =>
+        String(url).includes('/api/press/schema')
+          ? { ...SCHEMA, layoutDefaults: { page: { gap: 'spacious' }, row: {}, column: {} } }
+          : { data: [] },
+    }));
+    await act(async () => {
+      render(<BuilderInput name="body" attribute={{}} value={undefined} onChange={() => {}} />);
+    });
+    await flush();
+
+    const body = container.querySelector('[data-press-slot="body"]') as HTMLElement;
+    await act(async () => { (body.querySelector('[data-press-container-toggle]') as HTMLButtonElement).click(); });
+    expect(body.textContent).toContain('Site default · Spacious');
+  });
 });
 
 describe('BuilderInput (slots mode)', () => {

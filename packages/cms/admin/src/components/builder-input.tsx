@@ -12,11 +12,12 @@ import type { JSX } from 'react'; // @types/react 19 removed the global JSX name
 import { useStrapiApp } from '@strapi/strapi/admin';
 import { Box, Button, Field, Flex, NumberInput, SingleSelect, SingleSelectOption, Typography } from '@strapi/design-system';
 import { Image } from '@strapi/icons';
-import type { Node, PressSchema, PressTree, Slot } from '@ogs-tech/press-shared';
+import type { ContainerKey, Node, PressSchema, PressTree, Slot } from '@ogs-tech/press-shared';
 import { PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
 import { fetchPressSchema } from '../lib/press-data';
-import type { Forest } from '../lib/tree-ops';
-import { TreeEditor } from './tree-editor';
+import { layoutDefaultsOf } from '../lib/form-model';
+import { patchContainer, type Forest } from '../lib/tree-ops';
+import { ContainerSection, TreeEditor } from './tree-editor';
 
 interface BuilderInputProps {
   name: string;
@@ -177,14 +178,32 @@ export default function BuilderInput({ name, attribute, value, disabled, label, 
 
   const tree: PressTree = isRecord(parsed) && isRecord(parsed.root) ? (parsed as unknown as PressTree) : emptyTree();
   const setRoot = (patch: Partial<PressTree['root']>): void => emit({ ...tree, root: { ...tree.root, ...patch } });
+  /** Root-addressed container patch — same rule as the path-addressed
+   *  setContainerAttr (an emptied container disappears), via patchContainer. */
+  const setRootContainer = (key: ContainerKey, value: string | undefined): void => {
+    const container = patchContainer(tree.root.container, key, value);
+    const root = { ...tree.root };
+    if (container) root.container = container;
+    else delete root.container;
+    emit({ ...tree, root });
+  };
 
   return (
     <Flex direction="column" alignItems="stretch" gap={4} data-press-builder="tree">
       {label ? <Typography variant="beta" tag="h2">{label}</Typography> : null}
       <SlotEditor title="Header" slot={tree.root.header} schema={schema} disabled={disabled} onChange={(header) => setRoot({ header })} />
       <Section dataSlot="body" title="Body">
-        <TreeEditor forest={tree.root.children as Forest} schema={schema} disabled={disabled}
-          onChange={(children) => setRoot({ children: children as Node[] })} MediaField={MediaField} />
+        <>
+          {/* The layout ROOT's own attrs — only `gap` applies (rhythm between
+              top-level children). Slots mode has no root node, so this is
+              tree-mode only. */}
+          <ContainerSection nodeType="layout" topLevel container={tree.root.container}
+            defaults={layoutDefaultsOf(schema).page} disabled={disabled} onSet={setRootContainer} />
+          <Box marginTop={3}>
+            <TreeEditor forest={tree.root.children as Forest} schema={schema} disabled={disabled}
+              onChange={(children) => setRoot({ children: children as Node[] })} MediaField={MediaField} />
+          </Box>
+        </>
       </Section>
       <SlotEditor title="Footer" slot={tree.root.footer} schema={schema} disabled={disabled} onChange={(footer) => setRoot({ footer })} />
       {footer}
