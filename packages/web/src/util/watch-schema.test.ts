@@ -76,4 +76,65 @@ describe('watchSchema', () => {
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
+
+  it('ignores a change confined to editable values (layoutDefaults) — types did not change', async () => {
+    const controller = new AbortController();
+    const payload = (gap: string) => JSON.stringify({
+      tree: { version: 2 },
+      contentTypes: { 'plugin::press-cms.page': {} },
+      components: { 'preset-atom.paragraph': {} },
+      layoutDefaults: { page: {}, row: { gap }, column: {} },
+    });
+    const bodies = [payload('normal'), payload('spacious'), payload('compact')];
+    let i = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      const body = bodies[Math.min(i, bodies.length - 1)];
+      i += 1;
+      if (i >= bodies.length) controller.abort();
+      return okText(body);
+    }));
+
+    const onChange = vi.fn();
+    await watchSchema({ url: 'http://x', signal: controller.signal, intervalMs: 1, onChange });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('still fires when a component or content-type actually changes', async () => {
+    const controller = new AbortController();
+    const payload = (components: object) => JSON.stringify({
+      tree: { version: 2 },
+      contentTypes: {},
+      components,
+      layoutDefaults: { page: {}, row: {}, column: {} },
+    });
+    const bodies = [payload({}), payload({ 'custom-organism.callout': {} }), payload({ 'custom-organism.callout': {} })];
+    let i = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      const body = bodies[Math.min(i, bodies.length - 1)];
+      i += 1;
+      if (i >= bodies.length) controller.abort();
+      return okText(body);
+    }));
+
+    const onChange = vi.fn();
+    await watchSchema({ url: 'http://x', signal: controller.signal, intervalMs: 1, onChange });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to raw-body comparison for a non-JSON body (cms mid-restart)', async () => {
+    const controller = new AbortController();
+    const bodies = ['<html>restarting</html>', 'still not json', 'still not json'];
+    let i = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      const body = bodies[Math.min(i, bodies.length - 1)];
+      i += 1;
+      if (i >= bodies.length) controller.abort();
+      return okText(body);
+    }));
+
+    const onChange = vi.fn();
+    await watchSchema({ url: 'http://x', signal: controller.signal, intervalMs: 1, onChange });
+    // baseline · changed raw body fires once · unchanged
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
 });
