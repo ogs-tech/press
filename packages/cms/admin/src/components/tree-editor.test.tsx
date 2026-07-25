@@ -72,3 +72,65 @@ describe('TreeEditor span controls', () => {
     expect(badge()).toContain('12/12');
   });
 });
+
+/** Opens every collapsed "Layout options" section currently in the DOM. */
+const openLayoutOptions = async (): Promise<void> => {
+  const toggles = [...container.querySelectorAll('[data-press-container-toggle]')] as HTMLButtonElement[];
+  for (const toggle of toggles) await act(async () => { toggle.click(); });
+};
+
+describe('TreeEditor container sections', () => {
+  const forest = (): Forest => [newBlockNode('preset-organism.hero'), newRowNode()];
+
+  it('names the SITE default in every placeholder and never says "engine default"', async () => {
+    await act(async () => {
+      render(<TreeEditor forest={forest()} schema={SCHEMA} onChange={() => {}} MediaField={MediaField} />);
+    });
+    await act(async () => { buttonByText(container, 'Expand all').click(); });
+    await openLayoutOptions();
+
+    const text = container.textContent ?? '';
+    expect(text).not.toContain('engine default');
+    expect(text).toContain('Site default · Content width');     // row width  ← DEFAULT_LAYOUT lg
+    expect(text).toContain('Site default · Normal');             // row gap    ← DEFAULT_LAYOUT normal
+    expect(text).toContain('Site default · Top');                // vertical alignment ← top
+    expect(text).toContain('Site default · per-block spacing');  // column gap ← absent by default
+  });
+
+  it('labels the same `gap` key per level — "Column gap" on a row, "Vertical rhythm" in a column', async () => {
+    await act(async () => {
+      render(<TreeEditor forest={forest()} schema={SCHEMA} onChange={() => {}} MediaField={MediaField} />);
+    });
+    await act(async () => { buttonByText(container, 'Expand all').click(); });
+    await openLayoutOptions();
+
+    const text = container.textContent ?? '';
+    expect(text).toContain('Column gap');
+    expect(text).toContain('Vertical rhythm');
+    expect(text).toContain('Vertical align');
+    expect(text).toContain('Content align');
+    expect(text).toContain('Width');
+  });
+
+  it('reflects the CMS-served layoutDefaults, so the placeholder traces to the field an editor set', async () => {
+    const schema = {
+      ...SCHEMA,
+      layoutDefaults: {
+        page: {},
+        row: { width: 'full', gap: 'spacious', verticalAlign: 'center' },
+        column: { gap: 'compact', verticalAlign: 'bottom' },
+      },
+    } as unknown as PressSchema;
+    await act(async () => {
+      render(<TreeEditor forest={forest()} schema={schema} onChange={() => {}} MediaField={MediaField} />);
+    });
+    await act(async () => { buttonByText(container, 'Expand all').click(); });
+    await openLayoutOptions();
+
+    const text = container.textContent ?? '';
+    expect(text).toContain('Site default · Full bleed');
+    expect(text).toContain('Site default · Spacious');
+    expect(text).toContain('Site default · Compact');
+    expect(text).toContain('Site default · Bottom');
+  });
+});

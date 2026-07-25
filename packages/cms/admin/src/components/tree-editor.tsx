@@ -18,11 +18,12 @@ import {
   ArrowDown, ArrowUp, ChevronDown, ChevronRight, Plus, Trash,
 } from '@strapi/icons';
 import type {
-  BlockNode, ColumnNode, PressSchema, RowNode,
+  BlockNode, ColumnNode, ContainerAttrs, ContainerKey, LayoutDefaults, PressSchema, RowNode,
 } from '@ogs-tech/press-shared';
-import { applicableContainerAttrs, paletteGroups } from '../lib/form-model';
+import { CONTAINER_ENUMS } from '@ogs-tech/press-shared';
+import { applicableContainerAttrs, layoutDefaultsOf, paletteGroups } from '../lib/form-model';
 import {
-  blockIcon, blockLabel, categoryLabel, COLUMN_ICON, fieldLabel, ROW_ICON,
+  blockIcon, blockLabel, categoryLabel, COLUMN_ICON, containerFieldLabel, containerOptionLabel, ROW_ICON,
 } from '../lib/palette-labels';
 import {
   addColumn, effectiveSpan, insertNode, MAX_COLUMNS, moveNode, newBlockNode, newRowNode,
@@ -33,11 +34,6 @@ import { NodeForm } from './node-form';
 const SPAN_VALUES = Array.from({ length: 12 }, (_, i) => i + 1); // 1..12
 const TIERS = ['base', 'md', 'lg'] as const;
 type Tier = (typeof TIERS)[number];
-const CONTAINER_OPTIONS: Record<'width' | 'gap' | 'verticalAlign', string[]> = {
-  width: ['prose', 'lg', 'full'],
-  gap: ['compact', 'normal', 'spacious'],
-  verticalAlign: ['top', 'center', 'bottom'],
-};
 
 type MediaFieldComponent = Parameters<typeof NodeForm>[0]['MediaField'];
 
@@ -45,6 +41,8 @@ type MediaFieldComponent = Parameters<typeof NodeForm>[0]['MediaField'];
 interface TreeCtx {
   forest: Forest;
   schema: PressSchema;
+  /** Site layout defaults from the served schema — what every placeholder names. */
+  layoutDefaults: LayoutDefaults;
   disabled?: boolean;
   onChange(forest: Forest): void;
   MediaField: MediaFieldComponent;
@@ -94,13 +92,21 @@ function NodeControls({ label, disabled, onUp, onDown, onRemove }: {
   );
 }
 
-/** Collapsible "Layout options" — the shared container attrs applicable to this node. */
-function ContainerSection({ nodeType, topLevel, container, disabled, onSet }: {
-  nodeType: 'row' | 'column';
+/**
+ * Collapsible "Layout options" — the shared container attrs applicable to this
+ * node. An unset select does NOT mean "unknown": its placeholder NAMES the value
+ * that will be used (`Site default · Content width`), sourced from the CMS-owned
+ * LayoutDefaults, and clearing is phrased as returning to that default. Exported
+ * so builder-input can render the layout-root (page-level) section too.
+ */
+export function ContainerSection({ nodeType, topLevel, container, defaults, disabled, onSet }: {
+  nodeType: 'layout' | 'row' | 'column';
   topLevel: boolean;
-  container: Record<string, unknown> | undefined;
+  container: ContainerAttrs | undefined;
+  /** The site defaults for THIS level only — the subset the renderer actually reads. */
+  defaults: Partial<ContainerAttrs>;
   disabled?: boolean;
-  onSet(key: 'width' | 'gap' | 'verticalAlign', value: string | undefined): void;
+  onSet(key: ContainerKey, value: string | undefined): void;
 }) {
   const [open, setOpen] = useState(false);
   const attrs = applicableContainerAttrs(nodeType, topLevel);
@@ -109,7 +115,8 @@ function ContainerSection({ nodeType, topLevel, container, disabled, onSet }: {
   return (
     <Box data-press-container="">
       <Flex gap={1} alignItems="center">
-        <IconButton label={open ? 'Hide layout options' : 'Show layout options'} variant="ghost" size="S" onClick={() => setOpen((o) => !o)}>
+        <IconButton label={open ? 'Hide layout options' : 'Show layout options'} variant="ghost" size="S"
+          data-press-container-toggle="" onClick={() => setOpen((o) => !o)}>
           {open ? <ChevronDown /> : <ChevronRight />}
         </IconButton>
         <Typography variant="pi" fontWeight="bold" textColor="neutral600">
@@ -120,16 +127,18 @@ function ContainerSection({ nodeType, topLevel, container, disabled, onSet }: {
         <Flex direction="column" alignItems="stretch" gap={2} marginTop={2} paddingLeft={6}>
           {attrs.map((key) => (
             <Field.Root key={key} name={key}>
-              <Field.Label>{fieldLabel(key)}</Field.Label>
+              <Field.Label>{containerFieldLabel(nodeType, key)}</Field.Label>
               <SingleSelect
-                placeholder="engine default"
+                placeholder={`Site default · ${containerOptionLabel(key, defaults[key])}`}
                 disabled={disabled}
-                value={(container?.[key] as string) ?? undefined}
+                value={container?.[key] ?? undefined}
                 onClear={() => onSet(key, undefined)}
-                clearLabel="Reset to engine default"
+                clearLabel="Use site default"
                 onChange={(v) => onSet(key, v ? String(v) : undefined)}
               >
-                {CONTAINER_OPTIONS[key].map((opt) => <SingleSelectOption key={opt} value={opt}>{opt}</SingleSelectOption>)}
+                {CONTAINER_ENUMS[key].map((opt) => (
+                  <SingleSelectOption key={opt} value={opt}>{containerOptionLabel(key, opt)}</SingleSelectOption>
+                ))}
               </SingleSelect>
             </Field.Root>
           ))}
@@ -305,8 +314,9 @@ function ColumnCard({ column, columnPath, index, ctx }: { column: ColumnNode; co
         <SpanControls column={column} columnPath={columnPath} ctx={ctx} />
       </Box>
       <Box marginTop={2}>
-        <ContainerSection nodeType="column" topLevel={false} container={column.container as Record<string, unknown> | undefined}
-          disabled={ctx.disabled} onSet={(k, v) => ctx.onChange(setContainerAttr(ctx.forest, columnPath, k, v))} />
+        <ContainerSection nodeType="column" topLevel={false} container={column.container}
+          defaults={ctx.layoutDefaults.column} disabled={ctx.disabled}
+          onSet={(k, v) => ctx.onChange(setContainerAttr(ctx.forest, columnPath, k, v))} />
       </Box>
       <Box marginTop={2}>
         <TreeForest nodes={column.children} parentPath={columnPath} topLevel={false} ctx={ctx} />
@@ -344,8 +354,9 @@ function RowCard({ node, path, topLevel, ctx }: { node: RowNode; path: NodePath;
       {open ? (
         <>
           <Box marginTop={2}>
-            <ContainerSection nodeType="row" topLevel={topLevel} container={node.container as Record<string, unknown> | undefined}
-              disabled={ctx.disabled} onSet={(k, v) => ctx.onChange(setContainerAttr(ctx.forest, path, k, v))} />
+            <ContainerSection nodeType="row" topLevel={topLevel} container={node.container}
+              defaults={ctx.layoutDefaults.row} disabled={ctx.disabled}
+              onSet={(k, v) => ctx.onChange(setContainerAttr(ctx.forest, path, k, v))} />
           </Box>
           <Box marginTop={2} data-press-preview="">
             <Flex justifyContent="space-between" alignItems="center" marginBottom={2}>
@@ -412,7 +423,10 @@ export function TreeEditor({ forest, schema, disabled, onChange, MediaField }: T
       else next.add(id);
       return next;
     });
-  const ctx: TreeCtx = { forest, schema, disabled, onChange, MediaField, openIds, toggleOpen };
+  const ctx: TreeCtx = {
+    forest, schema, disabled, onChange, MediaField, openIds, toggleOpen,
+    layoutDefaults: layoutDefaultsOf(schema),
+  };
   const collapsibleIds = collectCollapsibleIds(forest);
   const anyOpen = collapsibleIds.some((id) => openIds.has(id));
 
