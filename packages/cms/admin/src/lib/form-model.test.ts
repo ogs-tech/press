@@ -55,4 +55,19 @@ describe('paletteGroups', () => {
       { category: 'preset-organism', uids: ['preset-organism.hero', 'preset-organism.navbar'] },
     ]);
   });
+
+  it('excludes nested-only categories on the custom side too (custom-molecule/layout/template are exactly as un-placeable as their preset counterparts)', () => {
+    const schema = {
+      contentTypes: {},
+      components: Object.fromEntries([
+        'custom-atom.badge',
+        'custom-molecule.nav-item',
+        'custom-layout.split',
+        'custom-template.landing',
+      ].map((uid) => [uid, { uid, attributes: {} }])),
+    } as any;
+    expect(paletteGroups(schema)).toEqual([
+      { category: 'custom-atom', uids: ['custom-atom.badge'] },
+    ]);
+  });
 });

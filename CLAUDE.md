@@ -183,9 +183,10 @@ edit forms. `container` is the ONE shared `ContainerAttrs` surface — row and
 column both reference it via a `component:` field, so the "Container" form
 section is defined exactly once and shared by both node types. None of the three
 is ever directly PLACEABLE as a tree block: the builder's "Add node" picker
-excludes the whole category (`NON_PLACEABLE = /^preset-(molecule|config|layout|
-template)$/` in `form-model.ts`) — a row/column is minted structurally (the "Add
-Row" control, or column recursion), never chosen from the palette like a block is.
+excludes the whole category (`NON_PLACEABLE = /^preset-config$|^(preset|custom)-
+(molecule|layout|template)$/` in `form-model.ts`) — a row/column is minted
+structurally (the "Add Row" control, or column recursion), never chosen from the
+palette like a block is.
 (3) CMS-facing SITE DEFAULTS — a DIFFERENT category, `preset-config.layout-{page,
 row,column}`, are the Site Settings fields (a `layout` group) that
 `resolveLayoutDefaults` turns into `LayoutDefaults` (`packages/shared/src/
@@ -349,9 +350,11 @@ about that belongs to press" (`serialize-schema.ts`, `admin/src/lib/form-model.t
   they encoded — "a hero is body-only, a navbar is chrome-only") are gone along with the
   Dynamic Zones that hosted them. The builder's "Add node" picker (`paletteGroups` in
   `form-model.ts`) offers the exact SAME full palette to every slot — page body, header,
-  footer — filtered only by one `NON_PLACEABLE` regex (`preset-(molecule|config|layout|
-  template)`; nested-only/settings/descriptor categories are never directly addable,
-  whether preset or custom). The tree has no notion of "where a component belongs" —
+  footer — filtered only by one `NON_PLACEABLE` regex (`preset-config|(preset|custom)-
+  (molecule|layout|template)`; nested-only/settings/descriptor categories are never
+  directly addable, whether preset or custom — `custom-molecule`/`custom-layout`/
+  `custom-template` are exactly as un-placeable as their preset counterparts, `config`
+  only ever exists on the preset side). The tree has no notion of "where a component belongs" —
   an editor could technically drop a navbar into the page body; that judgment is now
   entirely theirs, not a schema-enforced rule.
 - **Custom (adopter) — the category is the atomic LAYER too; discovery, not admission.**

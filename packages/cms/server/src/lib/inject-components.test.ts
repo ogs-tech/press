@@ -79,8 +79,8 @@ describe('injectComponents', () => {
   });
 
   it('injects the organism chrome (navbar/footer) under category "preset-organism" with a derived globalId', () => {
-    // navbar/footer are organisms too (unified from the old chrome.* palette); the
-    // placement split lives in schema.json, not the category.
+    // navbar/footer are organisms too (unified from the old chrome.* palette);
+    // placement is universal (Spec §4) — the tree, not the category, decides.
     const { strapi, components } = makeStrapi();
     injectComponents({ strapi });
 

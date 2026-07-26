@@ -79,8 +79,14 @@ export function applicableContainerAttrs(
  *  and an older cms that omits the key degrades identically everywhere. */
 export const layoutDefaultsOf = (schema: PressSchema): LayoutDefaults => resolveLayoutDefaults(schema.layoutDefaults);
 
-/** Categories whose components are never PLACED as blocks (nested-only / settings / descriptors). */
-const NON_PLACEABLE = /^preset-(molecule|config|layout|template)$/;
+/**
+ * Categories whose components are never PLACED as blocks (nested-only / settings /
+ * descriptors) — applies to both owners: a `molecule`/`layout`/`template` category is
+ * nested-only whether it's `preset-*` or `custom-*` (an adopter's `custom-molecule`
+ * is exactly as un-placeable as `preset-molecule`); `config` only ever exists on the
+ * preset side (an adopter has no `custom-config` category to exclude).
+ */
+const NON_PLACEABLE = /^preset-config$|^(preset|custom)-(molecule|layout|template)$/;
 
 export function paletteGroups(schema: PressSchema): Array<{ category: string; uids: string[] }> {
   const byCategory = new Map<string, string[]>();

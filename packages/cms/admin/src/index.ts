@@ -9,31 +9,20 @@
  * and never changes for presentation.
  *
  * The categories follow the Atomic Design model: `{owner}-{layer}` (owner ∈
- * preset|custom, layer ∈ atom|molecule|organism|config|layout|template). `layout`
- * and `template` are reserved (no components ship yet) but labelled so the picker
- * is ready when they arrive; `config` components never appear in a picker (they
- * are settings), but are labelled for completeness.
+ * preset|custom, layer ∈ atom|molecule|organism|config|layout|template). `template`
+ * is reserved (no components ship yet) but labelled so the picker is ready when it
+ * arrives; `config`/`layout` components never appear in a picker (they're settings
+ * and tree-node descriptors, never DZ members), but are labelled for completeness.
  *
  * Adopters keep the final word: translations from the host app's
  * src/admin/app.tsx (config.translations) take precedence over these.
  */
+import { CATEGORY_LABELS as EN_CATEGORY_LABELS } from './lib/palette-labels';
 
 type TradEntry = { locale: string; data: Record<string, string> };
 
 const CATEGORY_LABELS: Record<string, Record<string, string>> = {
-  en: {
-    'preset-atom': 'Atoms',
-    'preset-molecule': 'Molecules',
-    'preset-organism': 'Organisms',
-    'preset-config': 'Configuration',
-    'preset-layout': 'Layout',
-    'preset-template': 'Templates',
-    'custom-atom': 'Custom atoms',
-    'custom-molecule': 'Custom molecules',
-    'custom-organism': 'Custom organisms',
-    'custom-layout': 'Custom layout',
-    'custom-template': 'Custom templates',
-  },
+  en: EN_CATEGORY_LABELS,
   'pt-BR': {
     'preset-atom': 'Átomos',
     'preset-molecule': 'Moléculas',

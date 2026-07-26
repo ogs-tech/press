@@ -41,18 +41,6 @@ export const PRESET_LAYERS = ['atom', 'molecule', 'organism', 'config', 'layout'
 export type PresetLayer = (typeof PRESET_LAYERS)[number];
 
 /**
- * Adopter (CUSTOM) layers mirror the preset content layers, minus the engine-only
- * `config`. An adopter drops a component under `src/components/custom-${layer}/`;
- * Strapi derives the `custom-${layer}` category from that folder name. Unlike
- * preset, placement is NOT a category concern on the custom side — every custom
- * block is discovered straight from the components registry (`custom-*` category
- * prefix, see `isCustomBlockUid`) by the builder palette and `serialize-schema`;
- * the editor decides placement in the composition tree.
- */
-export const CUSTOM_LAYERS = ['atom', 'molecule', 'organism', 'layout', 'template'] as const;
-export type CustomLayer = (typeof CUSTOM_LAYERS)[number];
-
-/**
  * Engine-shipped components, grouped by Atomic Design layer.
  *
  * Strapi only scans the host APP's `src/components` directory; there is no
@@ -86,10 +74,10 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   // Molecules — small composed units nested inside organisms (e.g. a navbar's links).
   { layer: 'molecule', name: 'link', schema: linkSchema as Record<string, unknown> },
   // Organisms — composed sections for the page body (hero/cta) and the site chrome
-  // (navbar/footer). One unified layer (the old section.*/chrome.* palettes); the
-  // placement split (body vs header/footer) is declared per content-type
-  // schema.json, never by the category. The bar's internal layout is renderer-owned
-  // so editors cannot break the chrome.
+  // (navbar/footer). One unified layer (the old section.*/chrome.* palettes); placement
+  // is universal (any organism is addable in body, header, or footer via the composition
+  // tree — NON_PLACEABLE in form-model.ts is the only exclusion, and organisms aren't in
+  // it). The bar's internal layout is renderer-owned so editors cannot break the chrome.
   { layer: 'organism', name: 'hero', schema: heroSchema as Record<string, unknown> },
   { layer: 'organism', name: 'cta', schema: ctaSchema as Record<string, unknown> },
   { layer: 'organism', name: 'navbar', schema: navbarSchema as Record<string, unknown> },

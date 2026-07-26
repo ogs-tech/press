@@ -74,7 +74,12 @@ export function fieldLabel(name: string): string {
   return NAME_OVERRIDES[name] ?? titleize(name);
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
+/**
+ * English category labels — the single source of truth, reused by `index.ts`'s
+ * `registerTrads` (Strapi's native DZ-picker `en` locale) so the string isn't
+ * independently retyped in two places.
+ */
+export const CATEGORY_LABELS: Record<string, string> = {
   'preset-atom': 'Atoms',
   'preset-molecule': 'Molecules',
   'preset-organism': 'Organisms',
