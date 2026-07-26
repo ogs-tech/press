@@ -24,8 +24,7 @@ describe('injectComponents', () => {
       'preset-organism.hero', 'preset-organism.cta',
       'preset-organism.navbar', 'preset-organism.footer',
       'preset-layout.container', 'preset-layout.row', 'preset-layout.column',
-      'preset-config.seo', 'preset-config.theme-colors', 'preset-config.theme-radius',
-      'preset-config.cookie-category', 'preset-config.cookie-consent',
+      'preset-config.basic-settings', 'preset-config.theme-advanced',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -46,7 +45,7 @@ describe('injectComponents', () => {
     components.set('preset-atom.paragraph', { uid: 'preset-atom.paragraph', preexisting: true });
     injectComponents({ strapi });
     expect(components.get('preset-atom.paragraph')).toEqual({ uid: 'preset-atom.paragraph', preexisting: true });
-    expect(components.get('preset-config.seo')?.modelType).toBe('component'); // others still injected
+    expect(components.get('preset-config.basic-settings')?.modelType).toBe('component'); // others still injected
   });
 
   it('injects the organism sections (hero/cta) under category "preset-organism" with a derived globalId', () => {
@@ -199,16 +198,28 @@ describe('site-setting.pageDefaults customField (composition-builder storage, Sp
   });
 });
 
-describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () => {
-  it('attaches preset-config.cookie-consent as a config component', () => {
-    expect((siteSettingSchema.attributes as any).cookieConsent).toEqual({
+describe('site-setting basicSettings attribute (Ajustes básicos)', () => {
+  it('attaches preset-config.basic-settings as a config component', () => {
+    expect((siteSettingSchema.attributes as any).basicSettings).toEqual({
       type: 'component',
       repeatable: false,
-      component: 'preset-config.cookie-consent',
+      component: 'preset-config.basic-settings',
     });
   });
 
-  it('nests the three engine-fixed category components (closed key set, Spec §2)', () => {
+  it('no longer carries the removed seo/cookieConsent/themeColors/themeRadius attributes (BREAKING)', () => {
+    expect((siteSettingSchema.attributes as any).seo).toBeUndefined();
+    expect((siteSettingSchema.attributes as any).cookieConsent).toBeUndefined();
+    expect((siteSettingSchema.attributes as any).themeColors).toBeUndefined();
+    expect((siteSettingSchema.attributes as any).themeRadius).toBeUndefined();
+  });
+
+  it('always resolves the Content Manager title to the schema displayName, never the record name (mainField pinned to id)', () => {
+    expect((siteSettingSchema as any).config.settings.mainField).toBe('id');
+    expect(siteSettingSchema.info.displayName).toBe('Site Settings');
+  });
+
+  it('nests identity, curated basic theme tokens, and the theme-advanced sub-section', () => {
     const { strapi, components } = (() => {
       const map = new Map<string, any>();
       return {
@@ -220,17 +231,28 @@ describe('site-setting cookie-consent attribute (cookie-consent Spec §1)', () =
       };
     })();
     injectComponents({ strapi });
-    expect(components.get('preset-config.cookie-consent')?.attributes).toMatchObject({
-      enabled: { type: 'boolean', default: true },
-      necessary: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
-      analytics: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
-      marketing: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
-      privacyPage: { type: 'relation', relation: 'oneToOne', target: 'plugin::press-cms.page' },
+    expect(components.get('preset-config.basic-settings')?.attributes).toMatchObject({
+      name: { type: 'string' },
+      url: { type: 'string' },
+      locale: { type: 'string' },
+      logo: { type: 'media' },
+      favicon: { type: 'media' },
+      primary: { type: 'string' },
+      accent: { type: 'string' },
+      ink: { type: 'string' },
+      surface: { type: 'string' },
+      radius: { type: 'string' },
+      themeAdvanced: { type: 'component', repeatable: false, component: 'preset-config.theme-advanced' },
     });
-    expect(components.get('preset-config.cookie-category')?.attributes).toMatchObject({
-      enabled: { type: 'boolean', default: true },
-      label: { type: 'string' },
-      description: { type: 'text' },
+    expect(components.get('preset-config.theme-advanced')?.attributes).toMatchObject({
+      secondary: { type: 'string' },
+      muted: { type: 'string' },
+      danger: { type: 'string' },
+      onPrimary: { type: 'string' },
+      border: { type: 'string' },
+      radiusXs: { type: 'string' },
+      radiusSm: { type: 'string' },
+      radiusLg: { type: 'string' },
     });
   });
 });

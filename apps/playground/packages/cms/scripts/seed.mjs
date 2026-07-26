@@ -1,6 +1,6 @@
 // cms/scripts/seed.mjs — One-shot sample content for the cms host. Boots it
 // programmatically (CMS server must be STOPPED), fills the Site Settings single
-// type (identity/SEO + theme + a demo navbar with links and CTA), uploads one
+// type (identity + theme + a demo navbar with links and CTA), uploads one
 // tiny PNG (the image-atom cover — the media-crosses-REST proof), and creates a
 // PUBLISHED 'home' page kept deliberately SIMPLE (a few components + one 50-50
 // grid-system row — see buildHomeBody), so the first `press dev` renders a
@@ -76,8 +76,8 @@ async function main() {
     // bootstrap during app.load()), so fill THAT record once. Idempotent: skip
     // once an editor set a name, so their values are never clobbered (reset by
     // deleting cms/.tmp).
-    const settings = await app.documents(SITE_SETTING_UID).findFirst();
-    if (settings?.name) {
+    const settings = await app.documents(SITE_SETTING_UID).findFirst({ populate: { basicSettings: true } });
+    if (settings?.basicSettings?.name) {
       console.log('[seed] site settings already filled — skipping.');
     } else {
       const data = { ...SITE_SETTINGS };

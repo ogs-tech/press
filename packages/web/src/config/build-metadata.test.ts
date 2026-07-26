@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { buildMetadata } from './build-metadata';
-import { mapCookieConsent } from '../plugins/cookie-consent/map-cookie-consent';
 import type { ResolvedPressConfig } from './types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 
@@ -8,12 +7,6 @@ const resolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
   brand: { name: 'Acme', favicon: '/favicon.ico' },
   site: { url: 'https://acme.test', locale: 'en' },
-  seo: {
-    titleTemplate: '%s | Acme',
-    defaultTitle: 'Acme',
-    defaultDescription: 'An Acme content site.',
-    defaultOgImage: 'https://acme.test/og.png',
-  },
   routes: { home: 'home' },
   theme: {
     name: 'default',
@@ -27,16 +20,15 @@ const resolved: ResolvedPressConfig = {
   },
   pageDefaults: { header: [], footer: [] },
   layout: DEFAULT_LAYOUT,
-  plugins: { cookieConsent: mapCookieConsent(null, 'home') },
 };
 
 describe('buildMetadata', () => {
-  it('applies the title template to a page title (AC1)', () => {
+  it('uses the page title when there is a page', () => {
     const m = buildMetadata(resolved, { title: 'E2E Home' });
-    expect(m.title).toBe('E2E Home | Acme');
+    expect(m.title).toBe('E2E Home');
   });
 
-  it('uses defaultTitle when there is no page (layout base)', () => {
+  it('falls back to the site name when there is no page (layout base)', () => {
     const m = buildMetadata(resolved, null);
     expect(m.title).toBe('Acme');
   });
@@ -52,7 +44,7 @@ describe('buildMetadata', () => {
     expect(m.icons).toBeUndefined();
   });
 
-  it('emits no SEO/social metadata — deferred to Plugin/SEO', () => {
+  it('emits no SEO/social metadata — deferred to a future Plugin/SEO', () => {
     const m = buildMetadata(resolved, { title: 'E2E Home' });
     expect(m.description).toBeUndefined();
     expect(m.openGraph).toBeUndefined();

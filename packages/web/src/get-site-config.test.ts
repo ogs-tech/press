@@ -14,7 +14,7 @@ function stubFetch(impl: (...args: any[]) => Promise<any>) {
 
 describe('getSiteConfig', () => {
   it('maps a 200 body into the resolved config', async () => {
-    stubFetch(async () => ({ ok: true, json: async () => ({ data: { name: 'Acme' } }) }));
+    stubFetch(async () => ({ ok: true, json: async () => ({ data: { basicSettings: { name: 'Acme' } } }) }));
     const r = await getSiteConfig(buildTime);
     expect(r.brand.name).toBe('Acme');
     expect(r.theme.colors.primary).toBe('#119350'); // DEFAULT_THEME base

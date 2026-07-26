@@ -1,6 +1,5 @@
 import type { Core } from '@strapi/strapi';
 import { seedSiteSetting } from './lib/seed-site-setting';
-import { seedCookieConsent } from './lib/seed-cookie-consent';
 import { assertValidPageWrite, assertValidSiteSettingWrite } from './lib/validate-write';
 
 const bootstrap = async ({ strapi }: { strapi: Core.Strapi }) => {
@@ -21,9 +20,6 @@ const bootstrap = async ({ strapi }: { strapi: Core.Strapi }) => {
   } as any);
 
   await seedSiteSetting(strapi);
-  // Order matters: seedCookieConsent updates the record seedSiteSetting creates
-  // (and self-heals — without marking its flag — if the record is absent).
-  await seedCookieConsent(strapi);
 };
 
 export default bootstrap;

@@ -55,7 +55,6 @@ export function blockIcon(uid: string): IconType {
 /** Acronyms/proper spellings the title-caser would otherwise mangle. */
 const NAME_OVERRIDES: Record<string, string> = {
   cta: 'CTA',
-  seo: 'SEO',
 };
 
 const titleize = (raw: string): string =>

@@ -9,26 +9,26 @@ export const PRESS_SITE_URL = 'https://useogs.com/press';
 export const NPM_CREATE_URL = 'https://www.npmjs.com/package/@ogs-tech/create-press';
 
 export const SITE_SETTINGS = {
-  name: 'Press',
-  url: 'http://localhost:3000',
-  locale: 'en',
-  seo: {
-    titleTemplate: '%s · Press',
-    title: 'Press',
-    description: 'A press-powered site, server-rendered end-to-end.',
-  },
-  themeColors: {
+  basicSettings: {
+    name: 'Press',
+    url: 'http://localhost:3000',
+    locale: 'en',
     primary: '#119350',
     accent: '#D9A12C',
-    secondary: '#3D5CC2',
     ink: '#142036',
     surface: '#FAF8F3',
-    muted: '#7A7E89',
-    danger: '#C0392B',
-    onPrimary: '#FFFFFF',
-    border: 'rgba(20,32,54,0.12)',
+    radius: '14px',
+    themeAdvanced: {
+      secondary: '#3D5CC2',
+      muted: '#7A7E89',
+      danger: '#C0392B',
+      onPrimary: '#FFFFFF',
+      border: 'rgba(20,32,54,0.12)',
+      radiusXs: '6px',
+      radiusSm: '10px',
+      radiusLg: '20px',
+    },
   },
-  themeRadius: { xs: '6px', sm: '10px', md: '14px', lg: '20px' },
 };
 
 const block = (component, data = {}) => ({ id: randomUUID(), type: 'block', component, data });

@@ -23,8 +23,7 @@ unchanged.
 only `<title>` (+ favicon). `description`, `openGraph`, and `alternates`
 (canonical) are removed — the old canonical was always the site root, i.e. wrong
 for every non-home page, so dropping it is a net improvement. All SEO/social
-metadata is deferred to a future Plugin/SEO. `ResolvedPressConfig.seo` is
-unchanged (`defaultDescription`/`defaultOgImage` go unconsumed for now).
+metadata is deferred to a future Plugin/SEO.
 
 **press-cms — generic seed, privacy removed.** New generic idempotent
 `seedPage({ slug, title, body, flagKey })` (flag-first, slug-collision → adopter

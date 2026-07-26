@@ -105,51 +105,49 @@ export interface PresetLayoutColumn {
   container?: PresetLayoutContainer;
 }
 
-export interface PresetConfigSeo {
-  titleTemplate?: string;
-  title?: string;
-  description?: string;
-  image?: PressMedia;
-}
-
-export interface PresetConfigThemeColors {
-  primary?: string;
-  accent?: string;
+export interface PresetConfigThemeAdvanced {
   secondary?: string;
-  ink?: string;
-  surface?: string;
   muted?: string;
   danger?: string;
   onPrimary?: string;
   border?: string;
+  radiusXs?: string;
+  radiusSm?: string;
+  radiusLg?: string;
 }
 
-export interface PresetConfigThemeRadius {
-  xs?: string;
-  sm?: string;
-  md?: string;
-  lg?: string;
+export interface PresetConfigBasicSettings {
+  name?: string;
+  url?: string;
+  logo?: PressMedia;
+  favicon?: PressMedia;
+  primary?: string;
+  accent?: string;
+  ink?: string;
+  surface?: string;
+  radius?: string;
+  themeAdvanced?: PresetConfigThemeAdvanced;
 }
 
-export interface PresetConfigCookieCategory {
-  enabled?: boolean;
-  label?: string;
-  description?: string;
+export interface PresetConfigLayoutPage {
+  gap?: 'compact' | 'normal' | 'spacious';
 }
 
-export interface PresetConfigCookieConsent {
-  enabled?: boolean;
-  title?: string;
-  description?: string;
-  acceptAllLabel?: string;
-  rejectAllLabel?: string;
-  manageLabel?: string;
-  saveLabel?: string;
-  privacyLinkLabel?: string;
-  privacyPage?: PressPageRef;
-  necessary?: PresetConfigCookieCategory;
-  analytics?: PresetConfigCookieCategory;
-  marketing?: PresetConfigCookieCategory;
+export interface PresetConfigLayoutRow {
+  width?: 'prose' | 'lg' | 'full';
+  gap?: 'compact' | 'normal' | 'spacious';
+  verticalAlign?: 'top' | 'center' | 'bottom';
+}
+
+export interface PresetConfigLayoutColumn {
+  gap?: 'compact' | 'normal' | 'spacious';
+  verticalAlign?: 'top' | 'center' | 'bottom';
+}
+
+export interface PresetConfigLayout {
+  page?: PresetConfigLayoutPage;
+  row?: PresetConfigLayoutRow;
+  column?: PresetConfigLayoutColumn;
 }
 
 /** The page body IS the composition tree (composition-builder spec §5). */

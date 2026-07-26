@@ -11,29 +11,22 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
  *
  * The engine owns the populate (Spec §5.1 of the site-settings spec): `ctx.query`
  * is NOT honored (public `auth: false` route). `populate: '*'` is SHALLOW, so
- * `seo.image` is deep-populated explicitly. `pageDefaults` is a JSON custom field
- * (Spec §4) — a scalar on the wire, no populate key needed.
+ * `basicSettings`'s media fields and its nested `themeAdvanced` component are
+ * deep-populated explicitly. `pageDefaults` is a JSON custom field (Spec §4) —
+ * a scalar on the wire, no populate key needed.
  */
 const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
   const settingsPopulate = () => ({
-    logo: true,
-    favicon: true,
-    seo: { populate: { image: true } },
-    themeColors: true,
-    themeRadius: true,
-    // The layout group holds one component per tree level, and a shallow populate
-    // stops at the group — same reason as seo.image above.
-    layout: { populate: LAYOUT_POPULATE },
-    // Nested category components + the privacy page's slug sit one level below
-    // what a shallow populate reaches — same reason as seo.image above.
-    cookieConsent: {
+    basicSettings: {
       populate: {
-        necessary: true,
-        analytics: true,
-        marketing: true,
-        privacyPage: { fields: ['slug'] },
+        logo: true,
+        favicon: true,
+        themeAdvanced: true,
       },
     },
+    // The layout group holds one component per tree level, and a shallow populate
+    // stops at the group — same reason as basicSettings above.
+    layout: { populate: LAYOUT_POPULATE },
   });
 
   return {

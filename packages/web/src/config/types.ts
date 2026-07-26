@@ -1,6 +1,5 @@
 import type { LayoutDefaults, Node } from '@ogs-tech/press-shared';
 import type { Canonical } from '../urn';
-import type { RawCookieConsent, ResolvedCookieConsentPlugin } from '../plugins/cookie-consent/types';
 import type { ResolvedLink } from '../link';
 
 /** The only embedded theme this phase. The union exists so a second theme is additive, not breaking (Spec §2). */
@@ -35,8 +34,8 @@ export interface ThemeRadius {
 }
 
 /**
- * Adopter-facing build-time anchors (site-settings-cms spec §6). Identity, SEO,
- * and theme colour/radius VALUES no longer live here — they are edited in the CMS
+ * Adopter-facing build-time anchors (site-settings-cms spec §6). Identity and
+ * theme colour/radius VALUES no longer live here — they are edited in the CMS
  * "Site Settings" single type and fetched at runtime by getSiteConfig. This file
  * keeps ONLY what the build needs deterministically: the home-route slug, the
  * theme NAME (the <html data-theme> selector + ThemeName guard), and theme FONTS
@@ -85,12 +84,6 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
     url: string;
     locale: string;
   };
-  seo: {
-    titleTemplate: string;
-    defaultTitle: string;
-    defaultDescription: string;
-    defaultOgImage?: string;
-  };
   routes: {
     /** Slug served at the site root. The engine resolves '/' to this slug. */
     home: string;
@@ -120,31 +113,19 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
   /**
    * Site-level layout defaults (layout-defaults spec §5), TOTAL — the baseline
    * `container-attrs.ts` resolves an undeclared node attr against. A fail-to-DEFAULT
-   * key (joining `theme` and `plugins.cookieConsent`, NOT the identity/SEO
-   * fail-to-empty rule): a site with an unreachable CMS should render with the
-   * engine's layout, not with no layout. Required, hence a press-web major — the
-   * same discipline as `urn` / `pageDefaults` / `plugins`.
+   * key (joining `theme`, NOT the identity fail-to-empty rule): a site with an
+   * unreachable CMS should render with the engine's layout, not with no layout.
+   * Required, hence a press-web major — the same discipline as `urn` / `pageDefaults`.
    */
   layout: LayoutDefaults;
-  /**
-   * Engine plugins (cookie-consent Spec §1): a NAMED map — one required key
-   * per plugin, resolved TOTAL (defaults applied) even when the CMS is empty
-   * or unreachable. Not an array: plugins are fixed engine features, not
-   * editor-composed content (that is what the Dynamic Zones are for). Each
-   * new plugin adds a required key — a deliberate press-web major, the same
-   * discipline as `urn`/`pageDefaults`.
-   */
-  plugins: {
-    cookieConsent: ResolvedCookieConsentPlugin;
-  };
 }
 
 /**
  * Build-time-only slice resolved from press.config.ts. Deterministic and
  * CMS-independent: `routes` (routing + the /home → / redirect), `theme.name`
  * (the <html data-theme> selector + ThemeName guard), and `theme.fonts` (which
- * next/font must know at build time). Identity, SEO, and theme colour/radius
- * VALUES are layered on at runtime by getSiteConfig (site-settings-cms spec §6).
+ * next/font must know at build time). Identity and theme colour/radius VALUES
+ * are layered on at runtime by getSiteConfig (site-settings-cms spec §6).
  */
 export interface BuildTimeConfig {
   routes: { home: string };
@@ -157,26 +138,47 @@ interface CmsMedia {
 }
 
 /**
+ * Raw `preset-config.theme-advanced` payload, nested inside `basicSettings`
+ * (Ajustes básicos): the color/radius overrides beyond the curated basics.
+ */
+interface RawThemeAdvanced {
+  secondary?: string;
+  muted?: string;
+  danger?: string;
+  onPrimary?: string;
+  border?: string;
+  radiusXs?: string;
+  radiusSm?: string;
+  radiusLg?: string;
+}
+
+/**
+ * Raw `preset-config.basic-settings` payload (Ajustes básicos): identity plus
+ * the curated theme tokens most sites customize first, with the remaining
+ * color/radius tokens nested one level deeper under `themeAdvanced`.
+ */
+export interface RawBasicSettings {
+  name?: string;
+  url?: string;
+  locale?: string;
+  logo?: CmsMedia | null;
+  favicon?: CmsMedia | null;
+  primary?: string;
+  accent?: string;
+  ink?: string;
+  surface?: string;
+  radius?: string;
+  themeAdvanced?: RawThemeAdvanced | null;
+}
+
+/**
  * The Site Settings single-type payload as returned by GET /api/site-setting
  * (Strapi 5 flattened, explicit populate owned by the site-setting controller).
  * EVERY field is optional: an unfilled record and an unreachable CMS both map as
  * if absent (site-settings-cms spec §3.2, §7).
  */
 export interface SiteSettingsData {
-  name?: string;
-  url?: string;
-  locale?: string;
-  logo?: CmsMedia | null;
-  favicon?: CmsMedia | null;
-  seo?: {
-    titleTemplate?: string;
-    title?: string;
-    description?: string;
-    image?: CmsMedia | null;
-  } | null;
-  themeColors?: Partial<ThemeColors> | null;
-  themeRadius?: Partial<ThemeRadius> | null;
-  cookieConsent?: RawCookieConsent | null;
+  basicSettings?: RawBasicSettings | null;
   /** The two page-default slots (Spec §6): bare Node[] arrays, validated by mapSiteSettings. */
   pageDefaults?: { header?: unknown; footer?: unknown } | null;
   /** The `preset-config.layout` group, RAW: sanitized downstream by

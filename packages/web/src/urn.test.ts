@@ -14,8 +14,8 @@ describe('buildUrn', () => {
     expect(buildUrn('page', '1')).not.toBe(buildUrn('site-setting', '1'));
   });
 
-  it('formats the synthetic plugin identity (cookie-consent Spec §1)', () => {
-    expect(buildUrn('plugin', 'cookie-consent')).toBe('urn:plugin:cookie-consent');
+  it('formats the synthetic plugin identity (a compile-time constant id, never CMS-sourced)', () => {
+    expect(buildUrn('plugin', 'example-plugin')).toBe('urn:plugin:example-plugin');
   });
 });
 

@@ -45,7 +45,7 @@ describe('paletteGroups', () => {
       components: Object.fromEntries([
         'preset-atom.paragraph', 'preset-atom.heading',
         'preset-organism.hero', 'preset-organism.navbar',
-        'preset-molecule.link', 'preset-config.seo', 'preset-layout.container',
+        'preset-molecule.link', 'preset-config.basic-settings', 'preset-layout.container',
         'custom-organism.callout',
       ].map((uid) => [uid, { uid, attributes: {} }])),
     } as any;

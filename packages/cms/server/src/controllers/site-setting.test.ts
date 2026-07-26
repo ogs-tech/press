@@ -6,10 +6,10 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 /**
  * The engine owns the wire shape: the controller computes the populate
  * server-side and `ctx.query` is never honored. `populate: '*'` is SHALLOW — it
- * would leave `seo.image` unpopulated. `header`/`footer` are gone (Spec §4: the
- * composition-builder JSON custom field replaces the chrome Dynamic Zones); these
- * tests pin the remaining deep-populate contract the web resolver
- * (mapSiteSettings) depends on.
+ * would leave `basicSettings`'s media fields and nested `themeAdvanced`
+ * unpopulated. `header`/`footer` are gone (Spec §4: the composition-builder
+ * JSON custom field replaces the chrome Dynamic Zones); these tests pin the
+ * remaining deep-populate contract the web resolver (mapSiteSettings) depends on.
  */
 describe('site-setting controller', () => {
   function run(record: unknown = { name: 'Acme' }) {
@@ -38,34 +38,15 @@ describe('site-setting controller', () => {
     expect(populate.pageDefaults).toBeUndefined();
   });
 
-  it('deep-populates seo.image — media nested in a component is not reached by populate:*', async () => {
+  it('deep-populates basicSettings (media + nested themeAdvanced) — not reached by populate:*', async () => {
     const { strapi, ctx, findFirst } = run();
     await siteSetting({ strapi }).find(ctx);
     const { populate } = findFirst.mock.calls[0][0];
-    expect(populate.seo).toEqual({ populate: { image: true } });
-  });
-
-  it('populates every field mapSiteSettings consumes (media + config components)', async () => {
-    const { strapi, ctx, findFirst } = run();
-    await siteSetting({ strapi }).find(ctx);
-    const { populate } = findFirst.mock.calls[0][0];
-    expect(populate).toMatchObject({ logo: true, favicon: true, themeColors: true, themeRadius: true });
+    expect(populate.basicSettings).toEqual({
+      populate: { logo: true, favicon: true, themeAdvanced: true },
+    });
     // never the shallow wildcard that caused the 404
     expect(populate).not.toBe('*');
-  });
-
-  it('deep-populates cookieConsent (nested categories + privacy page slug) — cookie-consent Spec §1', async () => {
-    const { strapi, ctx, findFirst } = run();
-    await siteSetting({ strapi }).find(ctx);
-    const { populate } = findFirst.mock.calls[0][0];
-    expect(populate.cookieConsent).toEqual({
-      populate: {
-        necessary: true,
-        analytics: true,
-        marketing: true,
-        privacyPage: { fields: ['slug'] },
-      },
-    });
   });
 
   it('deep-populates layout — one component per tree level sits below a shallow populate', async () => {

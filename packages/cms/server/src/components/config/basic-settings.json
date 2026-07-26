@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_preset_config_basic_settings",
+  "info": {
+    "displayName": "Ajustes básicos",
+    "icon": "cog",
+    "description": "Core site identity plus the theme tokens most sites customize first"
+  },
+  "options": {},
+  "attributes": {
+    "name": { "type": "string" },
+    "url": { "type": "string" },
+    "locale": { "type": "string" },
+    "logo": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "favicon": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "primary": { "type": "string" },
+    "accent": { "type": "string" },
+    "ink": { "type": "string" },
+    "surface": { "type": "string" },
+    "radius": { "type": "string" },
+    "themeAdvanced": { "type": "component", "repeatable": false, "component": "preset-config.theme-advanced" }
+  },
+  "config": {
+    "metadatas": {
+      "name": { "edit": { "label": "Site Name", "description": "Shown in the browser tab, the navbar brand, and anywhere the site name is read by assistive tech." } },
+      "url": { "edit": { "label": "Site URL", "description": "The canonical address of the site — the base for absolute links. A wrong value breaks shared/social links." } },
+      "locale": { "edit": { "label": "Locale", "description": "Declared as the page language (<html lang>) and used for date formatting across the site." } },
+      "logo": { "edit": { "label": "Logo", "description": "Rendered in the navbar on every page. Empty shows the site name as text instead." } },
+      "favicon": { "edit": { "label": "Favicon", "description": "Shown in the browser tab and bookmarks on every page." } },
+      "primary": { "edit": { "label": "Primary color", "description": "The site's main brand color — buttons, links and calls-to-action everywhere." } },
+      "accent": { "edit": { "label": "Accent color", "description": "Secondary highlight — badges and emphasis elements across the site." } },
+      "ink": { "edit": { "label": "Text color", "description": "The base text color used across every page." } },
+      "surface": { "edit": { "label": "Background color", "description": "The base background behind sections and cards site-wide." } },
+      "radius": { "edit": { "label": "Corner roundness", "description": "Default rounding applied to buttons, cards and inputs across the site." } },
+      "themeAdvanced": { "edit": { "label": "Tema avançado", "description": "Fine-grained color and corner-radius overrides, for less common cases." } }
+    }
+  }
+}

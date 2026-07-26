@@ -5,21 +5,13 @@
     "singularName": "site-setting",
     "pluralName": "site-settings",
     "displayName": "Site Settings",
-    "description": "Whitelabel identity, SEO, theme values, and block-composed site chrome served at runtime by the press engine"
+    "description": "Whitelabel identity, basic theme tokens, and block-composed site chrome served at runtime by the press engine"
   },
   "options": { "draftAndPublish": false },
   "pluginOptions": {},
   "attributes": {
-    "name": { "type": "string" },
-    "url": { "type": "string" },
-    "locale": { "type": "string" },
-    "logo": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "favicon": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "seo": { "type": "component", "repeatable": false, "component": "preset-config.seo" },
-    "themeColors": { "type": "component", "repeatable": false, "component": "preset-config.theme-colors" },
-    "themeRadius": { "type": "component", "repeatable": false, "component": "preset-config.theme-radius" },
+    "basicSettings": { "type": "component", "repeatable": false, "component": "preset-config.basic-settings" },
     "layout": { "type": "component", "repeatable": false, "component": "preset-config.layout" },
-    "cookieConsent": { "type": "component", "repeatable": false, "component": "preset-config.cookie-consent" },
     "pageDefaults": {
       "type": "customField",
       "customField": "plugin::press-cms.builder",
@@ -27,17 +19,10 @@
     }
   },
   "config": {
+    "settings": { "bulkable": true, "filterable": true, "pageSize": 10, "searchable": true, "mainField": "id" },
     "metadatas": {
-      "name": { "edit": { "label": "Site Name" } },
-      "url": { "edit": { "label": "Site URL" } },
-      "locale": { "edit": { "label": "Locale" } },
-      "logo": { "edit": { "label": "Logo" } },
-      "favicon": { "edit": { "label": "Favicon" } },
-      "seo": { "edit": { "label": "SEO" } },
-      "themeColors": { "edit": { "label": "Theme Colors" } },
-      "themeRadius": { "edit": { "label": "Theme Radius" } },
+      "basicSettings": { "edit": { "label": "Ajustes básicos", "description": "Core identity and the theme tokens most sites customize first." } },
       "layout": { "edit": { "label": "Layout", "description": "Baseline layout every page, row and column inherits unless a node overrides it in the Composition builder. Leave a field empty to keep the engine default." } },
-      "cookieConsent": { "edit": { "label": "Cookie Consent", "description": "Cookie banner shown to visitors. Category keys (necessary/analytics/marketing) are engine-fixed; toggles and copy are yours." } },
       "pageDefaults": { "edit": { "label": "Page defaults", "description": "The default header and footer every page inherits. Pages can override or drop them per-slot." } }
     }
   }

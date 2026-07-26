@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 //
-// Interactive-flow tests for the mobile nav drawer — the engine's second
-// stateful client component (after the cookie-consent banner). Same
-// hand-rolled act() + createRoot harness (Spec §12; CLAUDE.md testing note):
+// Interactive-flow tests for the mobile nav drawer — a stateful client
+// component. Same hand-rolled act() + createRoot harness (Spec §12; CLAUDE.md
+// testing note):
 // NEVER @testing-library/react, because the workspace's node-linker=hoisted
 // layout materializes only Strapi-admin's react-19 RTL variant at root.
 import { act } from 'react';

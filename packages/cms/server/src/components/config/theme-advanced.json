@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_preset_config_theme_advanced",
+  "info": {
+    "displayName": "Tema avançado",
+    "icon": "paintBrush",
+    "description": "Fine-grained theme color and corner-radius overrides, for sites that need more control than the basic tokens in Ajustes básicos"
+  },
+  "options": {},
+  "attributes": {
+    "secondary": { "type": "string" },
+    "muted": { "type": "string" },
+    "danger": { "type": "string" },
+    "onPrimary": { "type": "string" },
+    "border": { "type": "string" },
+    "radiusXs": { "type": "string" },
+    "radiusSm": { "type": "string" },
+    "radiusLg": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "secondary": { "edit": { "label": "Secondary color", "description": "A less prominent brand color, used sparingly by a few components." } },
+      "muted": { "edit": { "label": "Muted color", "description": "Low-emphasis text — captions and secondary copy across the site." } },
+      "danger": { "edit": { "label": "Danger color", "description": "Errors and destructive actions across the site." } },
+      "onPrimary": { "edit": { "label": "On-primary color", "description": "Text/icon color placed on top of the primary color (e.g. button labels)." } },
+      "border": { "edit": { "label": "Border color", "description": "Dividers and outlines used by every component." } },
+      "radiusXs": { "edit": { "label": "Extra small radius", "description": "Corner rounding for the smallest elements (e.g. tags, chips)." } },
+      "radiusSm": { "edit": { "label": "Small radius", "description": "Corner rounding for compact elements (e.g. inputs, small buttons)." } },
+      "radiusLg": { "edit": { "label": "Large radius", "description": "Corner rounding for large surfaces (e.g. cards, panels)." } }
+    }
+  }
+}

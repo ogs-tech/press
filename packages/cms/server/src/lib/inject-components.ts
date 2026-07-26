@@ -15,11 +15,8 @@ import footerSchema from '../components/organisms/footer.json';
 import layoutContainerSchema from '../components/layout/container.json';
 import layoutRowSchema from '../components/layout/row.json';
 import layoutColumnSchema from '../components/layout/column.json';
-import seoSchema from '../components/config/seo.json';
-import themeColorsSchema from '../components/config/theme-colors.json';
-import themeRadiusSchema from '../components/config/theme-radius.json';
-import cookieCategorySchema from '../components/config/cookie-category.json';
-import cookieConsentSchema from '../components/config/cookie-consent.json';
+import themeAdvancedSchema from '../components/config/theme-advanced.json';
+import basicSettingsSchema from '../components/config/basic-settings.json';
 import layoutDefaultsPageSchema from '../components/config/layout-page.json';
 import layoutDefaultsRowSchema from '../components/config/layout-row.json';
 import layoutDefaultsColumnSchema from '../components/config/layout-column.json';
@@ -104,14 +101,11 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   { layer: 'layout', name: 'container', schema: layoutContainerSchema as Record<string, unknown> },
   { layer: 'layout', name: 'row', schema: layoutRowSchema as Record<string, unknown> },
   { layer: 'layout', name: 'column', schema: layoutColumnSchema as Record<string, unknown> },
-  // Config — non-block settings referenced by the Site Settings single type (seo /
-  // theme behave like a settings form; cookie-consent is plugin #1's editable
-  // surface). Injected like the rest but never admitted into a Dynamic Zone.
-  { layer: 'config', name: 'seo', schema: seoSchema as Record<string, unknown> },
-  { layer: 'config', name: 'theme-colors', schema: themeColorsSchema as Record<string, unknown> },
-  { layer: 'config', name: 'theme-radius', schema: themeRadiusSchema as Record<string, unknown> },
-  { layer: 'config', name: 'cookie-category', schema: cookieCategorySchema as Record<string, unknown> },
-  { layer: 'config', name: 'cookie-consent', schema: cookieConsentSchema as Record<string, unknown> },
+  // Config — non-block settings referenced by the Site Settings single type,
+  // behaving like a settings form. Injected like the rest but never admitted
+  // into a Dynamic Zone. Nested child first: `basic-settings` references it.
+  { layer: 'config', name: 'theme-advanced', schema: themeAdvancedSchema as Record<string, unknown> },
+  { layer: 'config', name: 'basic-settings', schema: basicSettingsSchema as Record<string, unknown> },
   // Layout defaults — the CMS-owned baseline `resolveLayoutDefaults` sanitizes and
   // both sides resolve against. Nested children first: `layout` references them.
   { layer: 'config', name: 'layout-page', schema: layoutDefaultsPageSchema as Record<string, unknown> },

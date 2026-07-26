@@ -333,9 +333,12 @@ about that belongs to press" (`serialize-schema.ts`, `admin/src/lib/form-model.t
     layer, unified from the old `section.*`/`chrome.*` palettes. The old `columns` organism
     is RETIRED — its job (2–4 column layouts, closed `ratio`/`gap`/`verticalAlign` enums) is
     now native tree recursion (`RowNode`/`ColumnNode`, unlimited depth), not a discrete block.
-  - `preset-config.*` — seo, theme-colors, theme-radius, cookie-consent, cookie-category,
-    layout, layout-page, layout-row, layout-column: non-block settings referenced by `component:`
-    fields on Site Settings, never a tree node.
+  - `preset-config.*` — basic-settings, theme-advanced, layout, layout-page, layout-row,
+    layout-column: non-block settings referenced by `component:` fields on Site Settings,
+    never a tree node. `basic-settings` ("Ajustes básicos") is identity + the curated basic
+    theme tokens; `theme-advanced` nests inside it for the remaining color/radius overrides
+    (see "Build-time anchors vs. runtime Site Settings" above). SEO and cookie-consent are
+    retired — no longer part of the palette.
   - `preset-layout.{container,row,column}` — no longer reserved-empty: pure registry
     descriptors the builder's admin form generator reads to build the row/column edit forms
     (see "Layout primitives" above for the full mechanics). Never placed as a tree block
@@ -414,7 +417,7 @@ This split is recent and easy to get wrong:
   and `theme.fonts` (which `next/font` must know at build time). The engine **reads**
   this file but **never rewrites** it. A destructive `ThemeName` change fails `tsc`
   right at the `defineConfig` call site.
-- **Identity, SEO, theme color/radius VALUES, layout DEFAULTS (`preset-config.layout`
+- **Identity, theme color/radius VALUES, layout DEFAULTS (`preset-config.layout`
   → `layout-page`/`layout-row`/`layout-column`, mirrored 1:1 by `LayoutDefaults`),
   and the two `pageDefaults` composition-tree
   slots (header/footer)** live in the CMS **"Site Settings"** single type — edited in the
@@ -423,7 +426,33 @@ This split is recent and easy to get wrong:
   runtime by `getSiteConfig` (ISR ~60s), no redeploy. Any failure (CMS down, malformed
   record) maps as if the record were *empty* → the site renders unbranded/default-themed
   AND chrome-less rather than crashing. There is **no `press.config` fallback for
-  identity** by design.
+  identity** by design. SEO and Cookie Consent are **not** part of Site Settings —
+  both were retired (see below); a future Plugin/Legal and Plugin/SEO are expected
+  to install their own entities rather than reuse this single type.
+  - **"Ajustes básicos" (`preset-config.basic-settings`) is the one identity+theme
+    attribute** on Site Settings (`basicSettings`), replacing the old flat
+    `name`/`url`/`locale`/`logo`/`favicon`/`themeColors`/`themeRadius` siblings.
+    It carries identity (unchanged fields) plus the FIVE theme tokens editors reach
+    for first — `primary`/`accent`/`ink`/`surface` colors + one `radius` (maps to
+    `ThemeRadius.md`) — flat, each with a system-impact tooltip
+    (`config.metadatas.<field>.edit.description`, Strapi's native `Field.Hint`).
+    The remaining tokens (`secondary`/`muted`/`danger`/`onPrimary`/`border` colors
+    + `radiusXs`/`radiusSm`/`radiusLg`) nest one level deeper as `themeAdvanced` →
+    `preset-config.theme-advanced`, rendering as its own collapsible sub-section —
+    the same "one component = one section, nested child = sub-section" mechanism
+    `preset-config.layout` already uses for Page/Row/Column (Strapi has no other
+    admin-side field-grouping primitive; see the "Component palette" section
+    below). `map-site-settings.ts` re-assembles both groups into the ONE full
+    `ThemeColors`/`ThemeRadius` shape the rest of the engine already expects
+    (`build-theme-style.ts`, `DEFAULT_THEME`) — only the CMS-facing input grouping
+    changed, not the resolved runtime shape.
+  - **The Content Manager header always reads "Site Settings"**, never the site's
+    own name. Strapi's single-type title defaults to the first `string` attribute
+    it finds (`getDefaultMainField`) — which used to be `name`, so a demo site
+    literally named "Press" leaked into the CMS chrome. `site-setting/schema.json`
+    now declares `config.settings.mainField: "id"`: since `"id"` never resolves to
+    a real document value, Strapi's own fallback (`schema.info.displayName`,
+    "Site Settings") wins unconditionally.
   - **Inheritance semantics:** a page's `header`/`footer` is a `Slot` — `inherit | none |
     custom`. `inherit` resolves against Site Settings `pageDefaults` at render time
     (`resolveTree`), so editing the site default updates every inheriting page on the next
@@ -440,7 +469,7 @@ This split is recent and easy to get wrong:
 - Routing reads only the build-time anchor, so the `/home → /` redirect stays
   deterministic and CMS-independent.
 
-### Engine plugins + cookie consent
+### Engine plugins
 
 - **The plugin family:** `PressPlugin<Id>` (`packages/web/src/plugin.ts`) is the
   contract for optional engine capabilities — `extends Canonical<'plugin'>` with a
@@ -449,35 +478,15 @@ This split is recent and easy to get wrong:
   plugin is wired explicitly — config component on Site Settings → pure mapper →
   `ResolvedPressConfig.plugins.<key>` (a NAMED map, one required key per plugin;
   each new plugin is a deliberate press-web major) → explicit mount in the host
-  `layout.tsx`. A second plugin (e.g. consent-gated third-party scripts) costs
-  exactly what the first did: 1 CMS component + 1 mapper + 1 key + 1 mount line.
-- **Cookie consent is plugin #1.** Config lives in the `preset-config.cookie-consent` /
-  `preset-config.cookie-category` components on Site Settings (injected, never
-  DZ-admitted, so — like `seo`/`themeColors` — they are OUTSIDE the type-sync
-  pipeline and mirrored manually in `SiteSettingsData`/`ResolvedPressConfig`).
-  Categories are a CLOSED code union (`necessary | analytics | marketing`) so
-  `hasConsent('analytics')` can never drift; editors toggle/re-word categories,
-  never rename keys. `necessary` is forced enabled/granted everywhere.
-- **`mapCookieConsent` FAILS OPEN** — the deliberate exception to the
-  identity/SEO fail-to-empty rule: CMS unreachable → banner still enabled with
-  total default copy (`DEFAULT_COOKIE_CONSENT`, the DEFAULT_THEME precedent;
-  copy merges with `||` so an editor-cleared `''` falls back too). A consent
-  gate must not vanish on a CMS hiccup. `hasConsent` is independently
-  FAIL-CLOSED: no stored decision ⇒ false for every optional category.
-- **The visitor's decision is client-only state**: a versioned first-party
-  cookie (`press_consent`, 180d) — cookie over localStorage so a future
-  server-adjacent consumer can read it, but NEVER via `next/headers cookies()`
-  in the RSC tree (that would force the whole route dynamic and poison the ISR
-  cache). Anti-flash is `buildConsentBootstrapScript()` (inline `<head>` script
-  stamps `<html data-press-consent="decided">` pre-paint; theme.css hides the
-  banner) + a null `useSyncExternalStore` server snapshot (no hydration
-  mismatch). `resetConsent()` is the minimal "change your mind" seam; a
-  persistent reopen affordance is a known follow-up.
-- **Seeding:** `seedCookieConsent` (flag `cookieConsentSeeded`) writes only the
-  `enabled` booleans — an unsaved Strapi boolean renders as an unchecked toggle,
-  contradicting the live default — while text stays empty ("no defaults
-  duplicated in the CMS"). It does NOT set its flag when the Site Settings
-  record is missing, so a broken bootstrap order self-heals next boot.
+  `layout.tsx`.
+- **RESERVED, currently unimplemented** — the same "declared ahead of components"
+  precedent as `preset-template` in the CMS palette. Cookie consent was plugin
+  #1 (config component + banner + client-only consent cookie) but was retired:
+  Site Settings no longer carries any cookie-consent surface, and
+  `ResolvedPressConfig` has no `plugins` key until the next plugin lands. Expect
+  Plugin/Legal and Plugin/SEO to be the next ones to install their own entities
+  and wire through this same contract — 1 CMS component + 1 mapper + 1 key +
+  1 mount line, same cost as the first.
 - **React version + admin bundle (load-bearing):** the whole monorepo is pinned
   to **React 19** via a root `pnpm.overrides` (`react`/`react-dom` = Strapi 5's
   `19.2.7`) so the Next host, the engine packages, and Strapi's admin all share
@@ -489,11 +498,12 @@ This split is recent and easy to get wrong:
   its own React copy and crashes the admin with a null hooks dispatcher. A guard
   test (`cms/server/src/lib/admin-react-externals.test.ts`) pins this, since
   build/test/typecheck all pass while only the browser catches it.
-- **Testing note:** the banner's interactive tests (`// @vitest-environment
-  jsdom`) use a hand-rolled `act()`+`createRoot` harness rather than
-  `@testing-library/react` — a lightweight, zero-extra-dep choice (it also
-  predates the React-19 unification above, which retired the earlier
-  react-18/react-19 rendering split).
+- **Testing note:** stateful client components' interactive tests (e.g. the
+  mobile nav drawer, `// @vitest-environment jsdom`) use a hand-rolled
+  `act()`+`createRoot` harness rather than `@testing-library/react` — a
+  lightweight, zero-extra-dep choice (it also predates the React-19
+  unification above, which retired the earlier react-18/react-19 rendering
+  split).
 
 ### Canonical identity (URNs)
 
