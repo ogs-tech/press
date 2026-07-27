@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { seedSiteSetting } from './lib/seed-site-setting';
+import { syncPluginEntries } from './lib/sync-plugin-entries';
 import { assertValidPageWrite, assertValidSiteSettingWrite } from './lib/validate-write';
 
 const bootstrap = async ({ strapi }: { strapi: Core.Strapi }) => {
@@ -20,6 +21,10 @@ const bootstrap = async ({ strapi }: { strapi: Core.Strapi }) => {
   } as any);
 
   await seedSiteSetting(strapi);
+  // Last (Spec §4): the CM plugin index mirrors whatever Site Settings holds
+  // after seeding, and runs every boot (not seed-once) so an editor toggle is
+  // never permanently stale.
+  await syncPluginEntries(strapi);
 };
 
 export default bootstrap;
