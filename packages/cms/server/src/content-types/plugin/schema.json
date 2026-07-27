@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "plugins",
+  "info": {
+    "singularName": "plugin",
+    "pluralName": "plugins",
+    "displayName": "Plugins",
+    "description": "Read-only index of engine plugins the CMS knows about and their configured state"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "pluginId": { "type": "string", "required": true, "unique": true },
+    "label": { "type": "string", "required": true },
+    "configHost": { "type": "string", "required": true },
+    "enabled": { "type": "boolean", "required": true, "default": false }
+  },
+  "config": {
+    "settings": { "bulkable": true, "filterable": true, "pageSize": 10, "searchable": true, "mainField": "pluginId" },
+    "metadatas": {
+      "pluginId": { "edit": { "label": "Plugin", "description": "Stable identifier of the engine plugin.", "editable": false } },
+      "label": { "edit": { "label": "Name", "description": "Human-readable plugin name.", "editable": false } },
+      "configHost": { "edit": { "label": "Configured at", "description": "Where this plugin is configured — a display-only pointer, not a link.", "editable": false } },
+      "enabled": { "edit": { "label": "Enabled", "description": "Mirrors the live Site Settings value as of the last CMS boot.", "editable": false } }
+    }
+  }
+}

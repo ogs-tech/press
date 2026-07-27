@@ -3,6 +3,7 @@ import { CONTAINER_ENUMS } from '@ogs-tech/press-shared';
 import { injectComponents } from './inject-components';
 import pageSchema from '../content-types/page/schema.json';
 import siteSettingSchema from '../content-types/site-setting/schema.json';
+import pluginSchema from '../content-types/plugin/schema.json';
 
 describe('injectComponents', () => {
   const makeStrapi = () => {
@@ -284,6 +285,33 @@ describe('site-setting examplePlugin attribute (base-plugin Spec §3.2)', () => 
       type: 'component',
       repeatable: false,
       component: 'preset-config.example-plugin',
+    });
+  });
+});
+
+describe('plugin content-type schema (base-plugin Spec §4)', () => {
+  it('declares a read-only collection type with the four mirror fields', () => {
+    expect(pluginSchema.kind).toBe('collectionType');
+    expect((pluginSchema.attributes as any).pluginId).toEqual({ type: 'string', required: true, unique: true });
+    expect((pluginSchema.attributes as any).label).toEqual({ type: 'string', required: true });
+    expect((pluginSchema.attributes as any).configHost).toEqual({ type: 'string', required: true });
+    expect((pluginSchema.attributes as any).enabled).toEqual({ type: 'boolean', required: true, default: false });
+  });
+
+  it('marks every field non-editable in the admin — a view, never a second source of truth', () => {
+    const metas = (pluginSchema as any).config.metadatas;
+    for (const field of ['pluginId', 'label', 'configHost', 'enabled']) {
+      expect(metas[field].edit.editable).toBe(false);
+    }
+  });
+
+  it('declares the full config.settings shape (bulkable/filterable/pageSize/searchable) per the repo gotcha', () => {
+    expect((pluginSchema as any).config.settings).toEqual({
+      bulkable: true,
+      filterable: true,
+      pageSize: 10,
+      searchable: true,
+      mainField: 'pluginId',
     });
   });
 });
