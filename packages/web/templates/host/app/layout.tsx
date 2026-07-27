@@ -1,5 +1,5 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
-import { buildMetadata, buildThemeStyle, getSiteConfig } from '@ogs-tech/press-web';
+import { buildMetadata, buildThemeStyle, getSiteConfig, ExamplePlugin } from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
 import { buildTime } from '../press-config';
 
@@ -33,6 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             route — the layout cannot see the slug, so it cannot resolve per-page
             slots (Spec §5). It keeps html/head and the theme injection only. */}
         {children}
+        {site.plugins.example.enabled && <ExamplePlugin message={site.plugins.example.message} />}
       </body>
     </html>
   );

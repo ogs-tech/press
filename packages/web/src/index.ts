@@ -41,6 +41,8 @@ export { buildThemeStyle } from './config/build-theme-style';
 export { buildUrn, componentUrn } from './urn';
 export type { Urn, Entity, Canonical } from './urn';
 export type { PressPlugin } from './plugin';
+export { ExamplePlugin } from './plugins/example/example-plugin';
+export type { ResolvedExamplePlugin } from './plugins/example/types';
 export type {
   Page,
   PageBody,
