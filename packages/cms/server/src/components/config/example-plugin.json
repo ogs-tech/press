@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_preset_config_example_plugins",
+  "info": {
+    "displayName": "Example Plugin",
+    "icon": "apps",
+    "description": "Synthetic reference plugin proving the plugin-wiring contract end to end"
+  },
+  "options": {},
+  "attributes": {
+    "enabled": { "type": "boolean", "default": false },
+    "message": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "enabled": { "edit": { "label": "Enabled", "description": "Turns the example plugin's banner on for every page. Ships off by default." } },
+      "message": { "edit": { "label": "Message", "description": "The text the example plugin renders when enabled." } }
+    }
+  }
+}

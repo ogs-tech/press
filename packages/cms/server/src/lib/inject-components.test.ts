@@ -24,7 +24,7 @@ describe('injectComponents', () => {
       'preset-organism.hero', 'preset-organism.cta',
       'preset-organism.navbar', 'preset-organism.footer',
       'preset-layout.container', 'preset-layout.row', 'preset-layout.column',
-      'preset-config.basic-settings', 'preset-config.theme-advanced',
+      'preset-config.basic-settings', 'preset-config.theme-advanced', 'preset-config.example-plugin',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -46,6 +46,16 @@ describe('injectComponents', () => {
     injectComponents({ strapi });
     expect(components.get('preset-atom.paragraph')).toEqual({ uid: 'preset-atom.paragraph', preexisting: true });
     expect(components.get('preset-config.basic-settings')?.modelType).toBe('component'); // others still injected
+  });
+
+  it('registers preset-config.example-plugin with enabled/message fields (base-plugin Spec §3.1)', () => {
+    const { strapi, components } = makeStrapi();
+    injectComponents({ strapi });
+    expect(components.get('preset-config.example-plugin')?.category).toBe('preset-config');
+    expect(components.get('preset-config.example-plugin')?.attributes).toEqual({
+      enabled: { type: 'boolean', default: false },
+      message: { type: 'string' },
+    });
   });
 
   it('injects the organism sections (hero/cta) under category "preset-organism" with a derived globalId', () => {

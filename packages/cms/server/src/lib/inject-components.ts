@@ -17,6 +17,7 @@ import layoutRowSchema from '../components/layout/row.json';
 import layoutColumnSchema from '../components/layout/column.json';
 import themeAdvancedSchema from '../components/config/theme-advanced.json';
 import basicSettingsSchema from '../components/config/basic-settings.json';
+import examplePluginSchema from '../components/config/example-plugin.json';
 import layoutDefaultsPageSchema from '../components/config/layout-page.json';
 import layoutDefaultsRowSchema from '../components/config/layout-row.json';
 import layoutDefaultsColumnSchema from '../components/config/layout-column.json';
@@ -101,6 +102,9 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   { layer: 'config', name: 'layout-row', schema: layoutDefaultsRowSchema as Record<string, unknown> },
   { layer: 'config', name: 'layout-column', schema: layoutDefaultsColumnSchema as Record<string, unknown> },
   { layer: 'config', name: 'layout', schema: layoutDefaultsSchema as Record<string, unknown> },
+  // Plugin config (base-plugin Spec §3.1) — the example plugin's own
+  // `enabled`/`message` fields, the first real consumer of PressPlugin<Id>.
+  { layer: 'config', name: 'example-plugin', schema: examplePluginSchema as Record<string, unknown> },
 ];
 
 /**
