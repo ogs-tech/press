@@ -3,6 +3,7 @@ import { buildThemeStyle } from './build-theme-style';
 import { DEFAULT_THEME } from './default-theme';
 import type { ResolvedPressConfig } from './types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
+import { DEFAULT_EXAMPLE_PLUGIN } from '../plugins/example/default-example-plugin';
 
 const baseResolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
@@ -17,6 +18,7 @@ const baseResolved: ResolvedPressConfig = {
   },
   pageDefaults: { header: [], footer: [] },
   layout: DEFAULT_LAYOUT,
+  plugins: { example: DEFAULT_EXAMPLE_PLUGIN },
 };
 
 /** Build a ResolvedPressConfig with theme overrides merged over DEFAULT_THEME. */

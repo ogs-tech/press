@@ -3,6 +3,7 @@ import type { BuildTimeConfig, ResolvedPressConfig, SiteSettingsData, ThemeColor
 import { DEFAULT_THEME } from './config/default-theme';
 import { buildUrn } from './urn';
 import { CMS_URL } from './media';
+import { mapExamplePlugin } from './plugins/example/map-example-plugin';
 
 /** Resolves a Strapi media url absolute against CMS_URL; undefined when absent. */
 function mediaUrl(media: { url?: string } | null | undefined): string | undefined {
@@ -102,5 +103,8 @@ export function mapSiteSettings(
     // Fail-to-DEFAULT (layout-defaults spec §5), like `theme` above and unlike
     // identity: an unreachable CMS renders with the engine's layout, not none.
     layout: resolveLayoutDefaults(c.layout),
+    plugins: {
+      example: mapExamplePlugin(c.examplePlugin),
+    },
   };
 }

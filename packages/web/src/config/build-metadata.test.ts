@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildMetadata } from './build-metadata';
 import type { ResolvedPressConfig } from './types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
+import { DEFAULT_EXAMPLE_PLUGIN } from '../plugins/example/default-example-plugin';
 
 const resolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
@@ -20,6 +21,7 @@ const resolved: ResolvedPressConfig = {
   },
   pageDefaults: { header: [], footer: [] },
   layout: DEFAULT_LAYOUT,
+  plugins: { example: DEFAULT_EXAMPLE_PLUGIN },
 };
 
 describe('buildMetadata', () => {

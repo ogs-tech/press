@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mapSiteSettings } from './map-site-settings';
 import type { BuildTimeConfig } from './config/types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
+import { DEFAULT_EXAMPLE_PLUGIN } from './plugins/example/default-example-plugin';
 
 const buildTime: BuildTimeConfig = {
   routes: { home: 'home' },
@@ -39,6 +40,16 @@ describe('mapSiteSettings', () => {
   it('attaches the synthetic site-setting urn regardless of the CMS payload (canonical-urn Spec §3)', () => {
     expect(mapSiteSettings(buildTime, null).urn).toBe('urn:site-setting:default');
     expect(mapSiteSettings(buildTime, { basicSettings: { name: 'Acme' } }).urn).toBe('urn:site-setting:default');
+  });
+
+  it('resolves plugins.example to DEFAULT_EXAMPLE_PLUGIN (disabled) when the CMS is null (base-plugin Spec §3)', () => {
+    const r = mapSiteSettings(buildTime, null);
+    expect(r.plugins.example).toEqual(DEFAULT_EXAMPLE_PLUGIN);
+  });
+
+  it('resolves plugins.example from a present examplePlugin component', () => {
+    const r = mapSiteSettings(buildTime, { examplePlugin: { enabled: true, message: 'On' } });
+    expect(r.plugins.example).toEqual({ enabled: true, message: 'On' });
   });
 
   it('maps a full CMS payload verbatim and lets theme overrides win per key (Ajustes básicos + Tema avançado)', () => {
