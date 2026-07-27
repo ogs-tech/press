@@ -7,14 +7,14 @@
  * admin UI; the descriptor layer (form-model.ts) is the only thing that knows
  * about press schema.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react'; // @types/react 19 removed the global JSX namespace
 import {
   Box, Button, Field, Flex, NumberInput, SingleSelect, SingleSelectOption,
   Textarea, TextInput, Toggle, Typography,
 } from '@strapi/design-system';
 import { Plus, Trash } from '@strapi/icons';
-import type { PressSchema } from '@ogs-tech/press-shared';
+import { isRecord, type PressSchema } from '@ogs-tech/press-shared';
 import { fieldsFor, type FieldDescriptor } from '../lib/form-model';
 import { fieldLabel } from '../lib/palette-labels';
 import { fetchPages, type PageOption } from '../lib/press-data';
@@ -28,8 +28,6 @@ interface NodeFormProps {
   /** Injectable media picker (tests stub it; production wires the media-library dialog). */
   MediaField: (props: { value: unknown; disabled?: boolean; onChange(v: unknown): void }) => JSX.Element;
 }
-
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 function PageRefField({ value, disabled, onChange }: { value: unknown; disabled?: boolean; onChange(v: unknown): void }) {
   const [pages, setPages] = useState<PageOption[]>([]);
@@ -156,8 +154,10 @@ function ComponentField({ field, schema, value, disabled, onChange, MediaField }
 
 export function NodeForm({ componentUid, schema, data, disabled, onChange, MediaField }: NodeFormProps) {
   const component = schema.components[componentUid];
+  // Memoized above the early return (component is stable per componentUid/schema,
+  // recomputed only when either changes, not on every field edit's re-render).
+  const fields = useMemo(() => (component ? fieldsFor(component.attributes) : []), [component]);
   if (!component) return <Typography variant="pi" textColor="danger600">unknown component {componentUid}</Typography>;
-  const fields = fieldsFor(component.attributes);
 
   if (fields.length === 0) {
     return <Typography variant="pi" textColor="neutral500">This block has no editable fields.</Typography>;

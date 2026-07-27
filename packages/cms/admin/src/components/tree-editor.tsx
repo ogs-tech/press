@@ -9,7 +9,7 @@
  * lose each card's open/closed state. They receive a shared `ctx` and recurse
  * through `TreeForest` (mutual recursion: Row → Column → TreeForest → Row …).
  */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { JSX } from 'react'; // @types/react 19 removed the global JSX namespace
 import {
   Box, Button, Divider, Field, Flex, IconButton, SingleSelect, SingleSelectOption, Typography,
@@ -156,7 +156,10 @@ function AddMenu({ ctx, parentPath, index, allowRow }: {
   allowRow: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const groups = paletteGroups(ctx.schema);
+  // ctx.schema is referentially stable across edits — memoized so every AddMenu
+  // instance (one per column, plus top level) doesn't re-filter/re-sort the
+  // whole palette on every keystroke anywhere in the tree.
+  const groups = useMemo(() => paletteGroups(ctx.schema), [ctx.schema]);
   const add = (kind: string): void => {
     const node = kind === 'row' ? newRowNode() : newBlockNode(kind);
     ctx.onChange(insertNode(ctx.forest, parentPath, index, node));
@@ -423,11 +426,15 @@ export function TreeEditor({ forest, schema, disabled, onChange, MediaField }: T
       else next.add(id);
       return next;
     });
+  // schema/forest are referentially stable except when actually reloaded/edited
+  // — both are memoized so a collapse-toggle (openIds-only state) or an edit
+  // elsewhere in the tree doesn't re-derive the site's layout defaults or
+  // re-walk the whole forest for collapsible ids.
+  const layoutDefaults = useMemo(() => layoutDefaultsOf(schema), [schema]);
+  const collapsibleIds = useMemo(() => collectCollapsibleIds(forest), [forest]);
   const ctx: TreeCtx = {
-    forest, schema, disabled, onChange, MediaField, openIds, toggleOpen,
-    layoutDefaults: layoutDefaultsOf(schema),
+    forest, schema, disabled, onChange, MediaField, openIds, toggleOpen, layoutDefaults,
   };
-  const collapsibleIds = collectCollapsibleIds(forest);
   const anyOpen = collapsibleIds.some((id) => openIds.has(id));
 
   return (

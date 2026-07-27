@@ -84,8 +84,9 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   { layer: 'organism', name: 'footer', schema: footerSchema as Record<string, unknown> },
   // Layout — the tree-node descriptors (Spec §4): pure schema for the builder's
   // layout-node forms. `preset-layout.container` is the shared ContainerAttrs
-  // surface, referenced by row/column via `component:` fields (the link/nav-item
-  // nesting pattern) so the "Container" form section is defined exactly once.
+  // surface, referenced by row/column via `component:` fields (the same nested-
+  // component pattern `preset-molecule.link` uses) so the "Container" form
+  // section is defined exactly once.
   { layer: 'layout', name: 'container', schema: layoutContainerSchema as Record<string, unknown> },
   { layer: 'layout', name: 'row', schema: layoutRowSchema as Record<string, unknown> },
   { layer: 'layout', name: 'column', schema: layoutColumnSchema as Record<string, unknown> },
@@ -137,6 +138,3 @@ export const injectComponents = ({ strapi }: { strapi: Core.Strapi }): void => {
     strapi.log.info(`[press-cms] injected engine component '${uid}'`);
   }
 };
-
-/** An adopter block: any registered component under a `custom` / `custom-${layer}` category. */
-export const isCustomBlockUid = (uid: string): boolean => uid.startsWith('custom.') || uid.startsWith('custom-');

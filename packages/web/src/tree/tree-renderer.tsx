@@ -21,6 +21,10 @@ import { hydrateEngineBlocks, resolveTree, type ResolvedTree } from './resolve-s
 
 type Registry = Record<string, ComponentType<any>>;
 
+// The engine's own atom+organism registry never changes at runtime — merged
+// once at module scope instead of on every TreeRenderer call.
+const engineRegistry: Registry = { ...atomBlocks, ...organismBlocks };
+
 interface TreeRendererProps {
   /** The raw page body (PressTree on the wire) — validated here, never trusted. */
   body: unknown;
@@ -84,7 +88,7 @@ function NodeList({ nodes, registry, layout, top }: { nodes: Node[]; registry: R
 }
 
 export function TreeRenderer({ body, site, components = {} }: TreeRendererProps) {
-  const registry: Registry = { ...atomBlocks, ...organismBlocks, ...components };
+  const registry: Registry = { ...engineRegistry, ...components };
   // Site layout defaults ride alongside `registry` as an explicit prop, not React
   // context: this subtree is server-first and uses no context today, and four
   // signatures cost less than introducing a provider.

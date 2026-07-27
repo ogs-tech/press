@@ -5,7 +5,16 @@
  * working form with zero admin code. `preset-molecule.link` needs NO special
  * case — its `page` relation maps to the pageRef dropdown like any other.
  */
-import { resolveLayoutDefaults, type Attr, type ContainerKey, type LayoutDefaults, type PressSchema } from '@ogs-tech/press-shared';
+import {
+  applicableContainerAttrs, parseUid, resolveLayoutDefaults,
+  type Attr, type LayoutDefaults, type PressSchema,
+} from '@ogs-tech/press-shared';
+
+// Re-exported so admin call sites (tree-editor.tsx and this module's own tests)
+// keep importing form/palette helpers from one place, while the single source of
+// truth — shared by the Site Settings layout-defaults resolver too — lives in
+// @ogs-tech/press-shared.
+export { applicableContainerAttrs };
 
 export type FieldKind =
   | 'text' | 'textarea' | 'select' | 'checkbox' | 'number'
@@ -63,16 +72,6 @@ export function fieldsFor(attributes: Record<string, Attr>): FieldDescriptor[] {
   return out;
 }
 
-/** Which shared container attrs the form shows per node type (Spec §3: non-applicable attrs are hidden). */
-export function applicableContainerAttrs(
-  nodeType: 'layout' | 'row' | 'column',
-  topLevel: boolean,
-): ContainerKey[] {
-  if (nodeType === 'layout') return ['gap'];
-  if (nodeType === 'row') return topLevel ? ['width', 'gap', 'verticalAlign'] : ['gap', 'verticalAlign'];
-  return ['gap', 'verticalAlign'];
-}
-
 /** The site layout defaults the served schema carries — routed through the shared
  *  `resolveLayoutDefaults` sanitizer (not a bare `?? DEFAULT_LAYOUT`) so a partial or
  *  malformed payload degrades PER KEY, never handing out the shared const by reference,
@@ -91,7 +90,7 @@ const NON_PLACEABLE = /^preset-config$|^(preset|custom)-(molecule|layout|templat
 export function paletteGroups(schema: PressSchema): Array<{ category: string; uids: string[] }> {
   const byCategory = new Map<string, string[]>();
   for (const uid of Object.keys(schema.components ?? {})) {
-    const category = uid.split('.')[0];
+    const { category } = parseUid(uid);
     if (NON_PLACEABLE.test(category)) continue;
     if (!byCategory.has(category)) byCategory.set(category, []);
     byCategory.get(category)!.push(uid);

@@ -7,16 +7,16 @@
  * Rendered with the design-system so the field reads as native admin UI; the
  * production admin already wraps plugin inputs in its DesignSystemProvider.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react'; // @types/react 19 removed the global JSX namespace
 import { useStrapiApp } from '@strapi/strapi/admin';
 import { Box, Button, Field, Flex, NumberInput, SingleSelect, SingleSelectOption, Typography } from '@strapi/design-system';
 import { Image } from '@strapi/icons';
 import type { ContainerKey, Node, PressSchema, PressTree, Slot } from '@ogs-tech/press-shared';
-import { PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
+import { DEFAULT_LAYOUT, isRecord, PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
 import { refreshPressSchema } from '../lib/press-data';
 import { layoutDefaultsOf } from '../lib/form-model';
-import { patchContainer, type Forest } from '../lib/tree-ops';
+import { applyContainer, patchContainer, type Forest } from '../lib/tree-ops';
 import { ContainerSection, TreeEditor } from './tree-editor';
 
 interface BuilderInputProps {
@@ -29,8 +29,6 @@ interface BuilderInputProps {
   error?: string;
   onChange(event: { target: { name: string; value: unknown; type: string } }): void;
 }
-
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 const parseValue = (value: unknown): unknown => {
   if (typeof value !== 'string') return value;
@@ -144,6 +142,11 @@ export default function BuilderInput({ name, attribute, value, disabled, label, 
     return () => { live = false; };
   }, []);
 
+  // schema is referentially stable across edits (only ever replaced by the
+  // effect above) — memoized so a keystroke anywhere in the tree doesn't
+  // re-derive the site's layout defaults.
+  const layoutDefaults = useMemo(() => (schema ? layoutDefaultsOf(schema) : DEFAULT_LAYOUT), [schema]);
+
   const emit = (next: unknown): void => onChange({ target: { name, value: next, type: 'json' } });
   const parsed = parseValue(value);
 
@@ -182,13 +185,10 @@ export default function BuilderInput({ name, attribute, value, disabled, label, 
   const tree: PressTree = isRecord(parsed) && isRecord(parsed.root) ? (parsed as unknown as PressTree) : emptyTree();
   const setRoot = (patch: Partial<PressTree['root']>): void => emit({ ...tree, root: { ...tree.root, ...patch } });
   /** Root-addressed container patch — same rule as the path-addressed
-   *  setContainerAttr (an emptied container disappears), via patchContainer. */
+   *  setContainerAttr (an emptied container disappears), via patchContainer +
+   *  applyContainer (tree-ops.ts). */
   const setRootContainer = (key: ContainerKey, value: string | undefined): void => {
-    const container = patchContainer(tree.root.container, key, value);
-    const root = { ...tree.root };
-    if (container) root.container = container;
-    else delete root.container;
-    emit({ ...tree, root });
+    emit({ ...tree, root: applyContainer(tree.root, patchContainer(tree.root.container, key, value)) });
   };
 
   return (
@@ -201,7 +201,7 @@ export default function BuilderInput({ name, attribute, value, disabled, label, 
               top-level children). Slots mode has no root node, so this is
               tree-mode only. */}
           <ContainerSection nodeType="layout" topLevel container={tree.root.container}
-            defaults={layoutDefaultsOf(schema).page} disabled={disabled} onSet={setRootContainer} />
+            defaults={layoutDefaults.page} disabled={disabled} onSet={setRootContainer} />
           <Box marginTop={3}>
             <TreeEditor forest={tree.root.children as Forest} schema={schema} disabled={disabled}
               onChange={(children) => setRoot({ children: children as Node[] })} MediaField={MediaField} />

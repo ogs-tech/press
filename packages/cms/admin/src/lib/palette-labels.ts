@@ -12,7 +12,7 @@ import {
   ArrowsOut, BulletList, Cursor, Feather, HeadingOne, Image, Layout, Link,
   Minus, Paragraph, PuzzlePiece, Quotes, SquaresFour, Stack, Star,
 } from '@strapi/icons';
-import type { ContainerKey } from '@ogs-tech/press-shared';
+import { parseUid, type ContainerKey } from '@ogs-tech/press-shared';
 
 export type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -46,8 +46,7 @@ const LAYER_ICONS: Record<string, IconType> = {
 export function blockIcon(uid: string): IconType {
   const exact = BLOCK_ICONS[uid];
   if (exact) return exact;
-  const [category] = uid.split('.');
-  const [owner, layer] = category.split('-');
+  const { owner, layer } = parseUid(uid);
   if (owner === 'custom') return PuzzlePiece;
   return LAYER_ICONS[layer] ?? PuzzlePiece;
 }

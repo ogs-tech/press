@@ -9,7 +9,7 @@
  * blocks here — adopter data passes through untouched (custom blocks render
  * links via <PressLink> themselves).
  */
-import type { ContainerAttrs, Node, PressTree, Slot } from '@ogs-tech/press-shared';
+import { isRecord, type ContainerAttrs, type Node, type PressTree, type Slot } from '@ogs-tech/press-shared';
 import type { ResolvedPressConfig } from '../config/types';
 import { resolveLink, type PressLinkData, type ResolvedLink } from '../link';
 
@@ -22,39 +22,64 @@ export interface ResolvedTree {
 
 type Brand = { name: string; logo?: string };
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
+/**
+ * A single link field to resolve on an engine block's data, declaratively —
+ * covers every shape LINK_FIELDS below needs, so no component gets its own
+ * hardcoded hydration branch:
+ *  - a plain field (`{ field: 'link' }`): resolved only when present, in place.
+ *  - `array`: the field is a `preset-molecule.link[]` (navbar `items`) — always
+ *    resolved to a (possibly empty) array of successfully-resolved links.
+ *  - `via`: the field is a NESTED component wrapping the real link one level
+ *    down (navbar `cta` is a `preset-atom.button`, whose link lives at
+ *    `cta.link`) — always resolved, `null` when absent, preserving the
+ *    wrapper's other own keys (e.g. `variant`).
+ */
+interface LinkFieldSpec {
+  field: string;
+  array?: boolean;
+  via?: string;
+  /** Output key, when it differs from `field` (navbar's `items` → `links`). */
+  outputField?: string;
+}
 
-/** Engine blocks whose data carries ONE link field to resolve in place. */
-const LINK_FIELDS: Record<string, string> = {
-  'preset-atom.button': 'link',
-  'preset-organism.hero': 'cta',
-  'preset-organism.cta': 'button',
+const LINK_FIELDS: Record<string, LinkFieldSpec[]> = {
+  'preset-atom.button': [{ field: 'link' }],
+  'preset-organism.hero': [{ field: 'cta' }],
+  'preset-organism.cta': [{ field: 'button' }],
+  'preset-organism.navbar': [
+    { field: 'items', array: true, outputField: 'links' },
+    { field: 'cta', via: 'link' },
+  ],
 };
 
+function resolveLinkField(data: Record<string, unknown>, spec: LinkFieldSpec, homeSlug: string): [string, unknown] | null {
+  const raw = data[spec.field];
+  const outKey = spec.outputField ?? spec.field;
+  if (spec.array) {
+    const items = Array.isArray(raw) ? (raw as PressLinkData[]) : [];
+    const links = items.map((item) => resolveLink(item, homeSlug)).filter((link): link is ResolvedLink => link !== null);
+    return [outKey, links];
+  }
+  if (spec.via) {
+    const wrapper = isRecord(raw) ? raw : undefined;
+    const link = wrapper ? resolveLink(wrapper[spec.via] as PressLinkData, homeSlug) : null;
+    return [outKey, link ? { ...link, variant: wrapper?.variant } : null];
+  }
+  if (raw === undefined || raw === null) return null; // single link fields: only overwritten when present
+  return [outKey, resolveLink(raw as PressLinkData, homeSlug)];
+}
+
 function hydrateBlockData(component: string, data: Record<string, unknown>, brand: Brand, homeSlug: string): Record<string, unknown> {
-  if (component === 'preset-organism.navbar') {
-    const items = Array.isArray(data.items) ? (data.items as PressLinkData[]) : [];
-    const links = items
-      .map((item) => resolveLink(item, homeSlug))
-      .filter((link): link is ResolvedLink => link !== null);
-    const rawCta = isRecord(data.cta) ? data.cta : undefined;
-    const ctaLink = rawCta ? resolveLink(rawCta.link as PressLinkData, homeSlug) : null;
-    return {
-      ...data,
-      brand: { name: brand.name, logo: brand.logo },
-      links,
-      cta: ctaLink ? { ...ctaLink, variant: rawCta?.variant } : null,
-    };
+  let out = data;
+  for (const spec of LINK_FIELDS[component] ?? []) {
+    const resolved = resolveLinkField(data, spec, homeSlug);
+    if (resolved) out = { ...out, [resolved[0]]: resolved[1] };
   }
-  if (component === 'preset-organism.footer') {
-    return { ...data, brand: { name: brand.name } };
-  }
-  const linkField = LINK_FIELDS[component];
-  if (linkField && data[linkField] !== undefined && data[linkField] !== null) {
-    return { ...data, [linkField]: resolveLink(data[linkField] as PressLinkData, homeSlug) };
-  }
-  return data;
+  // Brand has no source field in the schema at all — pure code-side injection,
+  // so it stays an explicit per-component step rather than folding into LINK_FIELDS.
+  if (component === 'preset-organism.navbar') out = { ...out, brand: { name: brand.name, logo: brand.logo } };
+  else if (component === 'preset-organism.footer') out = { ...out, brand: { name: brand.name } };
+  return out;
 }
 
 export function hydrateEngineBlocks(nodes: Node[], brand: Brand, homeSlug: string): Node[] {

@@ -1,7 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import type { Attr, PressSchema } from '@ogs-tech/press-shared';
-import { PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
-import { isCustomBlockUid } from './inject-components';
+import { isCustomBlockUid, isPresetUid, PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
 
 // Re-exported so the type stays importable from this module, while the single
 // source of truth lives in @ogs-tech/press-shared (shared with @ogs-tech/press-web's generator).
@@ -16,7 +15,7 @@ const SITE_SETTING_UID = 'plugin::press-cms.site-setting';
 const KEEP = ['type', 'required', 'enum', 'default', 'components', 'multiple', 'allowedTypes', 'repeatable', 'component', 'relation', 'target'] as const;
 
 /** Palette membership: engine presets + adopter customs; Strapi-internal categories never serve. */
-const isPaletteUid = (uid: string): boolean => uid.startsWith('preset-') || isCustomBlockUid(uid);
+const isPaletteUid = (uid: string): boolean => isPresetUid(uid) || isCustomBlockUid(uid);
 
 const pickAttributes = (attributes: Record<string, Attr>): Record<string, Attr> => {
   const out: Record<string, Attr> = {};

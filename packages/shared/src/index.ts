@@ -30,7 +30,7 @@ export interface Attr {
   enum?: string[];
   multiple?: boolean;
   components?: string[];
-  /** For `type: 'component'`: the referenced component uid (e.g. `preset-molecule.nav-item`). */
+  /** For `type: 'component'`: the referenced component uid (e.g. `preset-molecule.link`). */
   component?: string;
   /** For `type: 'component'`: repeatable → array on the wire (Spec §2). */
   repeatable?: boolean;
@@ -49,3 +49,4 @@ export interface PressSchema {
 export * from './tree';
 export * from './validate-tree';
 export * from './layout-defaults';
+export * from './uid';

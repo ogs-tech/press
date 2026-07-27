@@ -52,7 +52,9 @@ const warn = (ctx: Ctx, path: string, message: string): void => {
   ctx.warnings.push({ path, message });
 };
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
+/** The one `isRecord` guard in the engine — every plain-object check on tree/attr
+ *  data (cms server + admin, web) imports this instead of a local copy. */
+export const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
 function sanitizeContainer(input: unknown, path: string, ctx: Ctx): ContainerAttrs | undefined {

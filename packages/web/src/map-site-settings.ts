@@ -2,9 +2,7 @@ import { resolveLayoutDefaults, validateNodeArray, type Node } from '@ogs-tech/p
 import type { BuildTimeConfig, ResolvedPressConfig, SiteSettingsData, ThemeColors, ThemeRadius } from './config/types';
 import { DEFAULT_THEME } from './config/default-theme';
 import { buildUrn } from './urn';
-
-// Same module-level pattern as get-page.ts: read once, default to local Strapi.
-const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
+import { CMS_URL } from './media';
 
 /** Resolves a Strapi media url absolute against CMS_URL; undefined when absent. */
 function mediaUrl(media: { url?: string } | null | undefined): string | undefined {

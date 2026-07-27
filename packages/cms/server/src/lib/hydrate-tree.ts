@@ -9,6 +9,7 @@
  * serve-hydrated.ts. Never mutates its input; unknown components and malformed
  * values pass through untouched (the web renderer owns tolerance).
  */
+import { isRecord } from '@ogs-tech/press-shared';
 
 export interface TreeRefs {
   assetIds: number[];
@@ -23,9 +24,6 @@ export interface TreeResolvers {
 export type SchemaLookup = (uid: string) => { attributes?: Record<string, any> } | undefined;
 
 const PAGE_TARGET = 'plugin::press-cms.page';
-
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 type Visitor = {
   media(assetId: number): unknown;

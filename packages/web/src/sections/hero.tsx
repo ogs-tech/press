@@ -4,8 +4,7 @@ import { Grid } from '../layout/grid';
 import { Column } from '../layout/column';
 import { coerceLink } from '../link';
 import { PressLink } from '../press-link';
-
-const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
+import { resolveMediaUrl } from '../media';
 
 /**
  * Engine organism `preset-organism.hero` — a hero band born branded by the
@@ -53,7 +52,7 @@ export function Hero({
         </Column>
         {hasImage ? (
           <Column span={{ base: 12, md: 5 }}>
-            <img src={new URL(image!.url, CMS_URL).toString()} alt={image!.alternativeText ?? ''} />
+            <img src={resolveMediaUrl(image!.url)} alt={image!.alternativeText ?? ''} />
           </Column>
         ) : null}
       </Grid>

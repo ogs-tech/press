@@ -1,7 +1,6 @@
 import type { BuildTimeConfig, ResolvedPressConfig, SiteSettingsData } from './config/types';
 import { mapSiteSettings } from './map-site-settings';
-
-const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
+import { CMS_URL } from './media';
 
 // Next.js augments RequestInit with `next.revalidate` at the host; the engine
 // package typechecks with only @types/node, so name the option locally.

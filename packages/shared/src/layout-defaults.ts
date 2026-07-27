@@ -16,7 +16,7 @@
  * one shared implementation both sides import.
  */
 import type { ContainerAttrs, ContainerKey } from './tree';
-import { CONTAINER_ENUMS } from './validate-tree';
+import { CONTAINER_ENUMS, isRecord } from './validate-tree';
 
 /** Each level carries the SUBSET of ContainerAttrs that actually applies there
  *  (tree design §3: a non-applicable attr is ignored by the renderer and hidden
@@ -37,14 +37,27 @@ export const DEFAULT_LAYOUT: LayoutDefaults = {
   column: { verticalAlign: 'top' },
 };
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
+/** Which shared container attrs apply at a given tree level (a non-applicable
+ *  attr is ignored by the renderer and hidden by the builder form). `topLevel`
+ *  matters only for `row`: `width` applies solely at the top-level Container,
+ *  a nested row fills its parent cell instead. The one table both the builder's
+ *  live node-editing forms (topLevel-aware) and the Site Settings defaults below
+ *  (always top-level) read. */
+export function applicableContainerAttrs(
+  nodeType: 'layout' | 'row' | 'column',
+  topLevel: boolean,
+): ContainerKey[] {
+  if (nodeType === 'layout') return ['gap'];
+  if (nodeType === 'row') return topLevel ? ['width', 'gap', 'verticalAlign'] : ['gap', 'verticalAlign'];
+  return ['gap', 'verticalAlign'];
+}
 
-/** Which keys each level admits — the type's `Pick`s, as data. */
+/** Which keys each level admits — the type's `Pick`s, as data. Site Settings only
+ *  ever describes TOP-LEVEL defaults (there is no "nested row" default). */
 const LEVEL_KEYS: Record<keyof LayoutDefaults, readonly ContainerKey[]> = {
-  page: ['gap'],
-  row: ['width', 'gap', 'verticalAlign'],
-  column: ['gap', 'verticalAlign'],
+  page: applicableContainerAttrs('layout', true),
+  row: applicableContainerAttrs('row', true),
+  column: applicableContainerAttrs('column', true),
 };
 
 /**

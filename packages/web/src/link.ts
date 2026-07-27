@@ -7,6 +7,7 @@
  * links — nav items, button atom, hero/cta, adopter blocks via <PressLink> —
  * resolves through here, nowhere else.
  */
+import { isRecord } from '@ogs-tech/press-shared';
 
 export interface PressLinkData {
   label?: string;
@@ -43,9 +44,6 @@ export function resolveLink(link: PressLinkData | null | undefined, homeSlug?: s
   }
   return null;
 }
-
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** Accepts either an already-resolved link (hydrated engine block) or raw PressLinkData. */
 export function coerceLink(value: unknown, homeSlug?: string): ResolvedLink | null {

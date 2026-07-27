@@ -49,11 +49,11 @@ export function getNode(forest: Forest, path: NodePath): Node | null {
   return node;
 }
 
-/** Rebuilds the spine along `path`, applying `update` to the addressed sibling list. */
+/** Rebuilds the spine along `path`, applying `update` to the addressed sibling
+ *  list. `null` and `[]` both address the forest itself — `walk`'s own
+ *  `path.length === 0` base case already handles a `null` parentPath via the
+ *  trailing `parentPath ?? []`, so there is no separate case to special-case. */
 function updateList(forest: Forest, parentPath: NodePath | null, update: (siblings: Node[], parent: Node | null) => Node[]): Forest {
-  if (parentPath === null || parentPath.length === 0) {
-    if (parentPath === null) return update([...forest], null);
-  }
   const walk = (list: Node[], path: NodePath): Node[] => {
     if (path.length === 0) return update([...list], null);
     const [head, ...rest] = path;
@@ -67,6 +67,13 @@ function updateList(forest: Forest, parentPath: NodePath | null, update: (siblin
     });
   };
   return walk(forest, parentPath ?? []);
+}
+
+/** Splits an addressed node's `NodePath` into its parent path (empty at the
+ *  forest root — `updateList` treats `[]` the same as `null`) and its index
+ *  among siblings — shared by remove/move/patch. */
+function splitPath(path: NodePath): { parentPath: NodePath; index: number } {
+  return { parentPath: path.slice(0, -1), index: path[path.length - 1] };
 }
 
 function assertLegalChild(parent: Node | null, child: Node): void {
@@ -95,18 +102,16 @@ export function insertNode(forest: Forest, parentPath: NodePath | null, index: n
 }
 
 export function removeNode(forest: Forest, path: NodePath): Forest {
-  const parentPath = path.slice(0, -1);
-  const index = path[path.length - 1];
-  return updateList(forest, parentPath.length ? parentPath : null, (siblings) => {
+  const { parentPath, index } = splitPath(path);
+  return updateList(forest, parentPath, (siblings) => {
     siblings.splice(index, 1);
     return siblings;
   });
 }
 
 export function moveNode(forest: Forest, path: NodePath, delta: -1 | 1): Forest {
-  const parentPath = path.slice(0, -1);
-  const index = path[path.length - 1];
-  return updateList(forest, parentPath.length ? parentPath : null, (siblings) => {
+  const { parentPath, index } = splitPath(path);
+  return updateList(forest, parentPath, (siblings) => {
     const target = index + delta;
     if (target < 0 || target >= siblings.length) return siblings;
     const [node] = siblings.splice(index, 1);
@@ -116,9 +121,8 @@ export function moveNode(forest: Forest, path: NodePath, delta: -1 | 1): Forest 
 }
 
 function patchNode(forest: Forest, path: NodePath, patch: (node: Node) => Node): Forest {
-  const parentPath = path.slice(0, -1);
-  const index = path[path.length - 1];
-  return updateList(forest, parentPath.length ? parentPath : null, (siblings) => {
+  const { parentPath, index } = splitPath(path);
+  return updateList(forest, parentPath, (siblings) => {
     if (!siblings[index]) throw new Error('[press-cms] node not found at path');
     siblings[index] = patch(siblings[index]);
     return siblings;
@@ -133,10 +137,10 @@ export function setBlockData(forest: Forest, path: NodePath, data: Record<string
 }
 
 /**
- * The container-attr patch RULE, shared by the path-addressed `setContainerAttr`
- * below and the root-addressed layout-node call in builder-input: setting
- * `undefined` deletes the key, and an emptied container disappears entirely so a
- * cleared node never persists `container: {}`. Pure — never mutates its input.
+ * The container-attr patch RULE: setting `undefined` deletes the key, and an
+ * emptied container disappears entirely so a cleared node never persists
+ * `container: {}`. Pure — never mutates its input. Pair with `applyContainer`
+ * below to write the result back onto a node.
  */
 export function patchContainer(
   container: ContainerAttrs | undefined,
@@ -149,6 +153,17 @@ export function patchContainer(
   return Object.keys(next).length === 0 ? undefined : (next as ContainerAttrs);
 }
 
+/** Applies a patched `ContainerAttrs` onto a node-like object: sets the key when
+ *  present, deletes it when the patch collapsed to `undefined` (an emptied
+ *  container never persists as `container: {}`). Shared by the path-addressed
+ *  `setContainerAttr` below and the root-addressed call in builder-input. */
+export function applyContainer<T extends { container?: ContainerAttrs }>(obj: T, container: ContainerAttrs | undefined): T {
+  const next = { ...obj };
+  if (container) next.container = container;
+  else delete next.container;
+  return next;
+}
+
 export function setContainerAttr(
   forest: Forest,
   path: NodePath,
@@ -157,11 +172,7 @@ export function setContainerAttr(
 ): Forest {
   return patchNode(forest, path, (node) => {
     if (node.type === 'block') throw new Error('[press-cms] blocks carry no container attrs');
-    const container = patchContainer(node.container, key, value);
-    const next = { ...node } as Node & { container?: ContainerAttrs };
-    if (container) next.container = container;
-    else delete next.container;
-    return next as Node;
+    return applyContainer(node, patchContainer(node.container, key, value));
   });
 }
 

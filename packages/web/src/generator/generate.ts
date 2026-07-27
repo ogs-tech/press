@@ -50,9 +50,9 @@ export const tsTypeForAttribute = (attr: Attr): string => {
     return attr.multiple ? 'PressMedia[]' : 'PressMedia';
   }
   if (attr.type === 'relation') {
-    // Only the page-picker relation (nav-item/link `page` field) is consumed:
-    // the cms hydrates it into a PressPageRef. Every other relation stays out
-    // of generator scope (Spec §2) and is skipped at emit below.
+    // Only the page-picker relation (preset-molecule.link's `page` field) is
+    // consumed: the cms hydrates it into a PressPageRef. Every other relation
+    // stays out of generator scope (Spec §2) and is skipped at emit below.
     return (attr as Record<string, unknown>).target === 'plugin::press-cms.page' ? 'PressPageRef' : 'unknown';
   }
   return (attr.type ? SCALARS[attr.type] : undefined) ?? 'unknown';
