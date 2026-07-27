@@ -27,6 +27,9 @@ const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
     // The layout group holds one component per tree level, and a shallow populate
     // stops at the group — same reason as basicSettings above.
     layout: { populate: LAYOUT_POPULATE },
+    // examplePlugin is a flat scalar component (enabled/message) — no media or
+    // nested component to deep-populate, so a shallow `true` is enough.
+    examplePlugin: true,
   });
 
   return {

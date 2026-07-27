@@ -55,4 +55,11 @@ describe('site-setting controller', () => {
     const { populate } = findFirst.mock.calls[0][0];
     expect(populate.layout).toEqual({ populate: { page: true, row: true, column: true } });
   });
+
+  it('populates examplePlugin as a shallow scalar component (no media/nested component to deep-populate)', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.examplePlugin).toBe(true);
+  });
 });

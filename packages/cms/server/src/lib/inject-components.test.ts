@@ -277,3 +277,13 @@ describe('site-setting layout attribute (layout-defaults spec §4)', () => {
     expect((siteSettingSchema as any).config.metadatas.layout.edit.label).toBe('Layout');
   });
 });
+
+describe('site-setting examplePlugin attribute (base-plugin Spec §3.2)', () => {
+  it('attaches preset-config.example-plugin as a config component', () => {
+    expect((siteSettingSchema.attributes as any).examplePlugin).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'preset-config.example-plugin',
+    });
+  });
+});
