@@ -150,6 +150,11 @@ export interface PresetConfigLayout {
   column?: PresetConfigLayoutColumn;
 }
 
+export interface PresetConfigExamplePlugin {
+  enabled?: boolean;
+  message?: string;
+}
+
 /** The page body IS the composition tree (composition-builder spec §5). */
 export type PageBody = PressTree;
 
