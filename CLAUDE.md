@@ -482,14 +482,23 @@ This split is recent and easy to get wrong:
   `ResolvedPressConfig.plugins.<key>` (a NAMED map, one required key per plugin;
   each new plugin is a deliberate press-web major) → explicit mount in the host
   `layout.tsx`.
-- **RESERVED, currently unimplemented** — the same "declared ahead of components"
-  precedent as `preset-template` in the CMS palette. Cookie consent was plugin
-  #1 (config component + banner + client-only consent cookie) but was retired:
-  Site Settings no longer carries any cookie-consent surface, and
-  `ResolvedPressConfig` has no `plugins` key until the next plugin lands. Expect
-  Plugin/Legal and Plugin/SEO to be the next ones to install their own entities
-  and wire through this same contract — 1 CMS component + 1 mapper + 1 key +
-  1 mount line, same cost as the first.
+- **Two real plugins ship today.** `example` (`plugins/example/`) is the
+  synthetic reference wiring, disabled by default, mounted as a component in
+  `layout.tsx` — the canonical "1 CMS component + 1 mapper + 1 key + 1 mount
+  line" cost every plugin pays. `seo` (`plugins/seo/`) is the first plugin
+  with real product value, **enabled by default** (a deliberate divergence —
+  SEO is core surface, not a demo): a `preset-config.seo` Site Settings
+  component (+ nested `preset-config.seo-social`) plus a `preset-config.seo-page`
+  per-page override component feed `buildSeoMetadata` (replaces the old
+  `buildMetadata`, drives `generateMetadata()`) and `buildJsonLd` (feeds a
+  mounted `<SeoJsonLd>`, since structured data can't travel through Next's
+  `Metadata` object) — plus two new host routes, `sitemap.xml` and
+  `robots.txt`. A read-only `plugin::press-cms.plugin` collection type
+  (`PLUGIN_DEFINITIONS` in `sync-plugin-entries.ts`, synced every boot) gives
+  Content-Manager visibility into every installed plugin's `enabled` state —
+  a view, never a second source of truth. Cookie consent was retired before
+  either of these shipped; Legal is expected to be the next plugin to install
+  its own entities and wire through this same contract.
 - **React version + admin bundle (load-bearing):** the whole monorepo is pinned
   to **React 19** via a root `pnpm.overrides` (`react`/`react-dom` = Strapi 5's
   `19.2.7`) so the Next host, the engine packages, and Strapi's admin all share
