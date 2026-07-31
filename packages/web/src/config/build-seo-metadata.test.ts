@@ -62,3 +62,34 @@ describe('buildSeoMetadata — plugin disabled', () => {
     expect(m.metadataBase).toBeUndefined();
   });
 });
+
+describe('buildSeoMetadata — plugin enabled, layout fallback (page: null)', () => {
+  it('returns a title.template built from titleTemplate with {site} substituted, and a default', () => {
+    const m = buildSeoMetadata(baseResolved, null);
+    expect(m.title).toEqual({ template: '%s · Acme', default: 'Acme' });
+  });
+
+  it('sets metadataBase from site.url', () => {
+    const m = buildSeoMetadata(baseResolved, null);
+    expect(m.metadataBase).toEqual(new URL('https://acme.test'));
+  });
+
+  it('never sets canonical/alternates or openGraph.url — no page context', () => {
+    const m = buildSeoMetadata(baseResolved, null);
+    expect(m.alternates).toBeUndefined();
+    expect(m.openGraph?.url).toBeUndefined();
+  });
+
+  it('never throws on a malformed Site URL, and omits metadataBase', () => {
+    const bad = { ...baseResolved, site: { ...baseResolved.site, url: 'not-a-url' } };
+    expect(() => buildSeoMetadata(bad, null)).not.toThrow();
+    expect(buildSeoMetadata(bad, null).metadataBase).toBeUndefined();
+  });
+
+  it('omits metadataBase/canonical when site.url is empty', () => {
+    const empty = { ...baseResolved, site: { ...baseResolved.site, url: '' } };
+    const m = buildSeoMetadata(empty, { title: 'About' }, '/about');
+    expect(m.metadataBase).toBeUndefined();
+    expect(m.alternates).toBeUndefined();
+  });
+});

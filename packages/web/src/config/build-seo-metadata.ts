@@ -4,6 +4,15 @@ import type { PageSeo } from '../types/base';
 
 type PageMeta = { title?: string; seo?: PageSeo } | null;
 
+/** `new URL` throws on a malformed value — an editor-typed Site URL is free text, never trusted raw. */
+function safeUrl(value: string): URL | undefined {
+  try {
+    return new URL(value);
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Produces the Next `Metadata` object for a route (plugin-seo Spec §3),
  * replacing the old title+favicon-only `buildMetadata` — its own comment
@@ -11,10 +20,10 @@ type PageMeta = { title?: string; seo?: PageSeo } | null;
  * browser-visible URL path the caller already resolved (e.g. '/about');
  * callers must pass `undefined` whenever `page` is `null` so a 404/
  * layout-fallback response never carries a self-referencing canonical.
- * Pure — no I/O.
+ * Pure — no I/O, never throws even on a malformed Site URL.
  */
 export function buildSeoMetadata(resolved: ResolvedPressConfig, page: PageMeta, path?: string): Metadata {
-  const { brand } = resolved;
+  const { brand, site } = resolved;
   const seo = resolved.plugins.seo;
 
   if (!seo.enabled) {
@@ -24,9 +33,13 @@ export function buildSeoMetadata(resolved: ResolvedPressConfig, page: PageMeta, 
     };
   }
 
-  // Enabled branch: built out in the increments below.
+  const metadataBase = safeUrl(site.url);
+  const template = seo.titleTemplate.replace('{site}', brand.name);
+  const title = page ? page.seo?.metaTitle || page.title || brand.name : { template, default: brand.name };
+
   return {
-    title: page?.title ?? brand.name,
     ...(brand.favicon ? { icons: { icon: brand.favicon } } : {}),
+    ...(metadataBase ? { metadataBase } : {}),
+    title,
   };
 }
