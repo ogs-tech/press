@@ -235,6 +235,16 @@ describe('page.body customField (composition-builder storage, Spec §4)', () => 
   });
 });
 
+describe('page seo attribute (plugin-seo Spec §1)', () => {
+  it('attaches preset-config.seo-page as a component', () => {
+    expect((pageSchema.attributes as any).seo).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'preset-config.seo-page',
+    });
+  });
+});
+
 describe('site-setting.pageDefaults customField (composition-builder storage, Spec §4)', () => {
   it('points pageDefaults at the builder JSON custom field in slots mode', () => {
     expect((siteSettingSchema.attributes as any).pageDefaults).toEqual({
