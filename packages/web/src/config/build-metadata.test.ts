@@ -3,6 +3,7 @@ import { buildMetadata } from './build-metadata';
 import type { ResolvedPressConfig } from './types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 import { DEFAULT_EXAMPLE_PLUGIN } from '../plugins/example/default-example-plugin';
+import { DEFAULT_SEO_PLUGIN } from '../plugins/seo/default-seo-plugin';
 
 const resolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
@@ -21,7 +22,7 @@ const resolved: ResolvedPressConfig = {
   },
   pageDefaults: { header: [], footer: [] },
   layout: DEFAULT_LAYOUT,
-  plugins: { example: DEFAULT_EXAMPLE_PLUGIN },
+  plugins: { example: DEFAULT_EXAMPLE_PLUGIN, seo: DEFAULT_SEO_PLUGIN },
 };
 
 describe('buildMetadata', () => {

@@ -3,6 +3,7 @@ import { mapSiteSettings } from './map-site-settings';
 import type { BuildTimeConfig } from './config/types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 import { DEFAULT_EXAMPLE_PLUGIN } from './plugins/example/default-example-plugin';
+import { DEFAULT_SEO_PLUGIN } from './plugins/seo/default-seo-plugin';
 
 const buildTime: BuildTimeConfig = {
   routes: { home: 'home' },
@@ -50,6 +51,17 @@ describe('mapSiteSettings', () => {
   it('resolves plugins.example from a present examplePlugin component', () => {
     const r = mapSiteSettings(buildTime, { examplePlugin: { enabled: true, message: 'On' } });
     expect(r.plugins.example).toEqual({ enabled: true, message: 'On' });
+  });
+
+  it('resolves plugins.seo to DEFAULT_SEO_PLUGIN (enabled) when the CMS is null (plugin-seo Spec §2)', () => {
+    const r = mapSiteSettings(buildTime, null);
+    expect(r.plugins.seo).toEqual(DEFAULT_SEO_PLUGIN);
+  });
+
+  it('resolves plugins.seo from a present seo component', () => {
+    const r = mapSiteSettings(buildTime, { seo: { enabled: false, metaDescription: 'Custom' } });
+    expect(r.plugins.seo.enabled).toBe(false);
+    expect(r.plugins.seo.metaDescription).toBe('Custom');
   });
 
   it('maps a full CMS payload verbatim and lets theme overrides win per key (Ajustes básicos + Tema avançado)', () => {

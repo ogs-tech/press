@@ -2,6 +2,7 @@ import type { LayoutDefaults, Node } from '@ogs-tech/press-shared';
 import type { Canonical } from '../urn';
 import type { ResolvedLink } from '../link';
 import type { RawExamplePlugin, ResolvedExamplePlugin } from '../plugins/example/types';
+import type { RawSeoPlugin, ResolvedSeoPlugin } from '../plugins/seo/types';
 
 /** The only embedded theme this phase. The union exists so a second theme is additive, not breaking (Spec §2). */
 export type ThemeName = 'default';
@@ -122,10 +123,12 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
   /**
    * Resolved engine plugins (base-plugin Spec §3), one required key per wired
    * plugin — additive is a press-web MAJOR, the `pageDefaults`/`layout`
-   * discipline. A future plugin adds its own key beside `example`.
+   * discipline. `seo` (plugin-seo Spec §2) is the second real plugin, after
+   * `example`.
    */
   plugins: {
     example: ResolvedExamplePlugin;
+    seo: ResolvedSeoPlugin;
   };
 }
 
@@ -195,4 +198,6 @@ export interface SiteSettingsData {
   layout?: unknown;
   /** The `preset-config.example-plugin` component (base-plugin Spec §3), RAW. */
   examplePlugin?: RawExamplePlugin | null;
+  /** The `preset-config.seo` component (plugin-seo Spec §1), RAW. */
+  seo?: RawSeoPlugin | null;
 }

@@ -4,6 +4,7 @@ import { DEFAULT_THEME } from './config/default-theme';
 import { buildUrn } from './urn';
 import { mediaUrl } from './media';
 import { mapExamplePlugin } from './plugins/example/map-example-plugin';
+import { mapSeoPlugin } from './plugins/seo/map-seo-plugin';
 
 /** One pageDefaults slot: fail-to-empty on invalid nodes (Spec §6.3), dev-only warning. */
 function mapSlot(input: unknown, slot: string): Node[] {
@@ -98,6 +99,7 @@ export function mapSiteSettings(
     layout: resolveLayoutDefaults(c.layout),
     plugins: {
       example: mapExamplePlugin(c.examplePlugin),
+      seo: mapSeoPlugin(c.seo),
     },
   };
 }
