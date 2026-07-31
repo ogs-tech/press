@@ -80,7 +80,11 @@ export function mapSiteSettings(
     urn: buildUrn('site-setting', 'default'),
     brand,
     site: {
-      url: basics.url ?? '',
+      // Strips trailing slash(es) — a free-form Strapi string with no
+      // validation, and every consumer (canonical, JSON-LD url, sitemap,
+      // robots) concatenates `${site.url}${path}` raw, so an editor-typed
+      // 'https://acme.test/' would otherwise double-slash into every URL.
+      url: (basics.url ?? '').replace(/\/+$/, ''),
       locale: basics.locale ?? '',
     },
     routes: buildTime.routes,

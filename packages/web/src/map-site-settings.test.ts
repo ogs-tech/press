@@ -92,6 +92,15 @@ describe('mapSiteSettings', () => {
     expect(r.theme.radius.sm).toBe('10px'); // sibling keeps DEFAULT_THEME
   });
 
+  it('normalizes a trailing slash off site.url; a URL with no trailing slash is unchanged', () => {
+    expect(mapSiteSettings(buildTime, { basicSettings: { url: 'https://acme.test/' } }).site.url).toBe(
+      'https://acme.test',
+    );
+    expect(mapSiteSettings(buildTime, { basicSettings: { url: 'https://acme.test' } }).site.url).toBe(
+      'https://acme.test',
+    );
+  });
+
   it('keeps an empty CMS field empty — never backfills (the core anti-drift case)', () => {
     const r = mapSiteSettings(buildTime, { basicSettings: { name: 'Acme' } }); // url/locale absent
     expect(r.brand.name).toBe('Acme');
