@@ -62,4 +62,11 @@ describe('site-setting controller', () => {
     const { populate } = findFirst.mock.calls[0][0];
     expect(populate.examplePlugin).toBe(true);
   });
+
+  it('deep-populates seo (share image + nested social component)', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.seo).toEqual({ populate: { ogImage: true, social: true } });
+  });
 });

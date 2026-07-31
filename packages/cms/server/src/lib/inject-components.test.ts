@@ -259,8 +259,7 @@ describe('site-setting basicSettings attribute (Ajustes básicos)', () => {
     });
   });
 
-  it('no longer carries the removed seo/cookieConsent/themeColors/themeRadius attributes (BREAKING)', () => {
-    expect((siteSettingSchema.attributes as any).seo).toBeUndefined();
+  it('no longer carries the removed cookieConsent/themeColors/themeRadius attributes (BREAKING)', () => {
     expect((siteSettingSchema.attributes as any).cookieConsent).toBeUndefined();
     expect((siteSettingSchema.attributes as any).themeColors).toBeUndefined();
     expect((siteSettingSchema.attributes as any).themeRadius).toBeUndefined();
@@ -326,6 +325,16 @@ describe('site-setting examplePlugin attribute (base-plugin Spec §3.2)', () => 
       type: 'component',
       repeatable: false,
       component: 'preset-config.example-plugin',
+    });
+  });
+});
+
+describe('site-setting seo attribute (plugin-seo Spec §1)', () => {
+  it('attaches preset-config.seo as a config component', () => {
+    expect((siteSettingSchema.attributes as any).seo).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'preset-config.seo',
     });
   });
 });

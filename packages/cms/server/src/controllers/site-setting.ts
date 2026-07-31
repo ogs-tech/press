@@ -30,6 +30,9 @@ const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
     // examplePlugin is a flat scalar component (enabled/message) — no media or
     // nested component to deep-populate, so a shallow `true` is enough.
     examplePlugin: true,
+    // seo carries one media field (ogImage) plus the nested social component —
+    // both need explicit populate, same reason as basicSettings above.
+    seo: { populate: { ogImage: true, social: true } },
   });
 
   return {

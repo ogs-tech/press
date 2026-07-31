@@ -17,7 +17,8 @@
       "customField": "plugin::press-cms.builder",
       "options": { "mode": "slots" }
     },
-    "examplePlugin": { "type": "component", "repeatable": false, "component": "preset-config.example-plugin" }
+    "examplePlugin": { "type": "component", "repeatable": false, "component": "preset-config.example-plugin" },
+    "seo": { "type": "component", "repeatable": false, "component": "preset-config.seo" }
   },
   "config": {
     "settings": { "bulkable": true, "filterable": true, "pageSize": 10, "searchable": true, "mainField": "id" },
@@ -25,7 +26,8 @@
       "basicSettings": { "edit": { "label": "Ajustes básicos", "description": "Core identity and the theme tokens most sites customize first." } },
       "layout": { "edit": { "label": "Layout", "description": "Baseline layout every page, row and column inherits unless a node overrides it in the Composition builder. Leave a field empty to keep the engine default." } },
       "pageDefaults": { "edit": { "label": "Page defaults", "description": "The default header and footer every page inherits. Pages can override or drop them per-slot." } },
-      "examplePlugin": { "edit": { "label": "Example Plugin", "description": "Reference plugin proving the plugin framework end to end. Ships disabled." } }
+      "examplePlugin": { "edit": { "label": "Example Plugin", "description": "Reference plugin proving the plugin framework end to end. Ships disabled." } },
+      "seo": { "edit": { "label": "SEO", "description": "Head metadata defaults for every page — title template, description, share image, and social profiles." } }
     }
   }
 }
