@@ -26,7 +26,11 @@ function mapSocial(raw: RawSeoSocial | null | undefined): ResolvedSeoSocial {
 export function mapSeoPlugin(raw: RawSeoPlugin | null | undefined): ResolvedSeoPlugin {
   return {
     enabled: raw?.enabled ?? DEFAULT_SEO_PLUGIN.enabled,
-    titleTemplate: raw?.titleTemplate ?? DEFAULT_SEO_PLUGIN.titleTemplate,
+    // `||`, not `??`: an empty string (a cleared CMS field) must also fall
+    // back — an empty template propagates into Next's `title.template` for
+    // EVERY page, unlike the other fields here where `''` harmlessly falls
+    // through a later `||` chain in buildSeoMetadata/buildJsonLd.
+    titleTemplate: raw?.titleTemplate || DEFAULT_SEO_PLUGIN.titleTemplate,
     metaDescription: raw?.metaDescription ?? DEFAULT_SEO_PLUGIN.metaDescription,
     ogImage: mediaUrl(raw?.ogImage),
     social: mapSocial(raw?.social),

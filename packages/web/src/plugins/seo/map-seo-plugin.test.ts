@@ -27,6 +27,10 @@ describe('mapSeoPlugin', () => {
     });
   });
 
+  it('falls back to the default titleTemplate when the CMS value is an empty string (a cleared field)', () => {
+    expect(mapSeoPlugin({ titleTemplate: '' }).titleTemplate).toBe(DEFAULT_SEO_PLUGIN.titleTemplate);
+  });
+
   it('resolves ogImage to an absolute URL; missing media stays undefined', () => {
     expect(mapSeoPlugin({ ogImage: { url: '/uploads/og.png' } }).ogImage).toBe(
       'http://localhost:1337/uploads/og.png',
