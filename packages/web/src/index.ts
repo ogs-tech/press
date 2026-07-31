@@ -37,6 +37,8 @@ export type {
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
 export { buildSeoMetadata } from './config/build-seo-metadata';
+export { buildJsonLd } from './plugins/seo/build-json-ld';
+export { SeoJsonLd } from './plugins/seo/seo-json-ld';
 export { buildThemeStyle } from './config/build-theme-style';
 export { buildUrn, componentUrn } from './urn';
 export type { Urn, Entity, Canonical } from './urn';
