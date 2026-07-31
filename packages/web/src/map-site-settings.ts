@@ -2,15 +2,8 @@ import { resolveLayoutDefaults, validateNodeArray, type Node } from '@ogs-tech/p
 import type { BuildTimeConfig, ResolvedPressConfig, SiteSettingsData, ThemeColors, ThemeRadius } from './config/types';
 import { DEFAULT_THEME } from './config/default-theme';
 import { buildUrn } from './urn';
-import { CMS_URL } from './media';
+import { mediaUrl } from './media';
 import { mapExamplePlugin } from './plugins/example/map-example-plugin';
-
-/** Resolves a Strapi media url absolute against CMS_URL; undefined when absent. */
-function mediaUrl(media: { url?: string } | null | undefined): string | undefined {
-  const url = media?.url;
-  if (!url) return undefined;
-  return url.startsWith('http') ? url : `${CMS_URL}${url}`;
-}
 
 /** One pageDefaults slot: fail-to-empty on invalid nodes (Spec §6.3), dev-only warning. */
 function mapSlot(input: unknown, slot: string): Node[] {

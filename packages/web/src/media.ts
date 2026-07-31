@@ -12,3 +12,15 @@ export const CMS_URL = process.env.CMS_URL ?? 'http://localhost:1337';
 export function resolveMediaUrl(url: string, base: string = CMS_URL): string {
   return new URL(url, base).toString();
 }
+
+/**
+ * Resolves a Strapi media url absolute against CMS_URL; undefined when
+ * absent. Unlike `resolveMediaUrl` this never throws — a mapper-facing
+ * helper for optional media fields (`basicSettings.logo`, `seo.ogImage`, …)
+ * where "no media" is a normal, valid state, not an error.
+ */
+export function mediaUrl(media: { url?: string } | null | undefined): string | undefined {
+  const url = media?.url;
+  if (!url) return undefined;
+  return url.startsWith('http') ? url : `${CMS_URL}${url}`;
+}
