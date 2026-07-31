@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { buildSeoMetadata } from './build-seo-metadata';
-import type { ResolvedPressConfig } from './types';
+import type { BuildTimeConfig, ResolvedPressConfig } from './types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 import { DEFAULT_EXAMPLE_PLUGIN } from '../plugins/example/default-example-plugin';
 import { DEFAULT_SEO_PLUGIN } from '../plugins/seo/default-seo-plugin';
+import { mapSiteSettings } from '../map-site-settings';
+import { buildJsonLd } from '../plugins/seo/build-json-ld';
 
 const baseResolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
@@ -198,5 +200,52 @@ describe('buildSeoMetadata — plugin enabled, with a page (openGraph/twitter)',
   it('omits twitter.site when no handle is configured', () => {
     const m = buildSeoMetadata(baseResolved, page, '/about');
     expect(m.twitter?.site).toBeUndefined();
+  });
+});
+
+describe('buildSeoMetadata + buildJsonLd — integration through mapSiteSettings (mapper output as builder input)', () => {
+  // Nothing else exercises the FULL pipeline (raw CMS shape → mapSiteSettings →
+  // ResolvedPressConfig → buildSeoMetadata/buildJsonLd) in one pass — every
+  // other test hand-builds a ResolvedPressConfig fixture. A regression in
+  // mapSeoPlugin (e.g. social.sameAs resolving to undefined instead of []) would
+  // otherwise crash buildJsonLd's `sameAs.length` check at render time with zero
+  // coverage catching it.
+  const buildTimeConfig: BuildTimeConfig = {
+    routes: { home: 'home' },
+    theme: { name: 'default', fonts: {} },
+  };
+
+  const resolved = mapSiteSettings(buildTimeConfig, {
+    basicSettings: { name: 'Acme', url: 'https://acme.test', locale: 'en' },
+    seo: {
+      enabled: true,
+      titleTemplate: '%s · {site}',
+      metaDescription: 'Acme site default description',
+      social: { twitterHandle: '@acme', twitterUrl: 'https://twitter.com/acme' },
+    },
+  });
+
+  const page = { title: 'About', seo: { metaDescription: 'About page description' } };
+
+  it('resolves title/canonical/openGraph together from a realistic mapped payload', () => {
+    const m = buildSeoMetadata(resolved, page, '/about');
+    expect(m.title).toBe('About');
+    expect(m.alternates).toEqual({
+      canonical: 'https://acme.test/about',
+      languages: { en: 'https://acme.test/about' },
+    });
+    expect(m.openGraph).toEqual({
+      title: 'About',
+      description: 'About page description',
+      url: 'https://acme.test/about',
+      siteName: 'Acme',
+      type: 'website',
+    });
+  });
+
+  it('resolves JSON-LD Organization.sameAs from the same mapped payload without throwing', () => {
+    const nodes = buildJsonLd(resolved, page, '/about');
+    const organization = nodes.find((n) => n['@type'] === 'Organization') as Record<string, unknown>;
+    expect(organization.sameAs).toEqual(['https://twitter.com/acme']);
   });
 });
