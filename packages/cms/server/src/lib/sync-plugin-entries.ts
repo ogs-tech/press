@@ -6,6 +6,7 @@ const PLUGIN_UID = 'plugin::press-cms.plugin';
 /** A live Site Settings record, populated exactly enough for readEnabled below. */
 interface SiteSettingSnapshot {
   examplePlugin?: { enabled?: boolean } | null;
+  seo?: { enabled?: boolean } | null;
 }
 
 interface PluginDefinition {
@@ -32,6 +33,13 @@ export const PLUGIN_DEFINITIONS: PluginDefinition[] = [
     defaultEnabled: false,
     readEnabled: (site) => site?.examplePlugin?.enabled,
   },
+  {
+    id: 'seo',
+    label: 'SEO & Social',
+    configHost: 'site-setting.seo',
+    defaultEnabled: true,
+    readEnabled: (site) => site?.seo?.enabled,
+  },
 ];
 
 /**
@@ -45,7 +53,7 @@ export const PLUGIN_DEFINITIONS: PluginDefinition[] = [
 export async function syncPluginEntries(strapi: Core.Strapi): Promise<void> {
   const site = (await strapi
     .documents(SITE_SETTING_UID as any)
-    .findFirst({ populate: { examplePlugin: true } as any })) as SiteSettingSnapshot | null;
+    .findFirst({ populate: { examplePlugin: true, seo: true } as any })) as SiteSettingSnapshot | null;
 
   const docs = strapi.documents(PLUGIN_UID as any);
 

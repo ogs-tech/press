@@ -57,6 +57,25 @@ describe('syncPluginEntries (base-plugin Spec §4)', () => {
     expect(creates[0].data.enabled).toBe(true);
   });
 
+  it('creates the seo entry with defaultEnabled true when Site Settings is null (plugin-seo Spec §4)', async () => {
+    const { strapi, creates } = fakeStrapi(null);
+    await syncPluginEntries(strapi);
+    const seoEntry = creates.find((c) => c.data.pluginId === 'seo');
+    expect(seoEntry?.data).toEqual({
+      pluginId: 'seo',
+      label: 'SEO & Social',
+      configHost: 'site-setting.seo',
+      enabled: true,
+    });
+  });
+
+  it('mirrors the live Site Settings seo.enabled value on create', async () => {
+    const { strapi, creates } = fakeStrapi({ seo: { enabled: false } });
+    await syncPluginEntries(strapi);
+    const seoEntry = creates.find((c) => c.data.pluginId === 'seo');
+    expect(seoEntry?.data.enabled).toBe(false);
+  });
+
   it('updates the existing row on the next boot instead of creating a duplicate (idempotent upsert)', async () => {
     const { strapi, creates, updates } = fakeStrapi(
       { examplePlugin: { enabled: true } },
@@ -68,12 +87,20 @@ describe('syncPluginEntries (base-plugin Spec §4)', () => {
           configHost: 'site-setting.examplePlugin',
           enabled: false,
         },
+        seo: {
+          documentId: 'doc-seo',
+          pluginId: 'seo',
+          label: 'SEO & Social',
+          configHost: 'site-setting.seo',
+          enabled: true,
+        },
       },
     );
     await syncPluginEntries(strapi);
     expect(creates).toEqual([]);
-    expect(updates).toHaveLength(1);
-    expect(updates[0]).toEqual({
+    expect(updates).toHaveLength(2);
+    const exampleUpdate = updates.find((u) => u.data.pluginId === 'example');
+    expect(exampleUpdate).toEqual({
       documentId: 'doc-example',
       data: { pluginId: 'example', label: 'Example Plugin', configHost: 'site-setting.examplePlugin', enabled: true },
     });
@@ -82,6 +109,7 @@ describe('syncPluginEntries (base-plugin Spec §4)', () => {
   it('falls back to defaultEnabled when the Site Settings record has no examplePlugin component', async () => {
     const { strapi, creates } = fakeStrapi({});
     await syncPluginEntries(strapi);
-    expect(creates[0].data.enabled).toBe(false);
+    const exampleEntry = creates.find((c) => c.data.pluginId === 'example');
+    expect(exampleEntry?.data.enabled).toBe(false);
   });
 });
