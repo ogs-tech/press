@@ -335,11 +335,15 @@ about that belongs to press" (`serialize-schema.ts`, `admin/src/lib/form-model.t
     is RETIRED — its job (2–4 column layouts, closed `ratio`/`gap`/`verticalAlign` enums) is
     now native tree recursion (`RowNode`/`ColumnNode`, unlimited depth), not a discrete block.
   - `preset-config.*` — basic-settings, theme-advanced, layout, layout-page, layout-row,
-    layout-column: non-block settings referenced by `component:` fields on Site Settings,
+    layout-column, example-plugin, seo, seo-social, seo-page: non-block settings referenced
+    by `component:` fields on Site Settings (or, for `seo-page`, on the `page` content type),
     never a tree node. `basic-settings` ("Ajustes básicos") is identity + the curated basic
     theme tokens; `theme-advanced` nests inside it for the remaining color/radius overrides
-    (see "Build-time anchors vs. runtime Site Settings" above). SEO and cookie-consent are
-    retired — no longer part of the palette.
+    (see "Build-time anchors vs. runtime Site Settings" above). `example-plugin` and `seo`
+    (+ nested `seo-social`) are the config surfaces for the two shipped Engine plugins (see
+    "Engine plugins" below); `seo-page` is the per-page SEO override, attached directly to
+    the `page` content type rather than Site Settings. Cookie-consent is retired — no longer
+    part of the palette.
   - `preset-layout.{container,row,column}` — no longer reserved-empty: pure registry
     descriptors the builder's admin form generator reads to build the row/column edit forms
     (see "Layout primitives" above for the full mechanics). Never placed as a tree block
@@ -429,9 +433,13 @@ This split is recent and easy to get wrong:
   runtime by `getSiteConfig` (ISR ~60s), no redeploy. Any failure (CMS down, malformed
   record) maps as if the record were *empty* → the site renders unbranded/default-themed
   AND chrome-less rather than crashing. There is **no `press.config` fallback for
-  identity** by design. SEO and Cookie Consent are **not** part of Site Settings —
-  both were retired (see below); a future Plugin/Legal and Plugin/SEO are expected
-  to install their own entities rather than reuse this single type.
+  identity** by design. SEO IS a Site Settings attribute — the `seo` field
+  (`preset-config.seo` + nested `preset-config.seo-social`) feeds
+  `ResolvedPressConfig.plugins.seo` via `mapSeoPlugin`; reusing this single type is
+  the established plugin-config pattern (`example`/`seo` both do it — see "Engine
+  plugins" below). Cookie Consent was retired before either shipped. Plugin/Legal
+  remains the one candidate expected to install its own entities rather than reuse
+  Site Settings.
   - **"Ajustes básicos" (`preset-config.basic-settings`) is the one identity+theme
     attribute** on Site Settings (`basicSettings`), replacing the old flat
     `name`/`url`/`locale`/`logo`/`favicon`/`themeColors`/`themeRadius` siblings.
@@ -485,9 +493,11 @@ This split is recent and easy to get wrong:
 - **Two real plugins ship today.** `example` (`plugins/example/`) is the
   synthetic reference wiring, disabled by default, mounted as a component in
   `layout.tsx` — the canonical "1 CMS component + 1 mapper + 1 key + 1 mount
-  line" cost every plugin pays. `seo` (`plugins/seo/`) is the first plugin
-  with real product value, **enabled by default** (a deliberate divergence —
-  SEO is core surface, not a demo): a `preset-config.seo` Site Settings
+  line" cost every plugin pays. `seo` (`plugins/seo/` — `buildSeoMetadata` itself
+  stays in `config/`, replacing `buildMetadata` in place, since it must run even
+  when the plugin is disabled) is the first plugin with real product value,
+  **enabled by default** (a deliberate divergence — SEO is core surface, not a
+  demo): a `preset-config.seo` Site Settings
   component (+ nested `preset-config.seo-social`) plus a `preset-config.seo-page`
   per-page override component feed `buildSeoMetadata` (replaces the old
   `buildMetadata`, drives `generateMetadata()`) and `buildJsonLd` (feeds a

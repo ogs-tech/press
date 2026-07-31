@@ -14,10 +14,11 @@ import type { Canonical } from './urn';
  * - the `enabled` flag every plugin needs for the "seed active,
  *   editor-disable respected forever" pattern.
  *
- * RESERVED today — no plugin implements this contract (cookie-consent, the
- * first, was retired; legal/SEO are expected to be the next ones). Kept
- * deliberately, the same "declared ahead of components" precedent as
- * `preset-template` in the CMS palette.
+ * RESERVED today — no shipped plugin implements this contract yet.
+ * Cookie-consent, the first plugin, was retired before implementing it;
+ * `example` and `seo` (`ResolvedExamplePlugin`/`ResolvedSeoPlugin`) shipped
+ * without a `urn`/`id` either. Kept deliberately, the same "declared ahead
+ * of components" precedent as `preset-template` in the CMS palette.
  */
 export interface PressPlugin<Id extends string = string> extends Canonical<'plugin'> {
   readonly id: Id;

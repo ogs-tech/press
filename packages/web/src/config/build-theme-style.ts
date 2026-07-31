@@ -24,7 +24,7 @@ const RADIUS_KEYS: ReadonlyArray<keyof ThemeRadius> = ['xs', 'sm', 'md', 'lg'];
 
 /**
  * Emits the `:root{ --press-* }` value block from the resolved config — the
- * single injection point for token values (Spec §0). Mirrors `buildMetadata`:
+ * single injection point for token values (Spec §0). Mirrors `buildSeoMetadata`:
  * pure, same input → same output, safe as an RSC/SSR module constant.
  *
  * Emits all colours, the engine-fixed space/type scales, and the radii. A font
