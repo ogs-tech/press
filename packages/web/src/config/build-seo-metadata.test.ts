@@ -93,3 +93,49 @@ describe('buildSeoMetadata — plugin enabled, layout fallback (page: null)', ()
     expect(m.alternates).toBeUndefined();
   });
 });
+
+describe('buildSeoMetadata — plugin enabled, with a page (description/canonical/robots)', () => {
+  const page = { title: 'About us', seo: { metaDescription: 'The about page' } };
+
+  it('uses the page title as a plain string (Next applies the ancestor template)', () => {
+    const m = buildSeoMetadata(baseResolved, page, '/about');
+    expect(m.title).toBe('About us');
+  });
+
+  it('lets page.seo.metaTitle override page.title', () => {
+    const m = buildSeoMetadata(baseResolved, { ...page, seo: { ...page.seo, metaTitle: 'Override title' } }, '/about');
+    expect(m.title).toBe('Override title');
+  });
+
+  it('uses page.seo.metaDescription, falling back to the site default', () => {
+    const m = buildSeoMetadata(baseResolved, page, '/about');
+    expect(m.description).toBe('The about page');
+    const withSiteDefault: ResolvedPressConfig = {
+      ...baseResolved,
+      plugins: { ...baseResolved.plugins, seo: { ...DEFAULT_SEO_PLUGIN, metaDescription: 'Site default desc' } },
+    };
+    const noOverride = buildSeoMetadata(withSiteDefault, { title: 'About us' }, '/about');
+    expect(noOverride.description).toBe('Site default desc');
+  });
+
+  it('builds a self-referencing canonical from site.url + path, and a single-locale hreflang stub', () => {
+    const m = buildSeoMetadata(baseResolved, page, '/about');
+    expect(m.alternates).toEqual({
+      canonical: 'https://acme.test/about',
+      languages: { en: 'https://acme.test/about' },
+    });
+  });
+
+  it('omits alternates.languages when site.locale is empty', () => {
+    const noLocale = { ...baseResolved, site: { ...baseResolved.site, locale: '' } };
+    const m = buildSeoMetadata(noLocale, page, '/about');
+    expect(m.alternates).toEqual({ canonical: 'https://acme.test/about' });
+  });
+
+  it('sets robots.index=false only when page.seo.noindex is true; omits the tag otherwise', () => {
+    const noindexed = buildSeoMetadata(baseResolved, { ...page, seo: { ...page.seo, noindex: true } }, '/about');
+    expect(noindexed.robots).toEqual({ index: false });
+    const indexed = buildSeoMetadata(baseResolved, page, '/about');
+    expect(indexed.robots).toBeUndefined();
+  });
+});

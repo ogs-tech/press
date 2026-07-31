@@ -36,10 +36,18 @@ export function buildSeoMetadata(resolved: ResolvedPressConfig, page: PageMeta, 
   const metadataBase = safeUrl(site.url);
   const template = seo.titleTemplate.replace('{site}', brand.name);
   const title = page ? page.seo?.metaTitle || page.title || brand.name : { template, default: brand.name };
+  const description = page?.seo?.metaDescription || seo.metaDescription || undefined;
+  const canonical = path && site.url ? `${site.url}${path}` : undefined;
+  const alternates = canonical
+    ? { canonical, ...(site.locale ? { languages: { [site.locale]: canonical } } : {}) }
+    : undefined;
 
   return {
     ...(brand.favicon ? { icons: { icon: brand.favicon } } : {}),
     ...(metadataBase ? { metadataBase } : {}),
     title,
+    ...(description ? { description } : {}),
+    ...(alternates ? { alternates } : {}),
+    ...(page?.seo?.noindex ? { robots: { index: false } } : {}),
   };
 }
