@@ -1,7 +1,7 @@
 {
   "collectionName": "components_preset_config_seo_pages",
   "info": {
-    "displayName": "SEO",
+    "displayName": "SEO · Página",
     "icon": "listSearch",
     "description": "Per-page head metadata overrides — falls back to the site-wide SEO defaults when left empty"
   },
