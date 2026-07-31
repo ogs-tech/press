@@ -37,10 +37,12 @@ export function buildSeoMetadata(resolved: ResolvedPressConfig, page: PageMeta, 
   const template = seo.titleTemplate.replace('{site}', brand.name);
   const title = page ? page.seo?.metaTitle || page.title || brand.name : { template, default: brand.name };
   const description = page?.seo?.metaDescription || seo.metaDescription || undefined;
+  const ogImage = page?.seo?.ogImage || seo.ogImage;
   const canonical = path && site.url ? `${site.url}${path}` : undefined;
   const alternates = canonical
     ? { canonical, ...(site.locale ? { languages: { [site.locale]: canonical } } : {}) }
     : undefined;
+  const ogTitle = typeof title === 'string' ? title : brand.name;
 
   return {
     ...(brand.favicon ? { icons: { icon: brand.favicon } } : {}),
@@ -49,5 +51,20 @@ export function buildSeoMetadata(resolved: ResolvedPressConfig, page: PageMeta, 
     ...(description ? { description } : {}),
     ...(alternates ? { alternates } : {}),
     ...(page?.seo?.noindex ? { robots: { index: false } } : {}),
+    openGraph: {
+      title: ogTitle,
+      ...(description ? { description } : {}),
+      ...(canonical ? { url: canonical } : {}),
+      siteName: brand.name,
+      type: 'website',
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      ...(seo.social.twitterHandle ? { site: seo.social.twitterHandle } : {}),
+      title: ogTitle,
+      ...(description ? { description } : {}),
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
   };
 }

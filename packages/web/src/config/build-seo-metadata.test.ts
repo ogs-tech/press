@@ -139,3 +139,64 @@ describe('buildSeoMetadata — plugin enabled, with a page (description/canonica
     expect(indexed.robots).toBeUndefined();
   });
 });
+
+describe('buildSeoMetadata — plugin enabled, with a page (openGraph/twitter)', () => {
+  const page = { title: 'About us', seo: { metaDescription: 'The about page' } };
+
+  it('builds openGraph with title/description/url/siteName, type "website", and an image when one resolves', () => {
+    const withImage: ResolvedPressConfig = {
+      ...baseResolved,
+      plugins: { ...baseResolved.plugins, seo: { ...DEFAULT_SEO_PLUGIN, ogImage: 'https://acme.test/og-default.png' } },
+    };
+    const m = buildSeoMetadata(withImage, page, '/about');
+    expect(m.openGraph).toEqual({
+      title: 'About us',
+      description: 'The about page',
+      url: 'https://acme.test/about',
+      siteName: 'Acme',
+      type: 'website',
+      images: [{ url: 'https://acme.test/og-default.png' }],
+    });
+  });
+
+  it('OG image fallback chain: page override wins over the site default', () => {
+    const withSiteImage: ResolvedPressConfig = {
+      ...baseResolved,
+      plugins: { ...baseResolved.plugins, seo: { ...DEFAULT_SEO_PLUGIN, ogImage: 'https://acme.test/site-og.png' } },
+    };
+    const m = buildSeoMetadata(
+      withSiteImage,
+      { ...page, seo: { ...page.seo, ogImage: 'https://acme.test/page-og.png' } },
+      '/about',
+    );
+    expect(m.openGraph?.images).toEqual([{ url: 'https://acme.test/page-og.png' }]);
+  });
+
+  it('omits openGraph.images when no OG image resolves anywhere', () => {
+    const m = buildSeoMetadata(baseResolved, page, '/about');
+    expect(m.openGraph?.images).toBeUndefined();
+  });
+
+  it('builds a twitter summary_large_image card with the same title/description/image, plus site when a handle is set', () => {
+    const withHandle: ResolvedPressConfig = {
+      ...baseResolved,
+      plugins: {
+        ...baseResolved.plugins,
+        seo: { ...DEFAULT_SEO_PLUGIN, ogImage: 'https://acme.test/og.png', social: { sameAs: [], twitterHandle: '@acme' } },
+      },
+    };
+    const m = buildSeoMetadata(withHandle, page, '/about');
+    expect(m.twitter).toEqual({
+      card: 'summary_large_image',
+      site: '@acme',
+      title: 'About us',
+      description: 'The about page',
+      images: ['https://acme.test/og.png'],
+    });
+  });
+
+  it('omits twitter.site when no handle is configured', () => {
+    const m = buildSeoMetadata(baseResolved, page, '/about');
+    expect(m.twitter?.site).toBeUndefined();
+  });
+});
