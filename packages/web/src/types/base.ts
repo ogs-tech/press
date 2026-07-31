@@ -91,6 +91,21 @@ export interface PresetOrganismCta {
 export type PageBody = PressTree;
 
 /**
+ * Resolved per-page SEO/social overrides (plugin-seo Spec §1/§2) — `ogImage`
+ * is already an absolute URL (mapPage resolves it, mirroring
+ * `basicSettings.logo` in mapSiteSettings). Every field falls back to a
+ * site-wide default at the `buildSeoMetadata`/`buildJsonLd` call site, never
+ * here — `mapPage` stays structural, not a business-default resolver
+ * (mirrors how `title`/`slug`/`body` pass through unresolved too).
+ */
+export interface PageSeo {
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
+  noindex?: boolean;
+}
+
+/**
  * The page envelope the engine fetches and renders. A canonical entity
  * (canonical-urn Spec §2): `urn:page:{documentId}` is attached at the mapping
  * boundary (map-page.ts) — derived web-side, never part of the CMS wire shape.
@@ -101,4 +116,5 @@ export interface Page extends Canonical<'page'> {
   title: string;
   slug?: string;
   body: PageBody;
+  seo?: PageSeo;
 }

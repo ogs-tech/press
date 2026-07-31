@@ -47,6 +47,7 @@ export type { ResolvedSeoPlugin } from './plugins/seo/types';
 export type {
   Page,
   PageBody,
+  PageSeo,
   PressMedia,
   PresetAtomParagraph,
   PresetAtomHeading,
