@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_preset_config_seo_pages",
+  "info": {
+    "displayName": "SEO",
+    "icon": "listSearch",
+    "description": "Per-page head metadata overrides — falls back to the site-wide SEO defaults when left empty"
+  },
+  "options": {},
+  "attributes": {
+    "metaTitle": { "type": "string" },
+    "metaDescription": { "type": "text" },
+    "ogImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "noindex": { "type": "boolean", "default": false }
+  },
+  "config": {
+    "metadatas": {
+      "metaTitle": { "edit": { "label": "Title override", "description": "Overrides the page title in <title>/Open Graph/Twitter. Leave empty to use the page's own title." } },
+      "metaDescription": { "edit": { "label": "Description override", "description": "Overrides the site-wide default description for this page only." } },
+      "ogImage": { "edit": { "label": "Share image override", "description": "Overrides the site-wide default share image for this page only." } },
+      "noindex": { "edit": { "label": "Hide from search engines", "description": "Excludes this page from search results and the sitemap. Off by default." } }
+    }
+  }
+}

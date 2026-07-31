@@ -18,6 +18,9 @@ import layoutColumnSchema from '../components/layout/column.json';
 import themeAdvancedSchema from '../components/config/theme-advanced.json';
 import basicSettingsSchema from '../components/config/basic-settings.json';
 import examplePluginSchema from '../components/config/example-plugin.json';
+import seoSocialSchema from '../components/config/seo-social.json';
+import seoSchema from '../components/config/seo.json';
+import seoPageSchema from '../components/config/seo-page.json';
 import layoutDefaultsPageSchema from '../components/config/layout-page.json';
 import layoutDefaultsRowSchema from '../components/config/layout-row.json';
 import layoutDefaultsColumnSchema from '../components/config/layout-column.json';
@@ -105,6 +108,13 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   // Plugin config (base-plugin Spec §3.1) — the example plugin's own
   // `enabled`/`message` fields, the first real consumer of PressPlugin<Id>.
   { layer: 'config', name: 'example-plugin', schema: examplePluginSchema as Record<string, unknown> },
+  // SEO plugin config (plugin-seo Spec §1) — head metadata (ranking + social
+  // share). Nested child first: `seo` references `seo-social`. `seo-page` is
+  // the page-level override component, referenced by the page content-type
+  // directly (Task 3), not nested inside `seo`.
+  { layer: 'config', name: 'seo-social', schema: seoSocialSchema as Record<string, unknown> },
+  { layer: 'config', name: 'seo', schema: seoSchema as Record<string, unknown> },
+  { layer: 'config', name: 'seo-page', schema: seoPageSchema as Record<string, unknown> },
 ];
 
 /**

@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_preset_config_seo_socials",
+  "info": {
+    "displayName": "Redes sociais",
+    "icon": "earth",
+    "description": "Social profile links and the Twitter card handle, feeding Organization JSON-LD and twitter:site"
+  },
+  "options": {},
+  "attributes": {
+    "twitterHandle": { "type": "string" },
+    "twitterUrl": { "type": "string" },
+    "linkedinUrl": { "type": "string" },
+    "instagramUrl": { "type": "string" },
+    "facebookUrl": { "type": "string" }
+  },
+  "config": {
+    "metadatas": {
+      "twitterHandle": { "edit": { "label": "Twitter/X handle", "description": "e.g. @acme — used as the twitter:site meta tag on every page." } },
+      "twitterUrl": { "edit": { "label": "Twitter/X profile URL", "description": "Included in the site's Organization structured data (sameAs)." } },
+      "linkedinUrl": { "edit": { "label": "LinkedIn profile URL", "description": "Included in the site's Organization structured data (sameAs)." } },
+      "instagramUrl": { "edit": { "label": "Instagram profile URL", "description": "Included in the site's Organization structured data (sameAs)." } },
+      "facebookUrl": { "edit": { "label": "Facebook page URL", "description": "Included in the site's Organization structured data (sameAs)." } }
+    }
+  }
+}

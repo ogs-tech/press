@@ -26,6 +26,7 @@ describe('injectComponents', () => {
       'preset-organism.navbar', 'preset-organism.footer',
       'preset-layout.container', 'preset-layout.row', 'preset-layout.column',
       'preset-config.basic-settings', 'preset-config.theme-advanced', 'preset-config.example-plugin',
+      'preset-config.seo-social', 'preset-config.seo', 'preset-config.seo-page',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -182,6 +183,46 @@ describe('injectComponents', () => {
     expect(label('preset-config.layout-row', 'verticalAlign')).toBe('Vertical align');
     expect(label('preset-config.layout-column', 'gap')).toBe('Vertical rhythm');
     expect(label('preset-config.layout-column', 'verticalAlign')).toBe('Content align');
+  });
+
+  describe('preset-config.seo / seo-social / seo-page components (plugin-seo Spec §1)', () => {
+    it('registers preset-config.seo with the site-wide defaults + nested social component', () => {
+      const { strapi, components } = makeStrapi();
+      injectComponents({ strapi });
+      expect(components.get('preset-config.seo')?.category).toBe('preset-config');
+      expect(components.get('preset-config.seo')?.attributes).toEqual({
+        enabled: { type: 'boolean', default: true },
+        titleTemplate: { type: 'string', default: '%s · {site}' },
+        metaDescription: { type: 'text' },
+        ogImage: { type: 'media', multiple: false, allowedTypes: ['images'] },
+        social: { type: 'component', repeatable: false, component: 'preset-config.seo-social' },
+      });
+    });
+
+    it('registers preset-config.seo-social with the five social fields', () => {
+      const { strapi, components } = makeStrapi();
+      injectComponents({ strapi });
+      expect(components.get('preset-config.seo-social')?.category).toBe('preset-config');
+      expect(components.get('preset-config.seo-social')?.attributes).toEqual({
+        twitterHandle: { type: 'string' },
+        twitterUrl: { type: 'string' },
+        linkedinUrl: { type: 'string' },
+        instagramUrl: { type: 'string' },
+        facebookUrl: { type: 'string' },
+      });
+    });
+
+    it('registers preset-config.seo-page with the four page-override fields', () => {
+      const { strapi, components } = makeStrapi();
+      injectComponents({ strapi });
+      expect(components.get('preset-config.seo-page')?.category).toBe('preset-config');
+      expect(components.get('preset-config.seo-page')?.attributes).toEqual({
+        metaTitle: { type: 'string' },
+        metaDescription: { type: 'text' },
+        ogImage: { type: 'media', multiple: false, allowedTypes: ['images'] },
+        noindex: { type: 'boolean', default: false },
+      });
+    });
   });
 });
 
