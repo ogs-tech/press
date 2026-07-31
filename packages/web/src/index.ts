@@ -36,7 +36,7 @@ export type {
 } from '@ogs-tech/press-shared';
 export { defineConfig } from './config/define-config';
 export { resolveConfig } from './config/resolve-config';
-export { buildMetadata } from './config/build-metadata';
+export { buildSeoMetadata } from './config/build-seo-metadata';
 export { buildThemeStyle } from './config/build-theme-style';
 export { buildUrn, componentUrn } from './urn';
 export type { Urn, Entity, Canonical } from './urn';

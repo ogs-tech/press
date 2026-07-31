@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildMetadata } from './build-metadata';
+import { buildSeoMetadata } from './build-seo-metadata';
 import type { ResolvedPressConfig } from './types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 import { DEFAULT_EXAMPLE_PLUGIN } from '../plugins/example/default-example-plugin';
 import { DEFAULT_SEO_PLUGIN } from '../plugins/seo/default-seo-plugin';
 
-const resolved: ResolvedPressConfig = {
+const baseResolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
   brand: { name: 'Acme', favicon: '/favicon.ico' },
   site: { url: 'https://acme.test', locale: 'en' },
@@ -25,32 +25,40 @@ const resolved: ResolvedPressConfig = {
   plugins: { example: DEFAULT_EXAMPLE_PLUGIN, seo: DEFAULT_SEO_PLUGIN },
 };
 
-describe('buildMetadata', () => {
+const disabled: ResolvedPressConfig = {
+  ...baseResolved,
+  plugins: { ...baseResolved.plugins, seo: { ...DEFAULT_SEO_PLUGIN, enabled: false } },
+};
+
+describe('buildSeoMetadata — plugin disabled', () => {
   it('uses the page title when there is a page', () => {
-    const m = buildMetadata(resolved, { title: 'E2E Home' });
+    const m = buildSeoMetadata(disabled, { title: 'E2E Home' });
     expect(m.title).toBe('E2E Home');
   });
 
   it('falls back to the site name when there is no page (layout base)', () => {
-    const m = buildMetadata(resolved, null);
+    const m = buildSeoMetadata(disabled, null);
     expect(m.title).toBe('Acme');
   });
 
-  it('derives the favicon icon from brand.favicon (AC2)', () => {
-    const m = buildMetadata(resolved, null);
+  it('derives the favicon icon from brand.favicon', () => {
+    const m = buildSeoMetadata(disabled, null);
     expect(m.icons).toEqual({ icon: '/favicon.ico' });
   });
 
   it('omits the favicon when brand.favicon is empty', () => {
-    const noFavicon: ResolvedPressConfig = { ...resolved, brand: { ...resolved.brand, favicon: '' } };
-    const m = buildMetadata(noFavicon, null);
+    const noFavicon = { ...disabled, brand: { ...disabled.brand, favicon: '' } };
+    const m = buildSeoMetadata(noFavicon, null);
     expect(m.icons).toBeUndefined();
   });
 
-  it('emits no SEO/social metadata — deferred to a future Plugin/SEO', () => {
-    const m = buildMetadata(resolved, { title: 'E2E Home' });
+  it('emits no SEO/social metadata at all — exactly the pre-plugin shape', () => {
+    const m = buildSeoMetadata(disabled, { title: 'E2E Home', seo: { metaDescription: 'ignored', noindex: true } });
     expect(m.description).toBeUndefined();
     expect(m.openGraph).toBeUndefined();
+    expect(m.twitter).toBeUndefined();
     expect(m.alternates).toBeUndefined();
+    expect(m.robots).toBeUndefined();
+    expect(m.metadataBase).toBeUndefined();
   });
 });
