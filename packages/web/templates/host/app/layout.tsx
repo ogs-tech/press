@@ -1,5 +1,5 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
-import { buildMetadata, buildThemeStyle, getSiteConfig, ExamplePlugin } from '@ogs-tech/press-web';
+import { buildSeoMetadata, buildThemeStyle, getSiteConfig, ExamplePlugin } from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
 import { buildTime } from '../press-config';
 
@@ -14,10 +14,13 @@ const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], display
 
 const fontVars = `${display.variable} ${body.variable} ${mono.variable}`;
 
-// Brand defaults, no page: title = brand.name + favicon. Fetched at runtime
-// from the CMS (ISR ~60s) so editor changes appear without a redeploy.
+// Brand defaults, no page: title.template (or brand.name when the SEO plugin
+// is disabled) + favicon. Fetched at runtime from the CMS (ISR ~60s) so
+// editor changes appear without a redeploy. No `path` — this fallback only
+// fires for routes outside the catch-all (e.g. error boundaries), where a
+// page-specific canonical doesn't apply.
 export async function generateMetadata() {
-  return buildMetadata(await getSiteConfig(buildTime), null);
+  return buildSeoMetadata(await getSiteConfig(buildTime), null);
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

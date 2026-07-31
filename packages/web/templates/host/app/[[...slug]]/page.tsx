@@ -1,6 +1,8 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import {
-  buildMetadata,
+  buildSeoMetadata,
+  buildJsonLd,
+  SeoJsonLd,
   getPage,
   getSiteConfig,
   getStaticPageParams,
@@ -41,7 +43,10 @@ export async function generateMetadata({ params }: PageProps) {
   // getSiteConfig across requests, so this resolves to a single cached round-trip
   // even though the layout also calls it.
   const [site, page] = await Promise.all([getSiteConfig(buildTime), getPage(slugFor(slug))]);
-  return buildMetadata(site, page ? { title: page.title } : null);
+  // `path` stays undefined when there is no page — a 404 response must never
+  // carry a self-referencing canonical (plugin-seo Spec §3 call sites).
+  const path = page ? `/${(slug ?? []).join('/')}` : undefined;
+  return buildSeoMetadata(site, page ? { title: page.title, seo: page.seo } : null, path);
 }
 
 export default async function CatchAllPage({ params }: PageProps) {
@@ -57,5 +62,16 @@ export default async function CatchAllPage({ params }: PageProps) {
     getPage(path || buildTime.routes.home),
   ]);
   if (!page) notFound();
-  return <TreeRenderer body={page.body} site={site} components={customBlocks} />;
+
+  // notFound() above guarantees `page` is non-null here, so the JSON-LD
+  // WebPage node always has real page data (plugin-seo Spec §3).
+  const urlPath = `/${path}`;
+  return (
+    <>
+      {site.plugins.seo.enabled && (
+        <SeoJsonLd data={buildJsonLd(site, { title: page.title, seo: page.seo }, urlPath)} />
+      )}
+      <TreeRenderer body={page.body} site={site} components={customBlocks} />
+    </>
+  );
 }
