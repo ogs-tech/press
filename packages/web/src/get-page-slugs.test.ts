@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getPageSlugs, getStaticPageParams } from './get-page-slugs';
+import { getPageSlugs, getSitemapEntries, getStaticPageParams } from './get-page-slugs';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -85,5 +85,47 @@ describe('getStaticPageParams', () => {
       throw new Error('down');
     });
     expect(await getStaticPageParams('home')).toEqual([]);
+  });
+});
+
+describe('getSitemapEntries', () => {
+  it('returns slug + noindex for every published page', async () => {
+    stubFetch(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        data: [
+          { slug: 'home', seo: { noindex: false } },
+          { slug: 'about', seo: null },
+          { slug: 'internal', seo: { noindex: true } },
+        ],
+      }),
+    }));
+    expect(await getSitemapEntries()).toEqual([
+      { slug: 'home', noindex: false },
+      { slug: 'about', noindex: false },
+      { slug: 'internal', noindex: true },
+    ]);
+  });
+
+  it('skips entries with a missing or empty slug', async () => {
+    stubFetch(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ data: [{ seo: null }, { slug: '' }] }),
+    }));
+    expect(await getSitemapEntries()).toEqual([]);
+  });
+
+  it('fails to empty on a non-OK response', async () => {
+    stubFetch(async () => ({ ok: false, status: 500, json: async () => ({}) }));
+    expect(await getSitemapEntries()).toEqual([]);
+  });
+
+  it('fails to empty on a network error', async () => {
+    stubFetch(async () => {
+      throw new Error('ECONNREFUSED');
+    });
+    expect(await getSitemapEntries()).toEqual([]);
   });
 });

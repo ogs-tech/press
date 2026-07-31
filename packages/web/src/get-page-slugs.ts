@@ -44,3 +44,24 @@ export async function getStaticPageParams(homeSlug: string): Promise<{ slug: str
   const slugs = await getPageSlugs();
   return slugs.map((slug) => (slug === homeSlug ? { slug: [] } : { slug: slug.split('/') }));
 }
+
+/**
+ * Fetches slug + noindex for every PUBLISHED page (plugin-seo Spec §4) — the
+ * data source for app/sitemap.ts. FAIL-TO-EMPTY like `getPageSlugs`: any
+ * failure yields [], and an empty sitemap is never a build failure.
+ */
+export async function getSitemapEntries(): Promise<{ slug: string; noindex: boolean }[]> {
+  try {
+    const init: RevalidateInit = { next: { revalidate: 60 } };
+    const res = await fetch(`${CMS_URL}/api/pages`, init);
+    if (!res.ok) return [];
+    const json = (await res.json()) as {
+      data: Array<{ slug?: string; seo?: { noindex?: boolean } | null }> | null;
+    };
+    return (json.data ?? [])
+      .filter((p): p is { slug: string; seo?: { noindex?: boolean } | null } => typeof p?.slug === 'string' && p.slug.length > 0)
+      .map((p) => ({ slug: p.slug, noindex: p.seo?.noindex ?? false }));
+  } catch {
+    return [];
+  }
+}

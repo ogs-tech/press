@@ -1,5 +1,5 @@
 export { getPage } from './get-page';
-export { getPageSlugs, getStaticPageParams } from './get-page-slugs';
+export { getPageSlugs, getStaticPageParams, getSitemapEntries } from './get-page-slugs';
 export { getSiteConfig } from './get-site-config';
 export { atomBlocks } from './atom-blocks';
 export { Paragraph } from './blocks/paragraph';
