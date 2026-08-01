@@ -19,10 +19,11 @@ interface StoredConsent {
   decidedAt: number;
 }
 
+/** Returns the raw, still percent-encoded cookie value — decoding happens inside parseConsentCookie's try/catch. */
 function readRawCookie(name: string): string | undefined {
   if (typeof document === 'undefined') return undefined;
   const match = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.slice(name.length + 1)) : undefined;
+  return match ? match.slice(name.length + 1) : undefined;
 }
 
 function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
@@ -34,11 +35,16 @@ function clearCookie(name: string): void {
   document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
 }
 
-/** A version mismatch or malformed value parses as no decision (re-consent), never a throw. */
+/**
+ * A version mismatch, malformed JSON, or malformed percent-encoding all parse
+ * as no decision (re-consent), never a throw — `decodeURIComponent` on a
+ * corrupted (e.g. manually edited) cookie value can itself throw `URIError`,
+ * so it must run inside this same try/catch, not before it.
+ */
 function parseConsentCookie(raw: string | undefined): ConsentDecision | null {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(raw) as Partial<StoredConsent>;
+    const parsed = JSON.parse(decodeURIComponent(raw)) as Partial<StoredConsent>;
     if (parsed.v !== CONSENT_COOKIE_VERSION) return null;
     if (
       typeof parsed.analytics !== 'boolean' ||

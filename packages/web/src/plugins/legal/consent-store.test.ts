@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { hasConsent, readConsentCookie, resetConsent, setConsent, CONSENT_COOKIE_NAME } from './consent-store';
 
 afterEach(() => {
@@ -30,6 +30,20 @@ describe('consent-store cookie round-trip', () => {
     setConsent({ analytics: true, marketing: true });
     expect(document.cookie).toContain(`${CONSENT_COOKIE_NAME}=`);
   });
+
+  it('writes the full cookie string with SameSite=Lax, Path=/, and the 180-day Max-Age', () => {
+    // document.cookie's getter never exposes attributes (Path/SameSite/Secure/Max-Age) —
+    // only name=value pairs — so this spies on the setter to inspect the written string.
+    const setSpy = vi.spyOn(document, 'cookie', 'set');
+    setConsent({ analytics: true, marketing: true });
+    expect(setSpy).toHaveBeenCalledTimes(1);
+    const written = setSpy.mock.calls[0][0];
+    expect(written).toContain(`${CONSENT_COOKIE_NAME}=`);
+    expect(written).toContain('SameSite=Lax');
+    expect(written).toContain('Path=/');
+    expect(written).toContain('Max-Age=15552000');
+    setSpy.mockRestore();
+  });
 });
 
 describe('consent-store malformed/version-mismatched values', () => {
@@ -47,6 +61,12 @@ describe('consent-store malformed/version-mismatched values', () => {
 
   it('reads null for a structurally incomplete cookie value', () => {
     document.cookie = `${CONSENT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify({ v: 1 }))}; Path=/`;
+    expect(readConsentCookie()).toBeNull();
+  });
+
+  it('reads null (never throws) for a cookie value with invalid percent-encoding', () => {
+    document.cookie = `${CONSENT_COOKIE_NAME}=%; Path=/`;
+    expect(() => readConsentCookie()).not.toThrow();
     expect(readConsentCookie()).toBeNull();
   });
 });
