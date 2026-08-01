@@ -72,8 +72,23 @@ function subscribe(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
+// useSyncExternalStore requires getSnapshot to return a referentially STABLE
+// value while the store hasn't changed — React re-invokes it after every
+// render to detect drift, and notify() fires unconditionally on every
+// setConsent()/resetConsent() call (regardless of whether the value actually
+// changed), so this cache keys strictly off the raw cookie string rather than
+// trusting notify() to only fire on real changes. `readConsentCookie()` itself
+// stays unmemoized on purpose — non-store callers (hasConsent, tests) may read
+// it immediately after mutating the cookie via a non-store path.
+let lastRawSnapshot: string | undefined;
+let lastParsedSnapshot: ConsentDecision | null = null;
 function getSnapshot(): ConsentDecision | null {
-  return readConsentCookie();
+  const raw = readRawCookie(CONSENT_COOKIE_NAME);
+  if (raw !== lastRawSnapshot) {
+    lastRawSnapshot = raw;
+    lastParsedSnapshot = parseConsentCookie(raw);
+  }
+  return lastParsedSnapshot;
 }
 function getServerSnapshot(): ConsentDecision | null {
   return null;

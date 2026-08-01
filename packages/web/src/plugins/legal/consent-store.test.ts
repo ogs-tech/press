@@ -1,6 +1,21 @@
 // @vitest-environment jsdom
+import { act, createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { hasConsent, readConsentCookie, resetConsent, setConsent, CONSENT_COOKIE_NAME } from './consent-store';
+import {
+  hasConsent,
+  readConsentCookie,
+  resetConsent,
+  setConsent,
+  useConsentDecision,
+  CONSENT_COOKIE_NAME,
+} from './consent-store';
+
+// Hand-rolled act() + createRoot harness (Spec §12; CLAUDE.md testing note) —
+// NEVER @testing-library/react, matching the mobile-nav.test.tsx precedent.
+// This file stays .test.ts (no JSX) on purpose, so components are built with
+// createElement rather than a .tsx rename.
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 afterEach(() => {
   resetConsent();
@@ -99,6 +114,47 @@ describe('hasConsent', () => {
       expect(hasConsent('marketing')).toBe(false);
     } finally {
       globalThis.document = originalDocument;
+    }
+  });
+});
+
+describe('useConsentDecision rendered in a component (regression: infinite update loop)', () => {
+  // useSyncExternalStore requires getSnapshot to be referentially stable
+  // while the store hasn't changed. A prior version of getSnapshot() called
+  // readConsentCookie() directly, which JSON.parse()s and returns a brand-new
+  // object every call — so after notify() (fired unconditionally by every
+  // setConsent()/resetConsent(), whether or not the value changed) React saw
+  // "the snapshot changed again" on its own re-check, scheduled another
+  // re-render, checked again, forever ("Maximum update depth exceeded").
+  // Calling the plain functions directly (as every other test in this file
+  // does) never exercises useSyncExternalStore's render loop, so only an
+  // actual mount + notify catches this class of bug.
+  function ConsentProbe() {
+    const decision = useConsentDecision();
+    return createElement('div', { 'data-testid': 'decision' }, decision ? JSON.stringify(decision) : 'none');
+  }
+
+  it('does not enter an infinite update loop when setConsent runs after mount, and the render reflects the new decision', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    try {
+      act(() => {
+        root.render(createElement(ConsentProbe));
+      });
+      expect(container.textContent).toBe('none');
+
+      expect(() => {
+        act(() => {
+          setConsent({ analytics: true, marketing: false });
+        });
+      }).not.toThrow();
+
+      expect(container.textContent).toContain('"analytics":true');
+      expect(container.textContent).toContain('"marketing":false');
+    } finally {
+      act(() => root.unmount());
+      container.remove();
     }
   });
 });
