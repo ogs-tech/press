@@ -335,15 +335,19 @@ about that belongs to press" (`serialize-schema.ts`, `admin/src/lib/form-model.t
     is RETIRED — its job (2–4 column layouts, closed `ratio`/`gap`/`verticalAlign` enums) is
     now native tree recursion (`RowNode`/`ColumnNode`, unlimited depth), not a discrete block.
   - `preset-config.*` — basic-settings, theme-advanced, layout, layout-page, layout-row,
-    layout-column, example-plugin, seo, seo-social, seo-page: non-block settings referenced
+    layout-column, example-plugin, seo, seo-social, seo-page, legal-pages, cookie-consent,
+    cookie-category: non-block settings referenced
     by `component:` fields on Site Settings (or, for `seo-page`, on the `page` content type),
     never a tree node. `basic-settings` ("Ajustes básicos") is identity + the curated basic
     theme tokens; `theme-advanced` nests inside it for the remaining color/radius overrides
-    (see "Build-time anchors vs. runtime Site Settings" above). `example-plugin` and `seo`
-    (+ nested `seo-social`) are the config surfaces for the two shipped Engine plugins (see
+    (see "Build-time anchors vs. runtime Site Settings" above). `example-plugin`, `seo`
+    (+ nested `seo-social`), and `legal-pages`/`cookie-consent` (+ nested `cookie-category`,
+    referenced three times for the necessary/analytics/marketing rows) are the config
+    surfaces for the three shipped Engine plugins (see
     "Engine plugins" below); `seo-page` is the per-page SEO override, attached directly to
-    the `page` content type rather than Site Settings. Cookie-consent is retired — no longer
-    part of the palette.
+    the `page` content type rather than Site Settings. Cookie-consent was retired from an
+    earlier palette and came BACK with Plugin/Legal — it is a real component again, now as
+    that plugin's Eixo B config surface, not the standalone feature it once was.
   - `preset-layout.{container,row,column}` — no longer reserved-empty: pure registry
     descriptors the builder's admin form generator reads to build the row/column edit forms
     (see "Layout primitives" above for the full mechanics). Never placed as a tree block
@@ -398,12 +402,17 @@ about that belongs to press" (`serialize-schema.ts`, `admin/src/lib/form-model.t
   `NON_PLACEABLE` categories from the previous bullet. Labels are presentation-only;
   uids never change for display. Adopter `src/admin/app.tsx` translations still override
   the engine's for the legacy-picker path.
-- **Page templates:** the once-shipped "Privacy Policy" bootstrap seed was RETIRED;
-  what remains is `lib/seed-page.ts` — a generic, idempotent `seedPage(strapi, opts)`
-  primitive (flag-first, slug-collision-respecting, DRAFT-only) that is deliberately
-  exported-but-unused, awaiting future page-seeding consumers (Plugin/Legal,
-  archetype templates). `bootstrap()` seeds NO page today; the only page an adopter
-  starts with is the CLI seed's published `home`.
+- **Page templates:** `lib/seed-page.ts` is the generic, idempotent
+  `seedPage(strapi, opts)` primitive (flag-first, slug-collision-respecting,
+  DRAFT-only). Its first real consumer is Plugin/Legal: `bootstrap()` calls
+  `seedLegalPages(strapi)` (`lib/seed-legal-pages.ts`), which seeds a
+  `privacy-policy` page — heading + placeholder paragraph, chrome inheriting —
+  gated on Site Settings `legalPages.enabled` (absent component reads as ENABLED:
+  an `=== false` check, not `!== true`) and flagged `legalPrivacyPolicySeeded`, so
+  it runs exactly once and disabling the gate later never retroactively deletes the
+  page. That page is a **DRAFT**: the only PUBLISHED page an adopter starts with is
+  still the CLI seed's `home`. Archetype templates remain the other expected
+  `seedPage` consumer.
 - On the web side, `TreeRenderer` (`web/src/tree/tree-renderer.tsx`) merges the engine
   registries with the adopter map by `component` uid: `{ ...atomBlocks, ...organismBlocks,
   ...components }` — engine `preset-atom.*` atoms (`src/atom-blocks.ts`), engine
@@ -436,10 +445,12 @@ This split is recent and easy to get wrong:
   identity** by design. SEO IS a Site Settings attribute — the `seo` field
   (`preset-config.seo` + nested `preset-config.seo-social`) feeds
   `ResolvedPressConfig.plugins.seo` via `mapSeoPlugin`; reusing this single type is
-  the established plugin-config pattern (`example`/`seo` both do it — see "Engine
-  plugins" below). Cookie Consent was retired before either shipped. Plugin/Legal
-  remains the one candidate expected to install its own entities rather than reuse
-  Site Settings.
+  the established plugin-config pattern — `example`, `seo`, AND `legal` all do it
+  (see "Engine plugins" below). Legal is the one that was once expected to break
+  the pattern and install its own entities; it did not — its two fields
+  (`legalPages`, `cookieConsent`) sit on Site Settings like every other plugin's,
+  and `mapLegal` folds both into the single `plugins.legal` key. No shipped plugin
+  owns an entity today.
   - **"Ajustes básicos" (`preset-config.basic-settings`) is the one identity+theme
     attribute** on Site Settings (`basicSettings`), replacing the old flat
     `name`/`url`/`locale`/`logo`/`favicon`/`themeColors`/`themeRadius` siblings.
@@ -490,7 +501,7 @@ This split is recent and easy to get wrong:
   `ResolvedPressConfig.plugins.<key>` (a NAMED map, one required key per plugin;
   each new plugin is a deliberate press-web major) → explicit mount in the host
   `layout.tsx`.
-- **Two real plugins ship today.** `example` (`plugins/example/`) is the
+- **Three real plugins ship today.** `example` (`plugins/example/`) is the
   synthetic reference wiring, disabled by default, mounted as a component in
   `layout.tsx` — the canonical "1 CMS component + 1 mapper + 1 key + 1 mount
   line" cost every plugin pays. `seo` (`plugins/seo/` — `buildSeoMetadata` itself
@@ -506,9 +517,38 @@ This split is recent and easy to get wrong:
   `robots.txt`. A read-only `plugin::press-cms.plugin` collection type
   (`PLUGIN_DEFINITIONS` in `sync-plugin-entries.ts`, synced every boot) gives
   Content-Manager visibility into every installed plugin's `enabled` state —
-  a view, never a second source of truth. Cookie consent was retired before
-  either of these shipped; Legal is expected to be the next plugin to install
-  its own entities and wire through this same contract.
+  a view, never a second source of truth.
+- **`legal` (`plugins/legal/`) is the third, also enabled by default** — the
+  `seo` "core surface, not a demo" precedent, not `example`'s ships-disabled one.
+  Two independent axes behind one `plugins.legal` key and TWO Site Settings
+  components (hence two `PLUGIN_DEFINITIONS` rows, `legal-pages` and
+  `legal-consent`, each with its own toggle): **Eixo A** — `preset-config.
+  legal-pages` gates the bootstrap-seeded DRAFT `privacy-policy` page (see "Page
+  templates" above). **Eixo B** — `preset-config.cookie-consent` (+ nested
+  `cookie-category` ×3) drives `<CookieConsentBanner>`, the engine's SECOND client
+  component after MobileNav: globally mounted in `layout.tsx`, never tree-placed,
+  three states (full banner → floating reopen trigger → reopened panel) off a
+  versioned `press_consent` cookie. `hasConsent(category)` is the public read gate
+  (fail-closed: `necessary` always true, everything else false during SSR or
+  before a decision); `resetConsent()` and `CONSENT_ANTI_FLASH_SCRIPT` are
+  exported too. **The store module is deliberately React-free**
+  (`plugins/legal/consent-store.ts`): the host `layout.tsx` is a Server Component
+  and imports the anti-flash script's literal string through the barrel, so that
+  module lands in the RSC server graph, where `useSyncExternalStore` does not
+  exist — the hook lives alone in the `'use client'`
+  `plugins/legal/use-consent-decision.ts` and is NOT exported from `index.ts`.
+  The anti-flash `data-press-consent-decided` attribute (stamped on `<html>`
+  pre-hydration, hiding the banner via `theme.css`) is REMOVED by the banner's
+  own mount effect — it only bridges "HTML painted" → "React hydrated", and
+  leaving it would permanently hide the reopen panel.
+- **Legal did NOT install its own entities.** Every plugin so far, Legal
+  included, hosts its config on the `site-setting` single type — the expectation
+  recorded earlier in this file (that Legal would be the first to own entities)
+  did not materialize: its two axes are pure config plus one bootstrap page seed,
+  and a page is already a first-class `page` document, so a dedicated entity would
+  have bought nothing. A future plugin with genuinely plugin-owned records (form
+  submissions, consent audit logs) is still where that contract would first pay
+  for itself.
 - **React version + admin bundle (load-bearing):** the whole monorepo is pinned
   to **React 19** via a root `pnpm.overrides` (`react`/`react-dom` = Strapi 5's
   `19.2.7`) so the Next host, the engine packages, and Strapi's admin all share

@@ -124,8 +124,9 @@ export interface ResolvedPressConfig extends Canonical<'site-setting'> {
   /**
    * Resolved engine plugins (base-plugin Spec §3), one required key per wired
    * plugin — additive is a press-web MAJOR, the `pageDefaults`/`layout`
-   * discipline. `seo` (plugin-seo Spec §2) is the second real plugin, after
-   * `example`.
+   * discipline. In shipping order: `example` (the synthetic reference wiring),
+   * `seo` (plugin-seo Spec §2), then `legal` (Plugin/Legal Spec §2 — the seeded
+   * privacy-policy page plus the cookie-consent banner, both axes under one key).
    */
   plugins: {
     example: ResolvedExamplePlugin;
