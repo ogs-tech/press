@@ -309,10 +309,12 @@ describe('site-setting basicSettings attribute (Ajustes básicos)', () => {
   });
 
   it('no longer carries the removed themeColors/themeRadius attributes (BREAKING)', () => {
-    // cookieConsent itself is NOT asserted absent here: it was removed by this
-    // refactor but reintroduced by Plugin/Legal (Spec §1) as a new, differently
-    // shaped preset-config.cookie-consent component — see the dedicated
-    // 'site-setting cookieConsent attribute' describe block below.
+    // cookieConsent itself is NOT asserted absent here: it existed under this
+    // same component uid (preset-config.cookie-consent) before the 2026-07-25
+    // "Ajustes básicos" retirement, which removed the whole cookie-consent
+    // feature that day. Plugin/Legal (Spec §1) deliberately revives it with an
+    // adjusted field set — see the dedicated 'site-setting cookieConsent
+    // attribute' describe block below for coverage.
     expect((siteSettingSchema.attributes as any).themeColors).toBeUndefined();
     expect((siteSettingSchema.attributes as any).themeRadius).toBeUndefined();
   });
