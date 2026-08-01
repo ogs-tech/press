@@ -1,11 +1,23 @@
 import { describe, expect, it } from 'vitest';
+import type { PressTree } from '@ogs-tech/press-shared';
+import { PRESS_TREE_VERSION } from '@ogs-tech/press-shared';
 import { PAGE_UID, seedPage } from './seed-page';
+
+const DEMO_BODY: PressTree = {
+  version: PRESS_TREE_VERSION,
+  root: {
+    type: 'layout',
+    header: { mode: 'inherit' },
+    footer: { mode: 'inherit' },
+    children: [],
+  },
+};
 
 const OPTS = {
   slug: 'demo',
   title: 'Demo',
   flagKey: 'demoPageSeeded',
-  body: [{ __component: 'preset-atom.paragraph', content: [] }],
+  body: DEMO_BODY,
 };
 
 /**

@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import type { PressTree } from '@ogs-tech/press-shared';
 import { pluginStore } from './plugin-store';
 
 /** UID of the engine's page collection type (plugin name `press-cms`). */
@@ -21,7 +22,7 @@ export const PAGE_UID = 'plugin::press-cms.page';
  */
 export async function seedPage(
   strapi: Core.Strapi,
-  opts: { slug: string; title: string; body: unknown[]; flagKey: string },
+  opts: { slug: string; title: string; body: PressTree; flagKey: string },
 ): Promise<void> {
   const store = pluginStore(strapi);
   if (await store.get({ key: opts.flagKey })) return;
