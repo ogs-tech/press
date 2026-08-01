@@ -46,6 +46,9 @@ export type { PressPlugin } from './plugin';
 export { ExamplePlugin } from './plugins/example/example-plugin';
 export type { ResolvedExamplePlugin } from './plugins/example/types';
 export type { ResolvedSeoPlugin } from './plugins/seo/types';
+export { CookieConsentBanner } from './plugins/legal/banner';
+export { hasConsent, resetConsent, CONSENT_ANTI_FLASH_SCRIPT } from './plugins/legal/consent-store';
+export type { ResolvedLegalPlugin } from './plugins/legal/types';
 export type {
   Page,
   PageBody,
