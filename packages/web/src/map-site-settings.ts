@@ -5,6 +5,7 @@ import { buildUrn } from './urn';
 import { mediaUrl } from './media';
 import { mapExamplePlugin } from './plugins/example/map-example-plugin';
 import { mapSeoPlugin } from './plugins/seo/map-seo-plugin';
+import { mapLegal } from './plugins/legal/map-legal';
 
 /** One pageDefaults slot: fail-to-empty on invalid nodes (Spec §6.3), dev-only warning. */
 function mapSlot(input: unknown, slot: string): Node[] {
@@ -104,6 +105,7 @@ export function mapSiteSettings(
     plugins: {
       example: mapExamplePlugin(c.examplePlugin),
       seo: mapSeoPlugin(c.seo),
+      legal: mapLegal(c.legalPages, c.cookieConsent),
     },
   };
 }

@@ -5,6 +5,8 @@ import type { ResolvedPressConfig } from './types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 import { DEFAULT_EXAMPLE_PLUGIN } from '../plugins/example/default-example-plugin';
 import { DEFAULT_SEO_PLUGIN } from '../plugins/seo/default-seo-plugin';
+import { DEFAULT_LEGAL_PAGES } from '../plugins/legal/default-legal-pages';
+import { DEFAULT_COOKIE_CONSENT } from '../plugins/legal/default-cookie-consent';
 
 const baseResolved: ResolvedPressConfig = {
   urn: 'urn:site-setting:default',
@@ -19,7 +21,11 @@ const baseResolved: ResolvedPressConfig = {
   },
   pageDefaults: { header: [], footer: [] },
   layout: DEFAULT_LAYOUT,
-  plugins: { example: DEFAULT_EXAMPLE_PLUGIN, seo: DEFAULT_SEO_PLUGIN },
+  plugins: {
+    example: DEFAULT_EXAMPLE_PLUGIN,
+    seo: DEFAULT_SEO_PLUGIN,
+    legal: { pages: { privacyPolicy: DEFAULT_LEGAL_PAGES }, consent: DEFAULT_COOKIE_CONSENT },
+  },
 };
 
 /** Build a ResolvedPressConfig with theme overrides merged over DEFAULT_THEME. */

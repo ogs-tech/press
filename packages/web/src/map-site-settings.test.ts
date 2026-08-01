@@ -4,6 +4,8 @@ import type { BuildTimeConfig } from './config/types';
 import { DEFAULT_LAYOUT } from '@ogs-tech/press-shared';
 import { DEFAULT_EXAMPLE_PLUGIN } from './plugins/example/default-example-plugin';
 import { DEFAULT_SEO_PLUGIN } from './plugins/seo/default-seo-plugin';
+import { DEFAULT_LEGAL_PAGES } from './plugins/legal/default-legal-pages';
+import { DEFAULT_COOKIE_CONSENT } from './plugins/legal/default-cookie-consent';
 
 const buildTime: BuildTimeConfig = {
   routes: { home: 'home' },
@@ -62,6 +64,22 @@ describe('mapSiteSettings', () => {
     const r = mapSiteSettings(buildTime, { seo: { enabled: false, metaDescription: 'Custom' } });
     expect(r.plugins.seo.enabled).toBe(false);
     expect(r.plugins.seo.metaDescription).toBe('Custom');
+  });
+
+  it('resolves plugins.legal to defaults when the CMS is null (Plugin/Legal Spec §2)', () => {
+    const r = mapSiteSettings(buildTime, null);
+    expect(r.plugins.legal.pages.privacyPolicy).toEqual(DEFAULT_LEGAL_PAGES);
+    expect(r.plugins.legal.consent).toEqual(DEFAULT_COOKIE_CONSENT);
+  });
+
+  it('resolves plugins.legal from present legalPages/cookieConsent components', () => {
+    const r = mapSiteSettings(buildTime, {
+      legalPages: { enabled: false },
+      cookieConsent: { enabled: false, bannerTitle: 'Custom title' },
+    });
+    expect(r.plugins.legal.pages.privacyPolicy.enabled).toBe(false);
+    expect(r.plugins.legal.consent.enabled).toBe(false);
+    expect(r.plugins.legal.consent.bannerTitle).toBe('Custom title');
   });
 
   it('maps a full CMS payload verbatim and lets theme overrides win per key (Ajustes básicos + Tema avançado)', () => {
