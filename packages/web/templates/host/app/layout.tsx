@@ -1,5 +1,12 @@
 import { Archivo, Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
-import { buildSeoMetadata, buildThemeStyle, getSiteConfig, ExamplePlugin } from '@ogs-tech/press-web';
+import {
+  buildSeoMetadata,
+  buildThemeStyle,
+  getSiteConfig,
+  ExamplePlugin,
+  CookieConsentBanner,
+  CONSENT_ANTI_FLASH_SCRIPT,
+} from '@ogs-tech/press-web';
 import '@ogs-tech/press-web/theme.css';
 import { buildTime } from '../press-config';
 
@@ -30,6 +37,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         {/* The single injection point for token values (CMS-sourced or DEFAULT_THEME). */}
         <style dangerouslySetInnerHTML={{ __html: buildThemeStyle(site) }} />
+        {/* Anti-flash (Plugin/Legal Spec §5): stamps data-press-consent-decided
+            on <html> before hydration when a decision cookie already exists. */}
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_ANTI_FLASH_SCRIPT }} />
       </head>
       <body>
         {/* The page shell (header/main/footer) is rendered by TreeRenderer inside the
@@ -37,6 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             slots (Spec §5). It keeps html/head and the theme injection only. */}
         {children}
         {site.plugins.example.enabled && <ExamplePlugin message={site.plugins.example.message} />}
+        {site.plugins.legal.consent.enabled && <CookieConsentBanner {...site.plugins.legal.consent} />}
       </body>
     </html>
   );
