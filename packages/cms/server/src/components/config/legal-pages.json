@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_preset_config_legal_pages",
+  "info": {
+    "displayName": "Legal Pages",
+    "icon": "shield",
+    "description": "Gates the privacy-policy seed on a fresh install — the seeded page's text is then edited normally in Content Manager"
+  },
+  "options": {},
+  "attributes": {
+    "enabled": { "type": "boolean", "default": true }
+  },
+  "config": {
+    "metadatas": {
+      "enabled": { "edit": { "label": "Enabled", "description": "Seeds a placeholder Privacy Policy page on a fresh install. Disabling later does not remove an already-seeded page." } }
+    }
+  }
+}

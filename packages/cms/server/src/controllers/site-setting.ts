@@ -33,6 +33,12 @@ const siteSetting = ({ strapi }: { strapi: Core.Strapi }) => {
     // seo carries one media field (ogImage) plus the nested social component —
     // both need explicit populate, same reason as basicSettings above.
     seo: { populate: { ogImage: true, social: true } },
+    // legalPages is a flat scalar component (just `enabled`) — shallow `true`
+    // is enough, same reason as examplePlugin above.
+    legalPages: true,
+    // cookieConsent carries three nested cookie-category components — each
+    // needs its own populate key, same reason as basicSettings/seo above.
+    cookieConsent: { populate: { necessaryCategory: true, analyticsCategory: true, marketingCategory: true } },
   });
 
   return {

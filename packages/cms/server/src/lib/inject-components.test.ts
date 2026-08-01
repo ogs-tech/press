@@ -27,6 +27,7 @@ describe('injectComponents', () => {
       'preset-layout.container', 'preset-layout.row', 'preset-layout.column',
       'preset-config.basic-settings', 'preset-config.theme-advanced', 'preset-config.example-plugin',
       'preset-config.seo-social', 'preset-config.seo', 'preset-config.seo-page',
+      'preset-config.legal-pages', 'preset-config.cookie-category', 'preset-config.cookie-consent',
     ];
     for (const uid of expected) {
       expect(components.get(uid)?.modelType).toBe('component');
@@ -224,6 +225,44 @@ describe('injectComponents', () => {
       });
     });
   });
+
+  describe('preset-config.legal-pages / cookie-consent / cookie-category components (Plugin/Legal Spec §1)', () => {
+    it('registers preset-config.legal-pages with the enabled gate only', () => {
+      const { strapi, components } = makeStrapi();
+      injectComponents({ strapi });
+      expect(components.get('preset-config.legal-pages')?.category).toBe('preset-config');
+      expect(components.get('preset-config.legal-pages')?.attributes).toEqual({
+        enabled: { type: 'boolean', default: true },
+      });
+    });
+
+    it('registers preset-config.cookie-category with label/description only', () => {
+      const { strapi, components } = makeStrapi();
+      injectComponents({ strapi });
+      expect(components.get('preset-config.cookie-category')?.category).toBe('preset-config');
+      expect(components.get('preset-config.cookie-category')?.attributes).toEqual({
+        label: { type: 'string' },
+        description: { type: 'text' },
+      });
+    });
+
+    it('registers preset-config.cookie-consent with banner copy + three named category fields', () => {
+      const { strapi, components } = makeStrapi();
+      injectComponents({ strapi });
+      expect(components.get('preset-config.cookie-consent')?.category).toBe('preset-config');
+      expect(components.get('preset-config.cookie-consent')?.attributes).toEqual({
+        enabled: { type: 'boolean', default: true },
+        bannerTitle: { type: 'string' },
+        bannerDescription: { type: 'text' },
+        acceptAllLabel: { type: 'string' },
+        savePreferencesLabel: { type: 'string' },
+        reopenTriggerLabel: { type: 'string' },
+        necessaryCategory: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
+        analyticsCategory: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
+        marketingCategory: { type: 'component', repeatable: false, component: 'preset-config.cookie-category' },
+      });
+    });
+  });
 });
 
 describe('page.body customField (composition-builder storage, Spec §4)', () => {
@@ -269,8 +308,11 @@ describe('site-setting basicSettings attribute (Ajustes básicos)', () => {
     });
   });
 
-  it('no longer carries the removed cookieConsent/themeColors/themeRadius attributes (BREAKING)', () => {
-    expect((siteSettingSchema.attributes as any).cookieConsent).toBeUndefined();
+  it('no longer carries the removed themeColors/themeRadius attributes (BREAKING)', () => {
+    // cookieConsent itself is NOT asserted absent here: it was removed by this
+    // refactor but reintroduced by Plugin/Legal (Spec §1) as a new, differently
+    // shaped preset-config.cookie-consent component — see the dedicated
+    // 'site-setting cookieConsent attribute' describe block below.
     expect((siteSettingSchema.attributes as any).themeColors).toBeUndefined();
     expect((siteSettingSchema.attributes as any).themeRadius).toBeUndefined();
   });
@@ -345,6 +387,26 @@ describe('site-setting seo attribute (plugin-seo Spec §1)', () => {
       type: 'component',
       repeatable: false,
       component: 'preset-config.seo',
+    });
+  });
+});
+
+describe('site-setting legalPages attribute (Plugin/Legal Spec §1)', () => {
+  it('attaches preset-config.legal-pages as a config component', () => {
+    expect((siteSettingSchema.attributes as any).legalPages).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'preset-config.legal-pages',
+    });
+  });
+});
+
+describe('site-setting cookieConsent attribute (Plugin/Legal Spec §1)', () => {
+  it('attaches preset-config.cookie-consent as a config component', () => {
+    expect((siteSettingSchema.attributes as any).cookieConsent).toEqual({
+      type: 'component',
+      repeatable: false,
+      component: 'preset-config.cookie-consent',
     });
   });
 });

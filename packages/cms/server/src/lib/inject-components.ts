@@ -21,6 +21,9 @@ import examplePluginSchema from '../components/config/example-plugin.json';
 import seoSocialSchema from '../components/config/seo-social.json';
 import seoSchema from '../components/config/seo.json';
 import seoPageSchema from '../components/config/seo-page.json';
+import legalPagesSchema from '../components/config/legal-pages.json';
+import cookieCategorySchema from '../components/config/cookie-category.json';
+import cookieConsentSchema from '../components/config/cookie-consent.json';
 import layoutDefaultsPageSchema from '../components/config/layout-page.json';
 import layoutDefaultsRowSchema from '../components/config/layout-row.json';
 import layoutDefaultsColumnSchema from '../components/config/layout-column.json';
@@ -115,6 +118,12 @@ const ENGINE_COMPONENTS: Array<{ layer: PresetLayer; name: string; schema: Recor
   { layer: 'config', name: 'seo-social', schema: seoSocialSchema as Record<string, unknown> },
   { layer: 'config', name: 'seo', schema: seoSchema as Record<string, unknown> },
   { layer: 'config', name: 'seo-page', schema: seoPageSchema as Record<string, unknown> },
+  // Plugin/Legal (Plugin/Legal Spec §1) — the privacy-policy seed gate and the
+  // cookie-consent banner's copy. Nested child first: cookie-consent references
+  // cookie-category three times (necessary/analytics/marketing).
+  { layer: 'config', name: 'legal-pages', schema: legalPagesSchema as Record<string, unknown> },
+  { layer: 'config', name: 'cookie-category', schema: cookieCategorySchema as Record<string, unknown> },
+  { layer: 'config', name: 'cookie-consent', schema: cookieConsentSchema as Record<string, unknown> },
 ];
 
 /**

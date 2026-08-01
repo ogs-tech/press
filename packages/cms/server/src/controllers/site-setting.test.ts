@@ -69,4 +69,20 @@ describe('site-setting controller', () => {
     const { populate } = findFirst.mock.calls[0][0];
     expect(populate.seo).toEqual({ populate: { ogImage: true, social: true } });
   });
+
+  it('populates legalPages as a shallow scalar component (no media/nested component to deep-populate)', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.legalPages).toBe(true);
+  });
+
+  it('deep-populates cookieConsent (three nested cookie-category components)', async () => {
+    const { strapi, ctx, findFirst } = run();
+    await siteSetting({ strapi }).find(ctx);
+    const { populate } = findFirst.mock.calls[0][0];
+    expect(populate.cookieConsent).toEqual({
+      populate: { necessaryCategory: true, analyticsCategory: true, marketingCategory: true },
+    });
+  });
 });

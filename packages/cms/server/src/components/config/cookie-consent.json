@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_preset_config_cookie_consents",
+  "info": {
+    "displayName": "Cookie Consent",
+    "icon": "lock",
+    "description": "The cookie-consent banner's copy and category descriptions"
+  },
+  "options": {},
+  "attributes": {
+    "enabled": { "type": "boolean", "default": true },
+    "bannerTitle": { "type": "string" },
+    "bannerDescription": { "type": "text" },
+    "acceptAllLabel": { "type": "string" },
+    "savePreferencesLabel": { "type": "string" },
+    "reopenTriggerLabel": { "type": "string" },
+    "necessaryCategory": { "type": "component", "repeatable": false, "component": "preset-config.cookie-category" },
+    "analyticsCategory": { "type": "component", "repeatable": false, "component": "preset-config.cookie-category" },
+    "marketingCategory": { "type": "component", "repeatable": false, "component": "preset-config.cookie-category" }
+  },
+  "config": {
+    "metadatas": {
+      "enabled": { "edit": { "label": "Enabled", "description": "Turns on the cookie-consent banner for every page. Ships on by default." } },
+      "bannerTitle": { "edit": { "label": "Banner title", "description": "Heading shown at the top of the cookie banner." } },
+      "bannerDescription": { "edit": { "label": "Banner description", "description": "Explains why the site uses cookies." } },
+      "acceptAllLabel": { "edit": { "label": "Accept all label", "description": "Sets analytics and marketing on, saves, and dismisses the banner." } },
+      "savePreferencesLabel": { "edit": { "label": "Save preferences label", "description": "Saves whatever the category toggles are currently set to — an all-off save is a one-click full rejection." } },
+      "reopenTriggerLabel": { "edit": { "label": "Reopen trigger label", "description": "Label on the persistent floating button shown once a visitor has made a choice." } },
+      "necessaryCategory": { "edit": { "label": "Necessary category", "description": "Always shown as locked-on in the banner — never a stored toggle." } },
+      "analyticsCategory": { "edit": { "label": "Analytics category", "description": "Toggle copy for analytics cookies." } },
+      "marketingCategory": { "edit": { "label": "Marketing category", "description": "Toggle copy for marketing cookies." } }
+    }
+  }
+}
