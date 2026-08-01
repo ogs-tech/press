@@ -94,11 +94,25 @@ describe('syncPluginEntries (base-plugin Spec §4)', () => {
           configHost: 'site-setting.seo',
           enabled: true,
         },
+        'legal-pages': {
+          documentId: 'doc-legal-pages',
+          pluginId: 'legal-pages',
+          label: 'Legal Pages',
+          configHost: 'site-setting.legalPages',
+          enabled: true,
+        },
+        'legal-consent': {
+          documentId: 'doc-legal-consent',
+          pluginId: 'legal-consent',
+          label: 'Cookie Consent',
+          configHost: 'site-setting.cookieConsent',
+          enabled: true,
+        },
       },
     );
     await syncPluginEntries(strapi);
     expect(creates).toEqual([]);
-    expect(updates).toHaveLength(2);
+    expect(updates).toHaveLength(4);
     const exampleUpdate = updates.find((u) => u.data.pluginId === 'example');
     expect(exampleUpdate).toEqual({
       documentId: 'doc-example',
@@ -111,5 +125,36 @@ describe('syncPluginEntries (base-plugin Spec §4)', () => {
     await syncPluginEntries(strapi);
     const exampleEntry = creates.find((c) => c.data.pluginId === 'example');
     expect(exampleEntry?.data.enabled).toBe(false);
+  });
+
+  it('creates the legal-pages entry with defaultEnabled true when Site Settings is null (Plugin/Legal Spec §2)', async () => {
+    const { strapi, creates } = fakeStrapi(null);
+    await syncPluginEntries(strapi);
+    const entry = creates.find((c) => c.data.pluginId === 'legal-pages');
+    expect(entry?.data).toEqual({
+      pluginId: 'legal-pages',
+      label: 'Legal Pages',
+      configHost: 'site-setting.legalPages',
+      enabled: true,
+    });
+  });
+
+  it('creates the legal-consent entry with defaultEnabled true when Site Settings is null', async () => {
+    const { strapi, creates } = fakeStrapi(null);
+    await syncPluginEntries(strapi);
+    const entry = creates.find((c) => c.data.pluginId === 'legal-consent');
+    expect(entry?.data).toEqual({
+      pluginId: 'legal-consent',
+      label: 'Cookie Consent',
+      configHost: 'site-setting.cookieConsent',
+      enabled: true,
+    });
+  });
+
+  it('mirrors the live Site Settings legalPages.enabled and cookieConsent.enabled values on create', async () => {
+    const { strapi, creates } = fakeStrapi({ legalPages: { enabled: false }, cookieConsent: { enabled: false } });
+    await syncPluginEntries(strapi);
+    expect(creates.find((c) => c.data.pluginId === 'legal-pages')?.data.enabled).toBe(false);
+    expect(creates.find((c) => c.data.pluginId === 'legal-consent')?.data.enabled).toBe(false);
   });
 });

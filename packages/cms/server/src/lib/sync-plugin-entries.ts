@@ -7,6 +7,8 @@ const PLUGIN_UID = 'plugin::press-cms.plugin';
 interface SiteSettingSnapshot {
   examplePlugin?: { enabled?: boolean } | null;
   seo?: { enabled?: boolean } | null;
+  legalPages?: { enabled?: boolean } | null;
+  cookieConsent?: { enabled?: boolean } | null;
 }
 
 interface PluginDefinition {
@@ -40,6 +42,20 @@ export const PLUGIN_DEFINITIONS: PluginDefinition[] = [
     defaultEnabled: true,
     readEnabled: (site) => site?.seo?.enabled,
   },
+  {
+    id: 'legal-pages',
+    label: 'Legal Pages',
+    configHost: 'site-setting.legalPages',
+    defaultEnabled: true,
+    readEnabled: (site) => site?.legalPages?.enabled,
+  },
+  {
+    id: 'legal-consent',
+    label: 'Cookie Consent',
+    configHost: 'site-setting.cookieConsent',
+    defaultEnabled: true,
+    readEnabled: (site) => site?.cookieConsent?.enabled,
+  },
 ];
 
 /**
@@ -53,7 +69,7 @@ export const PLUGIN_DEFINITIONS: PluginDefinition[] = [
 export async function syncPluginEntries(strapi: Core.Strapi): Promise<void> {
   const site = (await strapi
     .documents(SITE_SETTING_UID as any)
-    .findFirst({ populate: { examplePlugin: true, seo: true } as any })) as SiteSettingSnapshot | null;
+    .findFirst({ populate: { examplePlugin: true, seo: true, legalPages: true, cookieConsent: true } as any })) as SiteSettingSnapshot | null;
 
   const docs = strapi.documents(PLUGIN_UID as any);
 
