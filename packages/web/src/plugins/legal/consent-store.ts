@@ -1,4 +1,15 @@
-import { useSyncExternalStore } from 'react';
+/**
+ * Plugin/Legal cookie store — deliberately ZERO React imports. `index.ts`
+ * re-exports `hasConsent`/`resetConsent`/`CONSENT_ANTI_FLASH_SCRIPT` from here,
+ * and the host `layout.tsx` (a Server Component) reads the anti-flash script's
+ * literal string at SSR/build time, so this module lands in the RSC server
+ * graph. React's `react-server` export condition does not export
+ * `useSyncExternalStore`, and Next's RSC transform rejects it outside a
+ * `'use client'` boundary — hence the hook lives alone in
+ * `./use-consent-decision.ts`. The store machinery below (`subscribe`,
+ * `getSnapshot`, `getServerSnapshot`) is plain JS and stays here; only the hook
+ * that consumes it is client-only.
+ */
 import type { ConsentCategory } from './types';
 
 /** Plugin/Legal Spec §4 cookie contract. */
@@ -26,12 +37,16 @@ function readRawCookie(name: string): string | undefined {
   return match ? match.slice(name.length + 1) : undefined;
 }
 
+/** SSR-safe no-op, mirroring readRawCookie's guard: `resetConsent` is public API, so a Server Component call must never throw. */
 function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
+  if (typeof document === 'undefined') return;
   const secure = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
   document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax${secure}`;
 }
 
+/** SSR-safe no-op — see writeCookie. */
 function clearCookie(name: string): void {
+  if (typeof document === 'undefined') return;
   document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
 }
 
@@ -68,7 +83,7 @@ const listeners = new Set<Listener>();
 function notify(): void {
   for (const listener of listeners) listener();
 }
-function subscribe(listener: Listener): () => void {
+export function subscribe(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
@@ -82,7 +97,7 @@ function subscribe(listener: Listener): () => void {
 // it immediately after mutating the cookie via a non-store path.
 let lastRawSnapshot: string | undefined;
 let lastParsedSnapshot: ConsentDecision | null = null;
-function getSnapshot(): ConsentDecision | null {
+export function getSnapshot(): ConsentDecision | null {
   const raw = readRawCookie(CONSENT_COOKIE_NAME);
   if (raw !== lastRawSnapshot) {
     lastRawSnapshot = raw;
@@ -90,17 +105,8 @@ function getSnapshot(): ConsentDecision | null {
   }
   return lastParsedSnapshot;
 }
-function getServerSnapshot(): ConsentDecision | null {
+export function getServerSnapshot(): ConsentDecision | null {
   return null;
-}
-
-/**
- * React-native hydration-safe read (Plugin/Legal Spec §4): server (and first
- * client paint) always see `null`; React swaps to the real cookie value
- * immediately after hydration commits.
- */
-export function useConsentDecision(): ConsentDecision | null {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 export function setConsent(decision: { analytics: boolean; marketing: boolean }): void {
@@ -137,5 +143,11 @@ export function hasConsent(category: ConsentCategory): boolean {
  * as a raw `<script>` in the host `layout.tsx` `<head>` — the `buildThemeStyle`
  * `<style>` injection precedent — never read via `next/headers` `cookies()`,
  * which would force the route dynamic.
+ *
+ * The attribute is REMOVED by `CookieConsentBanner`'s mount effect: it only has
+ * to bridge "HTML painted" → "React hydrated", and its `theme.css` rule hides
+ * ANY rendered banner, so leaving it in place would permanently swallow the
+ * reopen panel, a re-consent flow after a cookie-version bump, and any
+ * post-mount `resetConsent()`.
  */
 export const CONSENT_ANTI_FLASH_SCRIPT = `(function(){try{if(document.cookie.indexOf('${CONSENT_COOKIE_NAME}=')!==-1){document.documentElement.setAttribute('data-press-consent-decided','');}}catch(e){}})();`;

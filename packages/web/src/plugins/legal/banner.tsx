@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ResolvedCookieConsent } from './types';
-import { setConsent, useConsentDecision } from './consent-store';
+import { setConsent } from './consent-store';
+import { useConsentDecision } from './use-consent-decision';
 
 type CookieConsentBannerProps = Omit<ResolvedCookieConsent, 'enabled'>;
 
@@ -31,6 +32,16 @@ export function CookieConsentBanner({
   const [analytics, setAnalytics] = useState(decision?.analytics ?? false);
   const [marketing, setMarketing] = useState(decision?.marketing ?? false);
 
+  // The anti-flash attribute (CONSENT_ANTI_FLASH_SCRIPT) only has to bridge the
+  // gap between "HTML painted" and "React hydrated" — its theme.css rule hides
+  // ANY rendered banner, so leaving it on <html> would permanently swallow the
+  // reopen panel, a re-consent flow after a cookie-version bump, and any
+  // post-mount resetConsent(). Once mounted, React's own state is the source of
+  // truth and the attribute must get out of the way.
+  useEffect(() => {
+    document.documentElement.removeAttribute('data-press-consent-decided');
+  }, []);
+
   const openPanel = () => {
     setAnalytics(decision?.analytics ?? false);
     setMarketing(decision?.marketing ?? false);
@@ -56,7 +67,7 @@ export function CookieConsentBanner({
   }
 
   return (
-    <div data-press-consent="banner" role="region" aria-label="Cookie preferences">
+    <div data-press-consent="banner" role="region" aria-label={bannerTitle}>
       <p data-press-consent="title">{bannerTitle}</p>
       <p data-press-consent="description">{bannerDescription}</p>
       <div data-press-consent="category" data-category="necessary">

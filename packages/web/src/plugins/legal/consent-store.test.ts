@@ -7,9 +7,11 @@ import {
   readConsentCookie,
   resetConsent,
   setConsent,
-  useConsentDecision,
   CONSENT_COOKIE_NAME,
 } from './consent-store';
+// The hook lives in its own 'use client' module so consent-store.ts stays
+// React-free for the RSC server graph — see use-consent-decision.ts.
+import { useConsentDecision } from './use-consent-decision';
 
 // Hand-rolled act() + createRoot harness (Spec §12; CLAUDE.md testing note) —
 // NEVER @testing-library/react, matching the mobile-nav.test.tsx precedent.
@@ -112,6 +114,23 @@ describe('hasConsent', () => {
       expect(hasConsent('necessary')).toBe(true);
       expect(hasConsent('analytics')).toBe(false);
       expect(hasConsent('marketing')).toBe(false);
+    } finally {
+      globalThis.document = originalDocument;
+    }
+  });
+});
+
+describe('write path under SSR', () => {
+  // resetConsent is public package API (index.ts), so an adopter can call it
+  // from a Server Component — it must no-op, not throw a raw ReferenceError.
+  // setConsent shares the exact same write path and is guarded for symmetry.
+  it('setConsent/resetConsent are safe no-ops when document is undefined', () => {
+    const originalDocument = globalThis.document;
+    // @ts-expect-error simulating an SSR environment where document doesn't exist
+    delete globalThis.document;
+    try {
+      expect(() => setConsent({ analytics: true, marketing: true })).not.toThrow();
+      expect(() => resetConsent()).not.toThrow();
     } finally {
       globalThis.document = originalDocument;
     }

@@ -564,7 +564,10 @@ h6[data-block="preset-atom.heading"] { font-size: var(--press-text-body); }
    (consent-store.ts's CONSENT_ANTI_FLASH_SCRIPT) stamps
    data-press-consent-decided on <html> before hydration when a decision
    cookie already exists; this hides the momentarily server-rendered full
-   banner for a returning visitor until React swaps to the floating trigger. */
+   banner for a returning visitor until React swaps to the floating trigger.
+   CookieConsentBanner's mount effect then REMOVES the attribute — the rule
+   below hides any rendered banner, so a stale attribute would permanently
+   swallow the reopened panel. */
 [data-press-consent="banner"] {
   position: fixed;
   left: var(--press-space-4);

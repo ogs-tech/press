@@ -2,7 +2,7 @@
   "collectionName": "components_preset_config_cookie_categories",
   "info": {
     "displayName": "Cookie Category",
-    "icon": "list",
+    "icon": "bulletList",
     "description": "Copy for one cookie-consent category — reused by the necessary/analytics/marketing fields"
   },
   "options": {},

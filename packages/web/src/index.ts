@@ -47,8 +47,12 @@ export { ExamplePlugin } from './plugins/example/example-plugin';
 export type { ResolvedExamplePlugin } from './plugins/example/types';
 export type { ResolvedSeoPlugin } from './plugins/seo/types';
 export { CookieConsentBanner } from './plugins/legal/banner';
+// consent-store.ts is React-free on purpose — the host layout.tsx (a Server
+// Component) imports CONSENT_ANTI_FLASH_SCRIPT through this barrel, so the
+// module lands in the RSC server graph; the useSyncExternalStore hook lives in
+// the 'use client' ./plugins/legal/use-consent-decision.ts and is NOT exported.
 export { hasConsent, resetConsent, CONSENT_ANTI_FLASH_SCRIPT } from './plugins/legal/consent-store';
-export type { ResolvedLegalPlugin } from './plugins/legal/types';
+export type { ResolvedLegalPlugin, ConsentCategory } from './plugins/legal/types';
 export type {
   Page,
   PageBody,
