@@ -155,6 +155,29 @@ export interface PresetConfigExamplePlugin {
   message?: string;
 }
 
+export interface PresetConfigSeoSocial {
+  twitterHandle?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+}
+
+export interface PresetConfigSeo {
+  enabled?: boolean;
+  titleTemplate?: string;
+  metaDescription?: string;
+  ogImage?: PressMedia;
+  social?: PresetConfigSeoSocial;
+}
+
+export interface PresetConfigSeoPage {
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: PressMedia;
+  noindex?: boolean;
+}
+
 /** The page body IS the composition tree (composition-builder spec §5). */
 export type PageBody = PressTree;
 
@@ -164,4 +187,5 @@ export interface Page {
   title: string;
   slug?: string;
   body: PageBody;
+  seo?: PresetConfigSeoPage;
 }

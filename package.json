@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "dev": "test -d apps/playground || tsx scripts/create-playground.ts && turbo run dev --filter playground",
+    "dev": "test -d apps/playground || tsx scripts/create-playground.ts && turbo run build --filter=@ogs-tech/press-cms && turbo run dev --filter playground",
     "pack:check": "pnpm build && pnpm -r --filter \"./packages/*\" publish --dry-run --no-git-checks",
     "version-packages": "changeset version && pnpm --filter @ogs-tech/create-press gen:versions && git add -A",
     "release": "turbo run build && changeset publish"
